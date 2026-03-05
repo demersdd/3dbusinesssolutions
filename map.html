@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Human Rights Risk Index | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+  :root {
+    --bg: #050a0f;
+    --bg2: #080f18;
+    --panel: #0b1622;
+    --accent: #00e5ff;
+    --accent2: #ff6b35;
+    --text: #e8f4f8;
+    --muted: #6a8fa8;
+    --border: rgba(0,229,255,0.15);
+    --mono: 'Share Tech Mono', monospace;
+    --head: 'Barlow Condensed', sans-serif;
+    --body: 'Barlow', sans-serif;
+    --critical: #e63946;
+    --high: #ff6b35;
+    --medium: #ffd166;
+    --low: #06d6a0;
+    --minimal: #2dc653;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); cursor: none; }
+
+  .cursor { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: screen; transition: width .15s, height .15s; }
+  .cursor-ring { width: 30px; height: 30px; border: 1px solid rgba(0,229,255,.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); }
+
+  body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px); background-size:50px 50px; pointer-events:none; z-index:0; }
+
+  /* LAYOUT */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .9rem 2rem;
+    background: rgba(5,10,15,.92); backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo { font-family: var(--head); font-size: 1.3rem; font-weight: 900; letter-spacing: .08em; color: var(--text); text-decoration: none; }
+  .nav-logo span { color: var(--accent); }
+  .nav-back { font-family: var(--mono); font-size: .7rem; color: var(--muted); text-decoration: none; letter-spacing: .1em; transition: color .2s; }
+  .nav-back:hover { color: var(--accent); }
+  .nav-title { font-family: var(--mono); font-size: .7rem; color: var(--accent); letter-spacing: .15em; text-transform: uppercase; }
+
+  .layout {
+    display: flex; height: 100vh; padding-top: 48px;
+    position: relative; z-index: 1;
+  }
+
+  /* SIDEBAR */
+  .sidebar {
+    width: 300px; min-width: 300px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  .sidebar-header {
+    padding: 1.2rem 1.4rem .8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-title {
+    font-family: var(--head); font-size: 1.5rem; font-weight: 900;
+    text-transform: uppercase; line-height: 1; color: var(--text);
+  }
+  .sidebar-title em { font-style: normal; color: var(--accent); }
+  .sidebar-sub { font-family: var(--mono); font-size: .62rem; color: var(--muted); margin-top: .4rem; letter-spacing: .08em; }
+
+  /* SEARCH */
+  .search-wrap { padding: .8rem 1.2rem; border-bottom: 1px solid var(--border); }
+  .search-input {
+    width: 100%; background: var(--panel); border: 1px solid var(--border);
+    color: var(--text); font-family: var(--mono); font-size: .75rem;
+    padding: .55rem .8rem; letter-spacing: .05em;
+    outline: none; transition: border-color .2s;
+  }
+  .search-input::placeholder { color: var(--muted); }
+  .search-input:focus { border-color: var(--accent); }
+
+  /* FILTERS */
+  .filters { padding: .6rem 1.2rem; border-bottom: 1px solid var(--border); display: flex; flex-wrap: wrap; gap: .4rem; }
+  .filter-btn {
+    font-family: var(--mono); font-size: .6rem; padding: .25rem .6rem;
+    border: 1px solid; cursor: pointer; letter-spacing: .08em;
+    text-transform: uppercase; transition: all .15s; background: transparent;
+  }
+  .filter-btn.all { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.all.active, .filter-btn.all:hover { background: var(--accent); color: var(--bg); }
+  .filter-btn.critical { border-color: var(--critical); color: var(--critical); }
+  .filter-btn.critical.active, .filter-btn.critical:hover { background: var(--critical); color: #fff; }
+  .filter-btn.high { border-color: var(--high); color: var(--high); }
+  .filter-btn.high.active, .filter-btn.high:hover { background: var(--high); color: #fff; }
+  .filter-btn.medium { border-color: var(--medium); color: var(--medium); }
+  .filter-btn.medium.active, .filter-btn.medium:hover { background: var(--medium); color: var(--bg); }
+  .filter-btn.low { border-color: var(--low); color: var(--low); }
+  .filter-btn.low.active, .filter-btn.low:hover { background: var(--low); color: var(--bg); }
+
+  /* COUNTRY LIST */
+  .country-list { flex: 1; overflow-y: auto; }
+  .country-list::-webkit-scrollbar { width: 4px; }
+  .country-list::-webkit-scrollbar-thumb { background: var(--border); }
+  .country-item {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .55rem 1.2rem; border-bottom: 1px solid rgba(0,229,255,.06);
+    cursor: pointer; transition: background .15s;
+  }
+  .country-item:hover { background: rgba(0,229,255,.05); }
+  .country-item.selected { background: rgba(0,229,255,.1); border-left: 2px solid var(--accent); }
+  .country-name { font-size: .82rem; font-weight: 600; }
+  .country-region { font-family: var(--mono); font-size: .58rem; color: var(--muted); margin-top: .1rem; }
+  .score-badge {
+    font-family: var(--mono); font-size: .7rem; font-weight: 700;
+    padding: .2rem .5rem; min-width: 38px; text-align: center;
+  }
+
+  /* MAP AREA */
+  .map-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  .map-container { flex: 1; position: relative; overflow: hidden; }
+  #world-map { width: 100%; height: 100%; }
+
+  svg#world-map { display: block; }
+  .country-path { stroke: rgba(0,229,255,.2); stroke-width: .3px; cursor: pointer; transition: opacity .2s; }
+  .country-path:hover { opacity: .75; stroke: var(--accent); stroke-width: .8px; }
+  .country-path.selected { stroke: var(--accent); stroke-width: 1.2px; }
+  .country-path.no-data { fill: #1a2b3c; }
+
+  /* TOOLTIP */
+  .tooltip {
+    position: fixed; z-index: 500;
+    background: rgba(8,15,24,.97); border: 1px solid var(--accent);
+    padding: .9rem 1.1rem; min-width: 240px; max-width: 300px;
+    pointer-events: none; opacity: 0; transition: opacity .15s;
+    backdrop-filter: blur(8px);
+  }
+  .tooltip.visible { opacity: 1; }
+  .tt-country { font-family: var(--head); font-size: 1.1rem; font-weight: 900; text-transform: uppercase; }
+  .tt-region { font-family: var(--mono); font-size: .6rem; color: var(--muted); margin-bottom: .7rem; letter-spacing: .1em; }
+  .tt-score-row { display: flex; align-items: center; gap: .6rem; margin-bottom: .6rem; }
+  .tt-score-big { font-family: var(--head); font-size: 2.2rem; font-weight: 900; line-height: 1; }
+  .tt-tier { font-family: var(--mono); font-size: .65rem; letter-spacing: .1em; }
+  .tt-divider { border: none; border-top: 1px solid var(--border); margin: .6rem 0; }
+  .tt-row { display: flex; justify-content: space-between; margin-bottom: .3rem; }
+  .tt-label { font-family: var(--mono); font-size: .6rem; color: var(--muted); }
+  .tt-val { font-family: var(--mono); font-size: .6rem; color: var(--text); }
+
+  /* DETAIL PANEL */
+  .detail-panel {
+    height: 0; background: var(--bg2); border-top: 1px solid var(--border);
+    overflow: hidden; transition: height .3s ease;
+    display: flex; gap: 2rem; padding: 0 2rem;
+    align-items: center;
+  }
+  .detail-panel.open { height: 110px; padding: .8rem 2rem; }
+  .detail-col { flex: 1; }
+  .detail-label { font-family: var(--mono); font-size: .58rem; color: var(--accent2); text-transform: uppercase; letter-spacing: .12em; margin-bottom: .25rem; }
+  .detail-val { font-size: .88rem; font-weight: 600; }
+  .detail-bar-wrap { margin-top: .3rem; height: 4px; background: rgba(255,255,255,.08); }
+  .detail-bar { height: 100%; transition: width .6s ease; }
+  .detail-notes { font-family: var(--mono); font-size: .6rem; color: var(--muted); margin-top: .3rem; }
+
+  /* LEGEND */
+  .legend {
+    position: absolute; bottom: 16px; right: 16px; z-index: 10;
+    background: rgba(8,15,24,.9); border: 1px solid var(--border);
+    padding: .8rem 1rem; backdrop-filter: blur(8px);
+  }
+  .legend-title { font-family: var(--mono); font-size: .58rem; color: var(--accent); letter-spacing: .15em; text-transform: uppercase; margin-bottom: .6rem; }
+  .legend-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .3rem; font-family: var(--mono); font-size: .6rem; color: var(--muted); }
+  .legend-swatch { width: 12px; height: 12px; flex-shrink: 0; }
+
+  /* STATS BAR */
+  .stats-bar {
+    display: flex; gap: 0; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  .stat-item {
+    flex: 1; padding: .5rem .8rem; border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  .stat-item:last-child { border-right: none; }
+  .stat-num { font-family: var(--head); font-size: 1.3rem; font-weight: 900; line-height: 1; }
+  .stat-lbl { font-family: var(--mono); font-size: .55rem; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-top: .15rem; }
+
+  /* LOADING */
+  .loading {
+    position: absolute; inset: 0; display: flex; align-items: center;
+    justify-content: center; flex-direction: column; gap: 1rem; z-index: 50;
+    background: var(--bg);
+  }
+  .loading-text { font-family: var(--mono); font-size: .75rem; color: var(--accent); letter-spacing: .15em; animation: blink 1s ease infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+  .zoom-controls {
+    position: absolute; top: 12px; right: 12px; z-index: 10;
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .zoom-btn {
+    width: 30px; height: 30px; background: var(--panel); border: 1px solid var(--border);
+    color: var(--accent); font-size: 1rem; cursor: pointer; display: flex;
+    align-items: center; justify-content: center; transition: background .15s;
+  }
+  .zoom-btn:hover { background: rgba(0,229,255,.1); }
+
+  @media (max-width: 768px) {
+    .sidebar { display: none; }
+    .detail-panel.open { height: auto; padding: .8rem; flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span>BS</a>
+  <div class="nav-title">// Human Rights Risk Index</div>
+  <a href="/" class="nav-back">← Back to Home</a>
+</nav>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Risk <em>Index</em></div>
+      <div class="sidebar-sub">132 COUNTRIES · ILO 2024 · GSI 2023</div>
+    </div>
+    <div class="search-wrap">
+      <input class="search-input" id="searchInput" type="text" placeholder="Search country..."/>
+    </div>
+    <div class="filters">
+      <button class="filter-btn all active" data-tier="all">All</button>
+      <button class="filter-btn critical" data-tier="CRITICAL">Critical</button>
+      <button class="filter-btn high" data-tier="HIGH">High</button>
+      <button class="filter-btn medium" data-tier="MEDIUM">Medium</button>
+      <button class="filter-btn low" data-tier="LOW">Low</button>
+    </div>
+    <div class="country-list" id="countryList"></div>
+  </aside>
+
+  <!-- MAP -->
+  <div class="map-area">
+    <div class="stats-bar" id="statsBar">
+      <div class="stat-item"><div class="stat-num" id="statTotal">—</div><div class="stat-lbl">Countries</div></div>
+      <div class="stat-item"><div class="stat-num" style="color:var(--critical)" id="statCritical">—</div><div class="stat-lbl">Critical</div></div>
+      <div class="stat-item"><div class="stat-num" style="color:var(--high)" id="statHigh">—</div><div class="stat-lbl">High</div></div>
+      <div class="stat-item"><div class="stat-num" style="color:var(--medium)" id="statMedium">—</div><div class="stat-lbl">Medium</div></div>
+      <div class="stat-item"><div class="stat-num" style="color:var(--low)" id="statLow">—</div><div class="stat-lbl">Low/Minimal</div></div>
+      <div class="stat-item"><div class="stat-num" style="color:var(--accent)" id="statAvg">—</div><div class="stat-lbl">Avg Score</div></div>
+    </div>
+    <div class="map-container" id="mapContainer">
+      <div class="loading" id="loading">
+        <div class="loading-text">// LOADING DATA...</div>
+      </div>
+      <svg id="world-map" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="zoom-controls">
+        <button class="zoom-btn" id="zoomIn">+</button>
+        <button class="zoom-btn" id="zoomOut">−</button>
+        <button class="zoom-btn" id="zoomReset" style="font-size:.55rem;font-family:var(--mono)">RST</button>
+      </div>
+      <div class="legend">
+        <div class="legend-title">// Risk Score</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:var(--critical)"></div>Critical (75–100)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:var(--high)"></div>High (55–74)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:var(--medium)"></div>Medium (35–54)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:var(--low)"></div>Low (15–34)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:var(--minimal)"></div>Minimal (0–14)</div>
+        <div class="legend-row"><div class="legend-swatch" style="background:#1a2b3c"></div>No Data</div>
+      </div>
+    </div>
+    <div class="detail-panel" id="detailPanel"></div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+// CSV is loaded from the same repo on GitHub Pages
+const CSV_URL = 'human_rights_data.csv';
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let countryData = {};
+let selectedCountry = null;
+let activeFilter = 'all';
+let searchTerm = '';
+let svgScale = 1, svgX = 0, svgY = 0;
+let isDragging = false, dragStart = null;
+
+// ─── COLOR HELPERS ────────────────────────────────────────────────────────────
+function scoreColor(score) {
+  if (score >= 75) return '#e63946';
+  if (score >= 55) return '#ff6b35';
+  if (score >= 35) return '#ffd166';
+  if (score >= 15) return '#06d6a0';
+  return '#2dc653';
+}
+function tierFromScore(score) {
+  if (score >= 75) return 'CRITICAL';
+  if (score >= 55) return 'HIGH';
+  if (score >= 35) return 'MEDIUM';
+  if (score >= 15) return 'LOW';
+  return 'MINIMAL';
+}
+
+// ─── CSV LOAD ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  return new Promise((resolve, reject) => {
+    Papa.parse(CSV_URL, {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: results => {
+        results.data.forEach(row => {
+          const name = row.Country.trim();
+          countryData[name] = {
+            region: row.Region,
+            childLabourPct: parseFloat(row.ChildLabourPct) || 0,
+            childLabourScore: parseFloat(row.ChildLabourScore) || 0,
+            modSlaveryPer1000: parseFloat(row.ModSlaveryPer1000) || 0,
+            modSlaveryScore: parseFloat(row.ModSlaveryScore) || 0,
+            vulnerability: parseFloat(row.VulnerabilityScore) || 0,
+            govtResponseRaw: parseFloat(row.GovtResponseRaw) || 0,
+            govtResponseRisk: parseFloat(row.GovtResponseRisk) || 0,
+            composite: parseFloat(row.CompositeScore) || 0,
+            tier: row.RiskTier ? row.RiskTier.replace(/[^A-Z]/g,'').trim() : '',
+            notes: row.Notes || ''
+          };
+        });
+        resolve();
+      },
+      error: reject
+    });
+  });
+}
+
+// ─── MAP RENDERING ────────────────────────────────────────────────────────────
+// Simplified world map paths (Natural Earth simplified)
+// Using a lightweight inline SVG world map approach
+async function loadMap() {
+  const resp = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+  return resp.json();
+}
+
+// Country name mapping from TopoJSON ISO to our CSV names
+const isoToName = {
+  "004":"Afghanistan","008":"Albania","012":"Algeria","024":"Angola",
+  "032":"Argentina","036":"Australia","040":"Austria","031":"Azerbaijan",
+  "050":"Bangladesh","112":"Belarus","056":"Belgium","084":"Belize",
+  "204":"Benin","068":"Bolivia","070":"Bosnia & Herz.","076":"Brazil",
+  "100":"Bulgaria","854":"Burkina Faso","108":"Burundi","116":"Cambodia",
+  "120":"Cameroon","124":"Canada","140":"Central African Rep.","148":"Chad",
+  "152":"Chile","156":"China","170":"Colombia","180":"Congo (Dem. Rep.)",
+  "188":"Costa Rica","384":"Côte d'Ivoire","191":"Croatia","192":"Cuba",
+  "203":"Czech Republic","208":"Denmark","214":"Dominican Republic",
+  "218":"Ecuador","818":"Egypt","222":"El Salvador","232":"Eritrea",
+  "231":"Ethiopia","246":"Finland","250":"France","270":"Gambia",
+  "268":"Georgia","276":"Germany","288":"Ghana","320":"Guatemala",
+  "324":"Guinea","624":"Guinea-Bissau","332":"Haiti","340":"Honduras",
+  "348":"Hungary","356":"India","360":"Indonesia","364":"Iran",
+  "368":"Iraq","372":"Ireland","376":"Israel","380":"Italy",
+  "392":"Japan","400":"Jordan","398":"Kazakhstan","404":"Kenya",
+  "414":"Kuwait","417":"Kyrgyzstan","418":"Laos","422":"Lebanon",
+  "426":"Lesotho","430":"Liberia","434":"Libya","450":"Madagascar",
+  "454":"Malawi","458":"Malaysia","466":"Mali","478":"Mauritania",
+  "484":"Mexico","498":"Moldova","496":"Mongolia","504":"Morocco",
+  "508":"Mozambique","104":"Myanmar","524":"Nepal","528":"Netherlands",
+  "554":"New Zealand","558":"Nicaragua","562":"Niger","566":"Nigeria",
+  "408":"North Korea","578":"Norway","586":"Pakistan","591":"Panama",
+  "598":"Papua New Guinea","600":"Paraguay","604":"Peru","608":"Philippines",
+  "616":"Poland","620":"Portugal","634":"Qatar","642":"Romania",
+  "643":"Russia","646":"Rwanda","682":"Saudi Arabia","686":"Senegal",
+  "694":"Sierra Leone","706":"Somalia","710":"South Africa",
+  "728":"South Sudan","724":"Spain","144":"Sri Lanka","729":"Sudan",
+  "752":"Sweden","756":"Switzerland","760":"Syria","762":"Tajikistan",
+  "834":"Tanzania","764":"Thailand","768":"Togo","788":"Tunisia",
+  "792":"Turkey","795":"Turkmenistan","800":"Uganda","804":"Ukraine",
+  "784":"United Arab Emirates","826":"United Kingdom","840":"United States",
+  "860":"Uzbekistan","862":"Venezuela","704":"Vietnam","887":"Yemen",
+  "894":"Zambia","716":"Zimbabwe","688":"Serbia","686":"Senegal"
+};
+
+function renderMap(topo) {
+  const svg = document.getElementById('world-map');
+
+  // Use topojson-client via CDN
+  const script = document.createElement('script');
+  script.src = 'https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js';
+  script.onload = () => {
+    const d3Script = document.createElement('script');
+    d3Script.src = 'https://cdn.jsdelivr.net/npm/d3-geo@3/dist/d3-geo.min.js';
+    d3Script.onload = () => {
+      const countries = topojson.feature(topo, topo.objects.countries);
+      const projection = d3.geoNaturalEarth1()
+        .scale(153)
+        .translate([500, 250]);
+      const path = d3.geoPath().projection(projection);
+
+      const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+      g.id = 'mapGroup';
+      svg.appendChild(g);
+
+      countries.features.forEach(feature => {
+        const id = String(feature.id).padStart(3,'0');
+        const name = isoToName[id];
+        const data = name ? countryData[name] : null;
+
+        const el = document.createElementNS('http://www.w3.org/2000/svg','path');
+        el.setAttribute('d', path(feature));
+        el.setAttribute('class', 'country-path' + (data ? '' : ' no-data'));
+        el.setAttribute('fill', data ? scoreColor(data.composite) : '#1a2b3c');
+        el.setAttribute('data-name', name || id);
+        el.setAttribute('data-id', id);
+
+        if (data) {
+          el.addEventListener('mouseenter', e => showTooltip(e, name, data));
+          el.addEventListener('mousemove', e => moveTooltip(e));
+          el.addEventListener('mouseleave', hideTooltip);
+          el.addEventListener('click', () => selectCountry(name, data, el));
+        }
+        g.appendChild(el);
+      });
+
+      document.getElementById('loading').style.display = 'none';
+      updateStats();
+      renderList();
+    };
+    document.head.appendChild(d3Script);
+  };
+  document.head.appendChild(script);
+}
+
+// ─── TOOLTIP ──────────────────────────────────────────────────────────────────
+function showTooltip(e, name, d) {
+  const tt = document.getElementById('tooltip');
+  const color = scoreColor(d.composite);
+  const tier = tierFromScore(d.composite);
+  tt.innerHTML = `
+    <div class="tt-country">${name}</div>
+    <div class="tt-region">${d.region}</div>
+    <div class="tt-score-row">
+      <div class="tt-score-big" style="color:${color}">${d.composite}</div>
+      <div>
+        <div class="tt-tier" style="color:${color}">// ${tier} RISK</div>
+      </div>
+    </div>
+    <hr class="tt-divider"/>
+    <div class="tt-row"><span class="tt-label">Child Labour Rate</span><span class="tt-val">${d.childLabourPct}%</span></div>
+    <div class="tt-row"><span class="tt-label">Modern Slavery /1k</span><span class="tt-val">${d.modSlaveryPer1000}</span></div>
+    <div class="tt-row"><span class="tt-label">Vulnerability</span><span class="tt-val">${d.vulnerability}/100</span></div>
+    <div class="tt-row"><span class="tt-label">Govt Response</span><span class="tt-val">${d.govtResponseRaw}/100</span></div>
+  `;
+  tt.classList.add('visible');
+  moveTooltip(e);
+}
+function moveTooltip(e) {
+  const tt = document.getElementById('tooltip');
+  let x = e.clientX + 16, y = e.clientY - 10;
+  if (x + 300 > window.innerWidth) x = e.clientX - 316;
+  if (y + 200 > window.innerHeight) y = e.clientY - 210;
+  tt.style.left = x + 'px'; tt.style.top = y + 'px';
+}
+function hideTooltip() { document.getElementById('tooltip').classList.remove('visible'); }
+
+// ─── SELECTION & DETAIL PANEL ─────────────────────────────────────────────────
+function selectCountry(name, data, el) {
+  // Deselect previous
+  document.querySelectorAll('.country-path.selected').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll('.country-item.selected').forEach(i => i.classList.remove('selected'));
+
+  if (selectedCountry === name) {
+    selectedCountry = null;
+    document.getElementById('detailPanel').classList.remove('open');
+    document.getElementById('detailPanel').innerHTML = '';
+    return;
+  }
+
+  selectedCountry = name;
+  el.classList.add('selected');
+
+  // Highlight in list
+  const listItem = document.querySelector(`.country-item[data-name="${name}"]`);
+  if (listItem) { listItem.classList.add('selected'); listItem.scrollIntoView({block:'nearest'}); }
+
+  // Detail panel
+  const color = scoreColor(data.composite);
+  const dp = document.getElementById('detailPanel');
+  dp.innerHTML = `
+    <div class="detail-col">
+      <div class="detail-label">Country</div>
+      <div class="detail-val" style="font-family:var(--head);font-size:1.1rem;font-weight:900">${name}</div>
+      <div class="detail-notes">${data.region} · ${data.notes}</div>
+    </div>
+    <div class="detail-col">
+      <div class="detail-label">Composite Score</div>
+      <div class="detail-val" style="color:${color};font-size:1.4rem;font-family:var(--head)">${data.composite} <span style="font-size:.7rem;color:${color}">/ ${tierFromScore(data.composite)}</span></div>
+      <div class="detail-bar-wrap"><div class="detail-bar" style="width:${data.composite}%;background:${color}"></div></div>
+    </div>
+    <div class="detail-col">
+      <div class="detail-label">Child Labour</div>
+      <div class="detail-val">${data.childLabourPct}% <span style="font-size:.7rem;color:var(--muted)">(score: ${data.childLabourScore})</span></div>
+      <div class="detail-bar-wrap"><div class="detail-bar" style="width:${data.childLabourScore}%;background:var(--accent)"></div></div>
+    </div>
+    <div class="detail-col">
+      <div class="detail-label">Modern Slavery</div>
+      <div class="detail-val">${data.modSlaveryPer1000}/1k <span style="font-size:.7rem;color:var(--muted)">(score: ${data.modSlaveryScore})</span></div>
+      <div class="detail-bar-wrap"><div class="detail-bar" style="width:${data.modSlaveryScore}%;background:var(--accent2)"></div></div>
+    </div>
+    <div class="detail-col">
+      <div class="detail-label">Vulnerability</div>
+      <div class="detail-val">${data.vulnerability}/100</div>
+      <div class="detail-bar-wrap"><div class="detail-bar" style="width:${data.vulnerability}%;background:#a259ff"></div></div>
+    </div>
+    <div class="detail-col">
+      <div class="detail-label">Govt Response</div>
+      <div class="detail-val">${data.govtResponseRaw}/100 <span style="font-size:.7rem;color:var(--muted)">(higher=better)</span></div>
+      <div class="detail-bar-wrap"><div class="detail-bar" style="width:${data.govtResponseRaw}%;background:var(--low)"></div></div>
+    </div>
+  `;
+  dp.classList.add('open');
+}
+
+// ─── SIDEBAR LIST ─────────────────────────────────────────────────────────────
+function renderList() {
+  const list = document.getElementById('countryList');
+  const sorted = Object.entries(countryData)
+    .filter(([name, d]) => {
+      const matchSearch = name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchTier = activeFilter === 'all' || tierFromScore(d.composite) === activeFilter;
+      return matchSearch && matchTier;
+    })
+    .sort((a,b) => b[1].composite - a[1].composite);
+
+  list.innerHTML = sorted.map(([name, d]) => {
+    const color = scoreColor(d.composite);
+    return `<div class="country-item" data-name="${name}" onclick="clickListItem('${name.replace(/'/g,"\\'")}')">
+      <div>
+        <div class="country-name">${name}</div>
+        <div class="country-region">${d.region}</div>
+      </div>
+      <div class="score-badge" style="color:${color};border:1px solid ${color}20">${d.composite}</div>
+    </div>`;
+  }).join('');
+}
+
+function clickListItem(name) {
+  const data = countryData[name];
+  if (!data) return;
+  const el = document.querySelector(`.country-path[data-name="${name}"]`);
+  selectCountry(name, data, el || document.createElement('path'));
+}
+
+// ─── STATS ────────────────────────────────────────────────────────────────────
+function updateStats() {
+  const all = Object.values(countryData);
+  document.getElementById('statTotal').textContent = all.length;
+  document.getElementById('statCritical').textContent = all.filter(d => d.composite >= 75).length;
+  document.getElementById('statHigh').textContent = all.filter(d => d.composite >= 55 && d.composite < 75).length;
+  document.getElementById('statMedium').textContent = all.filter(d => d.composite >= 35 && d.composite < 55).length;
+  document.getElementById('statLow').textContent = all.filter(d => d.composite < 35).length;
+  const avg = (all.reduce((s,d) => s+d.composite, 0) / all.length).toFixed(1);
+  document.getElementById('statAvg').textContent = avg;
+}
+
+// ─── ZOOM & PAN ───────────────────────────────────────────────────────────────
+function applyTransform() {
+  const g = document.getElementById('mapGroup');
+  if (g) g.setAttribute('transform', `translate(${svgX},${svgY}) scale(${svgScale})`);
+}
+document.getElementById('zoomIn').onclick = () => { svgScale = Math.min(svgScale*1.4, 12); applyTransform(); };
+document.getElementById('zoomOut').onclick = () => { svgScale = Math.max(svgScale/1.4, 1); if(svgScale===1){svgX=0;svgY=0;} applyTransform(); };
+document.getElementById('zoomReset').onclick = () => { svgScale=1; svgX=0; svgY=0; applyTransform(); };
+
+const mapC = document.getElementById('mapContainer');
+mapC.addEventListener('mousedown', e => { if (svgScale > 1) { isDragging=true; dragStart={x:e.clientX-svgX, y:e.clientY-svgY}; mapC.style.cursor='grabbing'; }});
+mapC.addEventListener('mousemove', e => { if (isDragging) { svgX=e.clientX-dragStart.x; svgY=e.clientY-dragStart.y; applyTransform(); }});
+mapC.addEventListener('mouseup', () => { isDragging=false; mapC.style.cursor=''; });
+mapC.addEventListener('wheel', e => {
+  e.preventDefault();
+  const delta = e.deltaY > 0 ? 0.85 : 1.18;
+  svgScale = Math.min(Math.max(svgScale*delta, 1), 12);
+  if(svgScale===1){svgX=0;svgY=0;}
+  applyTransform();
+}, {passive:false});
+
+// ─── FILTERS & SEARCH ─────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.tier;
+    renderList();
+  });
+});
+document.getElementById('searchInput').addEventListener('input', e => {
+  searchTerm = e.target.value;
+  renderList();
+});
+
+// ─── CURSOR ───────────────────────────────────────────────────────────────────
+const cursor = document.getElementById('cursor');
+const ring = document.getElementById('cursorRing');
+let mx=0,my=0,rx=0,ry=0;
+document.addEventListener('mousemove', e => {mx=e.clientX;my=e.clientY;});
+(function tick(){
+  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
+  rx+=(mx-rx)*.1; ry+=(my-ry)*.1;
+  ring.style.left=rx+'px'; ring.style.top=ry+'px';
+  requestAnimationFrame(tick);
+})();
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(async () => {
+  try {
+    await loadData();
+    const topo = await loadMap();
+    renderMap(topo);
+  } catch(e) {
+    document.getElementById('loading').innerHTML = `<div class="loading-text" style="color:var(--accent2)">// ERROR LOADING DATA<br><span style="font-size:.6rem;opacity:.7">${e.message}</span></div>`;
+  }
+})();
+</script>
+</body>
+</html>

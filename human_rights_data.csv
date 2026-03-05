@@ -1,0 +1,133 @@
+Country,Region,ChildLabourPct,ChildLabourScore,ModSlaveryPer1000,ModSlaveryScore,VulnerabilityScore,GovtResponseRaw,GovtResponseRisk,CompositeScore,RiskTier,Notes
+Afghanistan,South Asia,35,70,12.5,11.9,87,10,90,56.9,🟠  HIGH,ILO 2024 est.; GSI 2023
+Albania,Europe,4.5,9,2.2,2.1,42,55,45,20.2,🟢  LOW,GSI 2023; ILO 2024
+Angola,Sub-Saharan Africa,38,76,6.1,5.8,78,22,78,52.2,🟡  MEDIUM,ILO 2024 est.; GSI 2023
+Argentina,Latin America,4,8,1.5,1.4,30,62,38,15.7,🟢  LOW,ILO 2024; GSI 2023
+Armenia,Europe/C. Asia,4.5,9,1.8,1.7,38,58,42,18.6,🟢  LOW,GSI 2023; ILO 2024
+Australia,Oceania,,,0.7,0.7,10,88,12,4.5,🟢  MINIMAL,GSI 2023; ILO
+Austria,Europe,,,0.7,0.7,8,85,15,4.5,🟢  MINIMAL,GSI 2023; ILO
+Azerbaijan,Europe/C. Asia,7,14,3.5,3.3,52,38,62,27,🟢  LOW,GSI 2023; ILO 2024
+Bangladesh,South Asia,10,20,6.8,6.5,72,30,70,35.8,🟡  MEDIUM,ILO 2024; GSI 2023
+Belarus,Europe,4.5,9,4.8,4.6,55,20,80,29.6,🟢  LOW,GSI 2023; ILO 2024
+Belgium,Europe,,,0.8,0.8,9,84,16,4.9,🟢  MINIMAL,GSI 2023
+Belize,Latin America,6.5,13,2.8,2.7,50,44,56,25.1,🟢  LOW,GSI 2023; ILO 2024
+Benin,Sub-Saharan Africa,40,80,5.8,5.5,76,25,75,52.2,🟡  MEDIUM,ILO 2024 est.; GSI 2023
+Bolivia,Latin America,26,52,3.2,3,55,42,58,36.5,🟡  MEDIUM,ILO 2024; GSI 2023
+Bosnia & Herz.,Europe,5.5,11,2.1,2,40,52,48,20.6,🟢  LOW,GSI 2023; ILO
+Brazil,Latin America,4,8,1.8,1.7,38,65,35,17.3,🟢  LOW,ILO 2024; GSI 2023
+Bulgaria,Europe,3.5,7,2.2,2.1,38,60,40,18,🟢  LOW,GSI 2023
+Burkina Faso,Sub-Saharan Africa,47,94,8.2,7.8,82,20,80,58.7,🟠  HIGH,ILO 2024 est.; GSI 2023
+Burundi,Sub-Saharan Africa,38,76,7.5,7.1,88,18,82,55.8,🟠  HIGH,ILO 2024; GSI 2023
+Cambodia,Southeast Asia,15,30,9.5,9,68,32,68,37.8,🟡  MEDIUM,ILO 2024; GSI 2023
+Cameroon,Sub-Saharan Africa,40,80,5.5,5.2,74,28,72,51.1,🟡  MEDIUM,ILO 2024 est.; GSI 2023
+Canada,North America,,,0.8,0.8,9,87,13,4.5,🟢  MINIMAL,GSI 2023; ILO
+Central African Rep.,Sub-Saharan Africa,47,94,14,13.3,92,10,90,64.7,🟠  HIGH,ILO 2024; GSI 2023
+Chad,Sub-Saharan Africa,48,96,9.5,9,90,12,88,62.8,🟠  HIGH,ILO 2024 est.; GSI 2023
+Chile,Latin America,3.5,7,1.2,1.1,22,70,30,12.1,🟢  MINIMAL,ILO 2024; GSI 2023
+China,East Asia,7,14,4.9,4.7,55,24,76,30.3,🟢  LOW,GSI 2023; ILO 2024
+Colombia,Latin America,7,14,2.5,2.4,44,60,40,21.3,🟢  LOW,ILO 2024; GSI 2023
+Congo (Dem. Rep.),Sub-Saharan Africa,42,84,10.5,10,89,14,86,59.6,🟠  HIGH,ILO 2024; GSI 2023
+Costa Rica,Latin America,4,8,1.5,1.4,28,68,32,14.3,🟢  MINIMAL,ILO 2024; GSI 2023
+Côte d'Ivoire,Sub-Saharan Africa,26,52,5.2,5,72,30,70,43.2,🟡  MEDIUM,ILO 2024; GSI 2023
+Croatia,Europe,2,4,1.5,1.4,22,70,30,11.5,🟢  MINIMAL,GSI 2023
+Cuba,Latin America,3,6,4.5,4.3,55,18,82,29.1,🟢  LOW,GSI 2023; ILO
+Czech Republic,Europe,,,1.2,1.1,12,80,20,6.4,🟢  MINIMAL,GSI 2023
+Denmark,Europe,,,0.5,0.5,5,90,10,2.9,🟢  MINIMAL,GSI 2023
+Dominican Republic,Latin America,8,16,2.8,2.7,46,48,52,24.2,🟢  LOW,ILO 2024; GSI 2023
+Ecuador,Latin America,8.5,17,2.5,2.4,42,55,45,22.3,🟢  LOW,ILO 2024; GSI 2023
+Egypt,Middle East/N.Africa,4,8,3.8,3.6,58,35,65,27.5,🟢  LOW,ILO 2024; GSI 2023
+El Salvador,Latin America,5,10,2.2,2.1,44,50,50,21.7,🟢  LOW,ILO 2024; GSI 2023
+Eritrea,Sub-Saharan Africa,9,18,90.3,86,95,5,95,72.6,🟠  HIGH,GSI 2023 — state forced labour
+Ethiopia,Sub-Saharan Africa,40,80,7.2,6.9,82,22,78,54.6,🟡  MEDIUM,ILO 2024; GSI 2023
+Finland,Europe,,,0.5,0.5,5,90,10,2.9,🟢  MINIMAL,GSI 2023
+France,Europe,,,0.9,0.9,12,82,18,6,🟢  MINIMAL,GSI 2023
+Gambia,Sub-Saharan Africa,20,40,6.8,6.5,78,24,76,43.2,🟡  MEDIUM,ILO 2024; GSI 2023
+Georgia,Europe/C. Asia,4.5,9,2.5,2.4,42,58,42,19.9,🟢  LOW,GSI 2023; ILO 2024
+Germany,Europe,,,0.6,0.6,8,88,12,4,🟢  MINIMAL,GSI 2023
+Ghana,Sub-Saharan Africa,22,44,3.8,3.6,60,40,60,36.3,🟡  MEDIUM,ILO 2024; GSI 2023
+Guatemala,Latin America,26,52,4.5,4.3,60,40,60,38.5,🟡  MEDIUM,ILO 2024; GSI 2023
+Guinea,Sub-Saharan Africa,35,70,7.5,7.1,82,18,82,52.8,🟡  MEDIUM,ILO 2024 est.; GSI 2023
+Guinea-Bissau,Sub-Saharan Africa,38,76,8.2,7.8,84,16,84,55.3,🟠  HIGH,ILO 2024; GSI 2023
+Haiti,Latin America,25,50,8.5,8.1,85,15,85,49.3,🟡  MEDIUM,ILO 2024; GSI 2023
+Honduras,Latin America,10,20,3.2,3,56,42,58,28.8,🟢  LOW,ILO 2024; GSI 2023
+Hungary,Europe,1.5,3,1.8,1.7,28,65,35,13.6,🟢  MINIMAL,GSI 2023
+India,South Asia,5.5,11,8,7.6,70,38,62,32.2,🟢  LOW,ILO 2024; GSI 2023
+Indonesia,Southeast Asia,6.5,13,5.6,5.3,60,45,55,28.4,🟢  LOW,ILO 2024; GSI 2023
+Iran,Middle East/N.Africa,3.5,7,9.5,9,75,10,90,37.1,🟡  MEDIUM,GSI 2023; ILO
+Iraq,Middle East/N.Africa,5,10,10.5,10,78,18,82,37.8,🟡  MEDIUM,ILO 2024; GSI 2023
+Ireland,Europe,,,0.8,0.8,9,86,14,4.6,🟢  MINIMAL,GSI 2023
+Israel,Middle East/N.Africa,,,2.5,2.4,22,72,28,10.5,🟢  MINIMAL,GSI 2023
+Italy,Europe,,,1.5,1.4,18,76,24,8.6,🟢  MINIMAL,GSI 2023
+Japan,East Asia,,,1.5,1.4,14,74,26,7.9,🟢  MINIMAL,GSI 2023
+Jordan,Middle East/N.Africa,3,6,5.5,5.2,58,42,58,26.5,🟢  LOW,GSI 2023; ILO
+Kazakhstan,Central Asia,2.5,5,4.5,4.3,52,42,58,24.5,🟢  LOW,GSI 2023; ILO 2024
+Kenya,Sub-Saharan Africa,26,52,4.8,4.6,66,38,62,40.4,🟡  MEDIUM,ILO 2024; GSI 2023
+Kuwait,Middle East/N.Africa,,,14.5,13.8,65,30,70,31.6,🟢  LOW,GSI 2023 — kafala system
+Kyrgyzstan,Central Asia,7,14,5.2,5,62,35,65,30.5,🟢  LOW,GSI 2023; ILO 2024
+Laos,Southeast Asia,10,20,6.5,6.2,70,25,75,35.9,🟡  MEDIUM,ILO 2024; GSI 2023
+Lebanon,Middle East/N.Africa,2,4,7.5,7.1,68,28,72,31.3,🟢  LOW,GSI 2023; ILO
+Lesotho,Sub-Saharan Africa,23,46,5.5,5.2,72,28,72,42.1,🟡  MEDIUM,ILO 2024; GSI 2023
+Liberia,Sub-Saharan Africa,32,64,7.8,7.4,82,20,80,51.1,🟡  MEDIUM,ILO 2024; GSI 2023
+Libya,Middle East/N.Africa,6,12,15,14.3,85,10,90,42.8,🟡  MEDIUM,GSI 2023 — open slave markets
+Madagascar,Sub-Saharan Africa,26,52,6.8,6.5,78,22,78,46.5,🟡  MEDIUM,ILO 2024; GSI 2023
+Malawi,Sub-Saharan Africa,38,76,5.5,5.2,76,28,72,50.6,🟡  MEDIUM,ILO 2024; GSI 2023
+Malaysia,Southeast Asia,1,2,4.5,4.3,48,52,48,21.2,🟢  LOW,GSI 2023; ILO 2024
+Mali,Sub-Saharan Africa,38,76,8,7.6,84,15,85,55.4,🟠  HIGH,ILO 2024; GSI 2023
+Mauritania,Sub-Saharan Africa,8,16,32,30.5,88,18,82,49,🟡  MEDIUM,GSI 2023 — historical slavery
+Mexico,Latin America,7,14,2.8,2.7,44,58,42,21.7,🟢  LOW,ILO 2024; GSI 2023
+Moldova,Europe,5,10,3.5,3.3,52,48,52,24.5,🟢  LOW,GSI 2023; ILO 2024
+Mongolia,East Asia,5.5,11,3.2,3,48,45,55,24.1,🟢  LOW,GSI 2023; ILO 2024
+Morocco,Middle East/N.Africa,3,6,2.8,2.7,45,50,50,21.2,🟢  LOW,ILO 2024; GSI 2023
+Mozambique,Sub-Saharan Africa,40,80,7.8,7.4,82,20,80,55.1,🟠  HIGH,ILO 2024; GSI 2023
+Myanmar,Southeast Asia,22,44,18.5,17.6,88,5,95,53.4,🟡  MEDIUM,GSI 2023 — military regime
+Nepal,South Asia,13,26,7.2,6.9,70,35,65,36.2,🟡  MEDIUM,ILO 2024; GSI 2023
+Netherlands,Europe,,,0.9,0.9,10,86,14,4.9,🟢  MINIMAL,GSI 2023
+New Zealand,Oceania,,,0.5,0.5,8,88,12,4,🟢  MINIMAL,GSI 2023
+Nicaragua,Latin America,10,20,3.8,3.6,55,35,65,29.8,🟢  LOW,ILO 2024; GSI 2023
+Niger,Sub-Saharan Africa,43,86,8.5,8.1,86,14,86,58.7,🟠  HIGH,ILO 2024; GSI 2023
+Nigeria,Sub-Saharan Africa,22,44,7,6.7,78,28,72,43.6,🟡  MEDIUM,ILO 2024; GSI 2023
+North Korea,East Asia,,,104.6,99.6,96,2,98,73.6,🟠  HIGH,GSI 2023 — state forced labour
+Norway,Europe,,,0.5,0.5,1,92,8,1.6,🟢  MINIMAL,GSI 2023
+Pakistan,South Asia,12,24,10.7,10.2,78,22,78,40.8,🟡  MEDIUM,ILO 2024; GSI 2023
+Panama,Latin America,5,10,2.5,2.4,38,60,40,18.8,🟢  LOW,ILO 2024; GSI 2023
+Papua New Guinea,Oceania,10,20,9.5,9,82,18,82,40.9,🟡  MEDIUM,GSI 2023; ILO 2024
+Paraguay,Latin America,8,16,2.8,2.7,45,52,48,23.4,🟢  LOW,ILO 2024; GSI 2023
+Peru,Latin America,9,18,2.5,2.4,42,62,38,21.5,🟢  LOW,ILO 2024; GSI 2023
+Philippines,Southeast Asia,8,16,4.5,4.3,55,48,52,27.1,🟢  LOW,ILO 2024; GSI 2023
+Poland,Europe,,,1.5,1.4,18,75,25,8.7,🟢  MINIMAL,GSI 2023
+Portugal,Europe,,,0.9,0.9,12,84,16,5.7,🟢  MINIMAL,GSI 2023
+Qatar,Middle East/N.Africa,,,18,17.1,60,35,65,30.7,🟢  LOW,GSI 2023 — kafala/labour reform
+Romania,Europe,3.5,7,3.5,3.3,45,55,45,20.9,🟢  LOW,GSI 2023; ILO 2024
+Russia,Europe/C. Asia,2,4,8.2,7.8,65,15,85,32.7,🟢  LOW,GSI 2023 — state-linked forced labour
+Rwanda,Sub-Saharan Africa,10,20,3.2,3,58,48,52,28.4,🟢  LOW,ILO 2024; GSI 2023
+Saudi Arabia,Middle East/N.Africa,,,21.3,20.3,68,28,72,34.9,🟢  LOW,GSI 2023 — kafala system
+Senegal,Sub-Saharan Africa,18,36,4.5,4.3,68,35,65,37.3,🟡  MEDIUM,ILO 2024; GSI 2023
+Serbia,Europe,2.5,5,2.2,2.1,38,62,38,17.2,🟢  LOW,GSI 2023; ILO
+Sierra Leone,Sub-Saharan Africa,30,60,7.2,6.9,80,22,78,49.1,🟡  MEDIUM,ILO 2024; GSI 2023
+Somalia,Sub-Saharan Africa,35,70,16,15.2,95,8,92,60.4,🟠  HIGH,GSI 2023; ILO — conflict
+South Africa,Sub-Saharan Africa,8,16,4.8,4.6,52,55,45,25.4,🟢  LOW,ILO 2024; GSI 2023
+South Sudan,Sub-Saharan Africa,30,60,22,21,100,8,92,61.1,🟠  HIGH,GSI 2023 — highest vulnerability
+Spain,Europe,,,1,1,14,80,20,6.8,🟢  MINIMAL,GSI 2023
+Sri Lanka,South Asia,5,10,3.5,3.3,48,55,45,22.4,🟢  LOW,ILO 2024; GSI 2023
+Sudan,Sub-Saharan Africa,32,64,14.5,13.8,90,10,90,56.8,🟠  HIGH,ILO 2024; GSI 2023
+Sweden,Europe,,,0.6,0.6,6,90,10,3.2,🟢  MINIMAL,GSI 2023
+Switzerland,Europe,,,0.5,0.5,5,90,10,2.9,🟢  MINIMAL,GSI 2023
+Syria,Middle East/N.Africa,5,10,20,19,94,5,95,46.9,🟡  MEDIUM,GSI 2023 — ongoing conflict
+Tajikistan,Central Asia,9,18,14.8,14.1,82,14,86,42.8,🟡  MEDIUM,GSI 2023 — state forced labour
+Tanzania,Sub-Saharan Africa,28,56,5.5,5.2,72,30,70,44.3,🟡  MEDIUM,ILO 2024; GSI 2023
+Thailand,Southeast Asia,4.5,9,4.2,4,50,52,48,23.3,🟢  LOW,ILO 2024; GSI 2023
+Togo,Sub-Saharan Africa,25,50,5.8,5.5,72,28,72,43.2,🟡  MEDIUM,ILO 2024; GSI 2023
+Tunisia,Middle East/N.Africa,2.5,5,2.8,2.7,42,52,48,19.9,🟢  LOW,ILO 2024; GSI 2023
+Turkey,Europe/C. Asia,2,4,15,14.3,60,38,62,30.3,🟢  LOW,GSI 2023; ILO 2024
+Turkmenistan,Central Asia,5,10,18.5,17.6,85,5,95,44.2,🟡  MEDIUM,GSI 2023 — state forced labour
+Uganda,Sub-Saharan Africa,32,64,5.8,5.5,76,28,72,47.7,🟡  MEDIUM,ILO 2024; GSI 2023
+Ukraine,Europe,3,6,4.5,4.3,55,50,50,24.3,🟢  LOW,GSI 2023; ILO 2024
+United Arab Emirates,Middle East/N.Africa,,,13.5,12.9,55,42,58,27,🟢  LOW,GSI 2023 — kafala system
+United Kingdom,Europe,,,1.2,1.1,12,88,12,5.2,🟢  MINIMAL,GSI 2023
+United States,North America,,,3.3,3.1,18,82,18,8.3,🟢  MINIMAL,GSI 2023; ILO
+Uzbekistan,Central Asia,5,10,10.5,10,72,28,72,34.8,🟢  LOW,GSI 2023 — cotton forced labour hist.
+Venezuela,Latin America,8,16,8.5,8.1,75,18,82,37.9,🟡  MEDIUM,GSI 2023; ILO 2024
+Vietnam,Southeast Asia,9,18,5.8,5.5,62,38,62,31.2,🟢  LOW,ILO 2024; GSI 2023
+Yemen,Middle East/N.Africa,8,16,20,19,96,5,95,48.9,🟡  MEDIUM,GSI 2023 — conflict
+Zambia,Sub-Saharan Africa,30,60,5.5,5.2,74,32,68,45.5,🟡  MEDIUM,ILO 2024; GSI 2023
+Zimbabwe,Sub-Saharan Africa,25,50,5.8,5.5,72,28,72,43.2,🟡  MEDIUM,ILO 2024; GSI 2023
