@@ -397,7 +397,7 @@ function renderMap(topo) {
   script.src = 'https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js';
   script.onload = () => {
     const d3Script = document.createElement('script');
-    d3Script.src = 'https://cdn.jsdelivr.net/npm/d3-geo@3/dist/d3-geo.min.js';
+    d3Script.src = 'https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js';
     d3Script.onload = () => {
       const countries = topojson.feature(topo, topo.objects.countries);
       const projection = d3.geoNaturalEarth1()
