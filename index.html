@@ -9,9 +9,7 @@
 :root { --bg: #050a0f; --bg2: #080f18; --panel: #0b1622; --accent: #00e5ff; --accent2: #ff6b35; --accent3: #39ff14; --text: #e8f4f8; --muted: #6a8fa8; --border: rgba(0,229,255,0.15); --mono: 'Share Tech Mono', monospace; --head: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: var(--body); overflow-x: hidden; cursor: none; }
-.cursor { width: 12px; height: 12px; background: var(--accent); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); transition: width .2s, height .2s; mix-blend-mode: screen; }
-.cursor-ring { width: 36px; height: 36px; border: 1px solid rgba(0,229,255,.5); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); }
+body { background: var(--bg); color: var(--text); font-family: var(--body); overflow-x: hidden; }
 body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px); background-size:60px 60px; pointer-events:none; z-index:0; }
 body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px); pointer-events:none; z-index:1; }
 nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:1.2rem 3rem; background:rgba(5,10,15,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
@@ -117,8 +115,6 @@ footer { padding:1.5rem 3rem; border-top:1px solid var(--border); display:flex; 
 </style>
 </head>
 <body>
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
 
 <nav>
   <a href="#" class="nav-logo">3D<span>.</span>BS</a>
@@ -259,11 +255,6 @@ footer { padding:1.5rem 3rem; border-top:1px solid var(--border); display:flex; 
 </footer>
 
 <script>
-const cursor = document.getElementById('cursor');
-const ring = document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
-(function tick(){ cursor.style.left=mx+'px';cursor.style.top=my+'px'; rx+=(mx-rx)*.12;ry+=(my-ry)*.12; ring.style.left=rx+'px';ring.style.top=ry+'px'; requestAnimationFrame(tick); })();
 document.querySelectorAll('a,button').forEach(el=>{
   el.addEventListener('mouseenter',()=>{cursor.style.width='20px';cursor.style.height='20px';});
   el.addEventListener('mouseleave',()=>{cursor.style.width='12px';cursor.style.height='12px';});

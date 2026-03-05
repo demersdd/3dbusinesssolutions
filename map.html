@@ -27,10 +27,7 @@
   }
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { height: 100%; overflow: hidden; }
-  body { background: var(--bg); color: var(--text); font-family: var(--body); cursor: none; }
-
-  .cursor { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9999; transform: translate(-50%,-50%); mix-blend-mode: screen; transition: width .15s, height .15s; }
-  .cursor-ring { width: 30px; height: 30px; border: 1px solid rgba(0,229,255,.4); border-radius: 50%; position: fixed; pointer-events: none; z-index: 9998; transform: translate(-50%,-50%); }
+  body { background: var(--bg); color: var(--text); font-family: var(--body); }
 
   body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px); background-size:50px 50px; pointer-events:none; z-index:0; }
 
@@ -215,8 +212,6 @@
 </head>
 <body>
 
-<div class="cursor" id="cursor"></div>
-<div class="cursor-ring" id="cursorRing"></div>
 
 <nav>
   <a href="/" class="nav-logo">3D<span>.</span>BS</a>
@@ -607,17 +602,6 @@ document.getElementById('searchInput').addEventListener('input', e => {
 });
 
 // ─── CURSOR ───────────────────────────────────────────────────────────────────
-const cursor = document.getElementById('cursor');
-const ring = document.getElementById('cursorRing');
-let mx=0,my=0,rx=0,ry=0;
-document.addEventListener('mousemove', e => {mx=e.clientX;my=e.clientY;});
-(function tick(){
-  cursor.style.left=mx+'px'; cursor.style.top=my+'px';
-  rx+=(mx-rx)*.1; ry+=(my-ry)*.1;
-  ring.style.left=rx+'px'; ring.style.top=ry+'px';
-  requestAnimationFrame(tick);
-})();
-
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 (async () => {
   try {
