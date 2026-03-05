@@ -284,7 +284,9 @@
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
 // CSV is loaded from the same repo on GitHub Pages
+// Try relative path first; falls back to raw GitHub if needed
 const CSV_URL = 'human_rights_data.csv';
+const CSV_FALLBACK = 'https://raw.githubusercontent.com/demersdd/3dbusinesssolutions/main/human_rights_data.csv';
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let countryData = {};
