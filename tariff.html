@@ -379,13 +379,11 @@ Provide a detailed tariff analysis. You must respond ONLY with a valid JSON obje
 Be accurate with current US tariff rates as of early 2025. Include Section 301 China tariffs if applicable, Section 232 steel/aluminum tariffs, and any reciprocal tariffs announced. Only return the JSON object, no other text.`;
 
   try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+    // Replace WORKER_URL with your Cloudflare Worker URL after deploying
+    const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+    const resp = await fetch(WORKER_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
