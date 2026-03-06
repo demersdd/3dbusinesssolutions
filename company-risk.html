@@ -147,6 +147,24 @@ nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between
 
 /* HIDDEN */
 .hidden{display:none!important;}
+
+/* SANCTIONS PANEL */
+.sanctions-panel{background:var(--panel);border:1px solid rgba(255,59,48,.25);margin-bottom:1.5px;}
+.sanctions-header{padding:1rem 1.4rem;border-bottom:1px solid rgba(255,59,48,.15);display:flex;align-items:center;justify-content:space-between;}
+.sanctions-header h3{font-family:var(--head);font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#ff3b30;}
+.sanctions-badge{font-family:var(--mono);font-size:.58rem;padding:.25rem .7rem;border:1px solid;text-transform:uppercase;letter-spacing:.1em;}
+.sanctions-badge.hit{border-color:#ff3b30;color:#ff3b30;background:rgba(255,59,48,.08);}
+.sanctions-badge.clear{border-color:var(--accent3);color:var(--accent3);background:rgba(57,255,20,.06);}
+.sanctions-badge.pending{border-color:var(--muted);color:var(--muted);}
+.sanctions-body{padding:1rem 1.4rem;}
+.sanctions-hit{background:rgba(255,59,48,.06);border-left:3px solid #ff3b30;padding:.8rem 1rem;margin-bottom:.6rem;}
+.sanctions-hit-name{font-family:var(--head);font-size:.95rem;font-weight:700;text-transform:uppercase;margin-bottom:.3rem;}
+.sanctions-hit-meta{font-family:var(--mono);font-size:.6rem;color:var(--muted);line-height:1.7;}
+.sanctions-hit-datasets{display:flex;flex-wrap:wrap;gap:.3rem;margin-top:.5rem;}
+.sanctions-dataset{font-family:var(--mono);font-size:.55rem;padding:.2rem .5rem;background:rgba(255,59,48,.1);border:1px solid rgba(255,59,48,.2);color:#ff9999;}
+.sanctions-score{font-family:var(--head);font-size:1.1rem;font-weight:900;color:#ff3b30;float:right;}
+.sanctions-clear{font-family:var(--mono);font-size:.7rem;color:var(--accent3);padding:.5rem 0;text-align:center;}
+.sanctions-loading{font-family:var(--mono);font-size:.65rem;color:var(--muted);padding:.8rem 0;letter-spacing:.08em;}
 </style>
 </head>
 <body>
@@ -206,6 +224,17 @@ nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between
         Standardized PDF report · Includes all risk categories · Branded with date stamp · Suitable for due diligence files
       </div>
       <button class="btn-pdf" onclick="generatePDF()">↓ Download PDF Report</button>
+    </div>
+
+    <!-- SANCTIONS PANEL -->
+    <div class="sanctions-panel" id="sanctionsPanel">
+      <div class="sanctions-header">
+        <h3>⚠ Sanctions &amp; Watchlist Screening</h3>
+        <span class="sanctions-badge pending" id="sanctionsBadge">// CHECKING...</span>
+      </div>
+      <div class="sanctions-body" id="sanctionsBody">
+        <div class="sanctions-loading">// Querying OpenSanctions database — sanctions lists, PEPs, criminal watchlists...</div>
+      </div>
     </div>
 
     <!-- DETAIL SECTIONS -->
@@ -324,6 +353,9 @@ async function runAnalysis() {
 
   // Scroll to results
   setTimeout(() => document.getElementById('phase2').scrollIntoView({behavior:'smooth'}), 100);
+
+  // Run OpenSanctions check in parallel
+  runSanctionsCheck(selectedEntity);
 
   const steps = ['// ANALYZING SUPPLY CHAIN GEOGRAPHY...','// REVIEWING HUMAN RIGHTS EXPOSURE...','// CHECKING TRADE & SANCTIONS DATA...','// GENERATING RISK ASSESSMENT...'];
   let si = 0;
@@ -724,6 +756,76 @@ async function callWorker(prompt, maxTokens=1000) {
   const data = await resp.json();
   if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
   return data.content.map(c => c.text||'').join('');
+}
+
+// ── OPENSANCTIONS CHECK ───────────────────────────────────────────────────────
+async function runSanctionsCheck(entity) {
+  try {
+    const payload = {
+      _service: 'opensanctions',
+      _path: '/match/default',
+      queries: {
+        company: {
+          schema: 'Company',
+          properties: {
+            name: [entity.name],
+            country: [entity.jurisdiction],
+          }
+        }
+      }
+    };
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error(`${resp.status}`);
+    const data = await resp.json();
+    renderSanctions(data);
+  } catch(e) {
+    document.getElementById('sanctionsBadge').textContent = '// UNAVAILABLE';
+    document.getElementById('sanctionsBody').innerHTML = `<div class="sanctions-loading" style="color:var(--muted)">// OpenSanctions check unavailable: ${e.message}</div>`;
+  }
+}
+
+function renderSanctions(data) {
+  const badge = document.getElementById('sanctionsBadge');
+  const body = document.getElementById('sanctionsBody');
+
+  const results = data.responses?.company?.results || [];
+  const hits = results.filter(r => r.score >= 0.7);
+
+  if (hits.length === 0) {
+    badge.className = 'sanctions-badge clear';
+    badge.textContent = '✓ NO HITS FOUND';
+    body.innerHTML = `<div class="sanctions-clear">// No matches found in sanctions lists, PEP databases, or criminal watchlists<br><span style="color:var(--muted);font-size:.58rem">Searched: OpenSanctions default dataset · ${new Date().toLocaleDateString()}</span></div>`;
+    return;
+  }
+
+  badge.className = 'sanctions-badge hit';
+  badge.textContent = `⚠ ${hits.length} HIT${hits.length>1?'S':''} FOUND`;
+
+  body.innerHTML = hits.map(hit => {
+    const props = hit.properties || {};
+    const name = props.name?.[0] || hit.caption || 'Unknown';
+    const country = props.country?.join(', ') || props.jurisdiction?.join(', ') || '—';
+    const topics = hit.topics?.join(', ') || '—';
+    const datasets = hit.datasets || [];
+    const score = Math.round((hit.score || 0) * 100);
+
+    return `<div class="sanctions-hit">
+      <span class="sanctions-score">${score}%</span>
+      <div class="sanctions-hit-name">${name}</div>
+      <div class="sanctions-hit-meta">
+        Country: ${country}<br>
+        Topics: ${topics}<br>
+        Match score: ${score}% · Entity ID: ${hit.id || '—'}
+      </div>
+      <div class="sanctions-hit-datasets">
+        ${datasets.map(ds => `<span class="sanctions-dataset">${ds}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
 }
 
 // ── RESET ─────────────────────────────────────────────────────────────────────
