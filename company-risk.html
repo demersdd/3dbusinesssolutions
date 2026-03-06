@@ -767,21 +767,21 @@ function generatePDF() {
   });
 
   // GLEIF section
-  const g = window._gleifData;
-  if (g && g.leiCode !== '—') {
+  const gleif = window._gleifData;
+  if (gleif && gleif.leiCode !== '—') {
     section('Legal Entity Intelligence (GLEIF)', [0,229,255]);
     const gleifLines = [
-      `LEI Code: ${g.leiCode}`,
-      `Legal Name: ${g.legalName}`,
-      `Entity Status: ${g.status}  |  LEI Renewal: ${g.renewalStatus}`,
-      `Jurisdiction: ${g.jurisdiction}  |  Legal Form: ${g.legalForm}`,
-      g.addressParts ? `Registered Address: ${g.addressParts}` : null,
-      g.regAuthId !== '—' ? `Registration Authority: ${g.regAuthId}` : null,
-      g.regEntityId !== '—' ? `Registration ID: ${g.regEntityId}` : null,
-      g.otherNames !== '—' ? `Other Names: ${g.otherNames}` : null,
-      g.hasParent ? `Direct Parent: LEI record available` : null,
-      g.hasUltimateParent ? `Ultimate Parent: LEI record available` : null,
-      `Last Updated: ${g.lastUpdate}  |  Next Renewal: ${g.nextRenewal}`,
+      `LEI Code: ${gleif.leiCode}`,
+      `Legal Name: ${gleif.legalName}`,
+      `Entity Status: ${gleif.status}  |  LEI Renewal: ${gleif.renewalStatus}`,
+      `Jurisdiction: ${gleif.jurisdiction}  |  Legal Form: ${gleif.legalForm}`,
+      gleif.addressParts ? `Registered Address: ${gleif.addressParts}` : null,
+      gleif.regAuthId !== '—' ? `Registration Authority: ${gleif.regAuthId}` : null,
+      gleif.regEntityId !== '—' ? `Registration ID: ${gleif.regEntityId}` : null,
+      gleif.otherNames !== '—' ? `Other Names: ${gleif.otherNames}` : null,
+      gleif.hasParent ? `Direct Parent: LEI record available` : null,
+      gleif.hasUltimateParent ? `Ultimate Parent: LEI record available` : null,
+      `Last Updated: ${gleif.lastUpdate}  |  Next Renewal: ${gleif.nextRenewal}`,
       `Source: GLEIF Global LEI Index (gleif.org) · Open Data CC0`,
     ].filter(Boolean);
     gleifLines.forEach(line => body(line));
