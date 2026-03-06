@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>US Tariff Calculator | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<style>
+:root {
+  --bg: #050a0f; --bg2: #080f18; --panel: #0b1622;
+  --accent: #00e5ff; --accent2: #ff6b35; --accent3: #39ff14;
+  --text: #e8f4f8; --muted: #6a8fa8; --border: rgba(0,229,255,0.15);
+  --mono: 'Share Tech Mono', monospace; --head: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-back{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .2s;}
+.nav-back:hover{color:var(--accent);}
+.nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
+
+.layout{display:flex;height:100vh;padding-top:48px;position:relative;z-index:1;}
+
+/* LEFT PANEL */
+.left-panel{width:320px;min-width:320px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.panel-header{padding:1.2rem 1.4rem .8rem;border-bottom:1px solid var(--border);}
+.panel-title{font-family:var(--head);font-size:1.5rem;font-weight:900;text-transform:uppercase;line-height:1;}
+.panel-title em{font-style:normal;color:var(--accent);}
+.panel-sub{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.4rem;letter-spacing:.08em;}
+
+/* STEP INDICATOR */
+.steps{display:flex;gap:0;border-bottom:1px solid var(--border);}
+.step-btn{flex:1;padding:.6rem .5rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.08em;text-transform:uppercase;text-align:center;color:var(--muted);border-right:1px solid var(--border);background:transparent;cursor:default;transition:all .2s;border-bottom:2px solid transparent;}
+.step-btn:last-child{border-right:none;}
+.step-btn.active{color:var(--accent);border-bottom-color:var(--accent);background:rgba(0,229,255,.04);}
+.step-btn.done{color:var(--accent3);border-bottom-color:transparent;}
+.step-num{display:block;font-size:.9rem;font-weight:700;margin-bottom:.2rem;}
+
+/* FORM SECTIONS */
+.form-scroll{flex:1;overflow-y:auto;padding:1.2rem;}
+.form-scroll::-webkit-scrollbar{width:3px;}
+.form-scroll::-webkit-scrollbar-thumb{background:var(--border);}
+
+.form-section{display:none;}
+.form-section.active{display:block;}
+
+.field-label{font-family:var(--mono);font-size:.62rem;color:var(--accent2);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;}
+.field-label::before{content:'//';color:var(--muted);}
+
+.selected-country{background:var(--panel);border:1px solid var(--accent);padding:.8rem 1rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;}
+.selected-country-name{font-family:var(--head);font-size:1.2rem;font-weight:700;text-transform:uppercase;}
+.selected-country-hint{font-family:var(--mono);font-size:.6rem;color:var(--muted);}
+.no-selection{background:var(--panel);border:1px dashed rgba(0,229,255,.2);padding:.8rem 1rem;margin-bottom:1rem;text-align:center;font-family:var(--mono);font-size:.65rem;color:var(--muted);}
+
+/* PRODUCT GRID */
+.product-grid{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:1rem;}
+.product-btn{background:var(--panel);border:1px solid rgba(0,229,255,.1);padding:.7rem .6rem;text-align:left;cursor:pointer;transition:all .15s;position:relative;overflow:hidden;}
+.product-btn::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s;}
+.product-btn:hover{border-color:rgba(0,229,255,.3);background:#0d1f2f;}
+.product-btn:hover::before{transform:scaleX(1);}
+.product-btn.selected{border-color:var(--accent);background:rgba(0,229,255,.08);}
+.product-btn.selected::before{transform:scaleX(1);}
+.product-icon{font-size:1.3rem;display:block;margin-bottom:.35rem;}
+.product-name{font-family:var(--head);font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;color:var(--text);line-height:1.2;}
+.product-hts{font-family:var(--mono);font-size:.52rem;color:var(--muted);margin-top:.2rem;}
+
+/* VALUE INPUT */
+.value-input-wrap{position:relative;margin-bottom:1rem;}
+.value-prefix{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);font-family:var(--mono);font-size:.9rem;color:var(--accent);pointer-events:none;}
+.value-input{width:100%;background:var(--panel);border:1px solid rgba(0,229,255,.2);color:var(--text);font-family:var(--mono);font-size:1rem;padding:.75rem .8rem .75rem 2rem;outline:none;transition:border-color .2s;letter-spacing:.05em;}
+.value-input:focus{border-color:var(--accent);}
+.value-input::placeholder{color:var(--muted);}
+
+/* BUTTONS */
+.btn-calc{width:100%;font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;padding:.85rem;background:var(--accent);color:var(--bg);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,opacity .2s;margin-top:.5rem;}
+.btn-calc:hover{box-shadow:0 0 24px rgba(0,229,255,.4);}
+.btn-calc:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.btn-next{width:100%;font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;padding:.7rem;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;transition:background .2s,color .2s;margin-top:.8rem;}
+.btn-next:hover{background:rgba(0,229,255,.08);}
+.btn-next:disabled{opacity:.35;cursor:not-allowed;}
+.btn-reset{font-family:var(--mono);font-size:.6rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:.4rem 0;text-decoration:underline;text-transform:uppercase;letter-spacing:.08em;transition:color .2s;}
+.btn-reset:hover{color:var(--accent);}
+
+/* MAP */
+.map-area{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;}
+.map-container{flex:1;position:relative;overflow:hidden;}
+#world-map{width:100%;height:100%;}
+.country-path{stroke:rgba(0,229,255,.15);stroke-width:.3px;cursor:pointer;transition:opacity .15s,stroke .15s;}
+.country-path:hover{stroke:var(--accent);stroke-width:.8px;opacity:.8;}
+.country-path.selected{stroke:var(--accent);stroke-width:1.5px;filter:brightness(1.3);}
+.country-path.no-data{fill:#111d2a;cursor:default;}
+.country-path.no-data:hover{stroke:rgba(0,229,255,.15);stroke-width:.3px;opacity:1;}
+
+.map-hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);font-family:var(--mono);font-size:.62rem;color:var(--muted);background:rgba(5,10,15,.8);padding:.4rem .9rem;border:1px solid var(--border);letter-spacing:.1em;pointer-events:none;transition:opacity .4s;}
+.map-hint.hidden{opacity:0;}
+
+.zoom-controls{position:absolute;top:12px;right:12px;z-index:10;display:flex;flex-direction:column;gap:4px;}
+.zoom-btn{width:30px;height:30px;background:var(--panel);border:1px solid var(--border);color:var(--accent);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s;}
+.zoom-btn:hover{background:rgba(0,229,255,.1);}
+
+/* TOOLTIP */
+.tooltip{position:fixed;z-index:500;background:rgba(8,15,24,.97);border:1px solid var(--accent);padding:.7rem .9rem;pointer-events:none;opacity:0;transition:opacity .12s;backdrop-filter:blur(8px);min-width:160px;}
+.tooltip.visible{opacity:1;}
+.tt-country{font-family:var(--head);font-size:1rem;font-weight:900;text-transform:uppercase;}
+.tt-hint{font-family:var(--mono);font-size:.58rem;color:var(--accent);margin-top:.2rem;letter-spacing:.08em;}
+
+/* RESULTS PANEL */
+.results-panel{position:absolute;bottom:0;left:0;right:0;background:var(--bg2);border-top:1px solid var(--border);transform:translateY(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);max-height:65%;overflow-y:auto;z-index:20;}
+.results-panel.open{transform:translateY(0);}
+.results-panel::-webkit-scrollbar{width:3px;}
+.results-panel::-webkit-scrollbar-thumb{background:var(--border);}
+
+.results-inner{padding:1.4rem 2rem 2rem;}
+.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.2rem;gap:2rem;}
+.results-title{font-family:var(--head);font-size:1.8rem;font-weight:900;text-transform:uppercase;line-height:1;}
+.results-title span{color:var(--accent);}
+.results-close{font-family:var(--mono);font-size:.6rem;color:var(--muted);background:none;border:1px solid var(--border);padding:.3rem .7rem;cursor:pointer;letter-spacing:.1em;transition:color .2s,border-color .2s;white-space:nowrap;}
+.results-close:hover{color:var(--accent);border-color:var(--accent);}
+
+.results-meta{display:flex;gap:1.5rem;flex-wrap:wrap;margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid var(--border);}
+.meta-item{}
+.meta-label{font-family:var(--mono);font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.2rem;}
+.meta-val{font-family:var(--head);font-size:1.1rem;font-weight:700;text-transform:uppercase;}
+
+.results-numbers{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);margin-bottom:1.2rem;}
+.result-num{background:var(--panel);padding:1rem 1.2rem;}
+.result-num-label{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;}
+.result-num-val{font-family:var(--head);font-size:2rem;font-weight:900;line-height:1;color:var(--accent);}
+.result-num-sub{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.3rem;}
+
+.results-body{font-size:.88rem;color:var(--muted);line-height:1.8;}
+.results-body strong{color:var(--text);}
+.results-body h4{font-family:var(--head);font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent2);margin:1rem 0 .4rem;}
+.results-body ul{padding-left:1.2rem;}
+.results-body li{margin-bottom:.3rem;}
+.results-body .disclaimer{font-family:var(--mono);font-size:.58rem;color:rgba(106,143,168,.6);margin-top:1rem;padding-top:.8rem;border-top:1px solid rgba(0,229,255,.08);line-height:1.6;}
+
+/* LOADING STATE */
+.loading-result{display:flex;align-items:center;gap:.8rem;padding:1.5rem 0;}
+.loading-dot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:pulse 1.2s ease-in-out infinite;}
+.loading-dot:nth-child(2){animation-delay:.2s;}
+.loading-dot:nth-child(3){animation-delay:.4s;}
+@keyframes pulse{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1.2)}}
+.loading-text{font-family:var(--mono);font-size:.72rem;color:var(--accent);letter-spacing:.1em;}
+
+/* STACKED BAR */
+.tariff-bar-wrap{margin:1rem 0;height:8px;background:rgba(255,255,255,.06);position:relative;overflow:hidden;}
+.tariff-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width 1s ease;width:0;}
+
+@media(max-width:768px){
+  .left-panel{width:100%;min-width:0;position:absolute;bottom:0;left:0;right:0;z-index:30;max-height:60%;border-right:none;border-top:1px solid var(--border);}
+  .map-area{flex:1;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span>BS</a>
+  <div class="nav-title">// US Tariff Calculator</div>
+  <a href="/" class="nav-back">← Back to Home</a>
+</nav>
+
+<div class="layout">
+
+  <!-- LEFT PANEL -->
+  <aside class="left-panel">
+    <div class="panel-header">
+      <div class="panel-title">Tariff <em>Calculator</em></div>
+      <div class="panel-sub">US IMPORTER · CLICK MAP TO SELECT ORIGIN</div>
+    </div>
+
+    <div class="steps">
+      <div class="step-btn active" id="step1btn"><span class="step-num">01</span>Origin</div>
+      <div class="step-btn" id="step2btn"><span class="step-num">02</span>Product</div>
+      <div class="step-btn" id="step3btn"><span class="step-num">03</span>Value</div>
+    </div>
+
+    <div class="form-scroll">
+
+      <!-- STEP 1: Country -->
+      <div class="form-section active" id="step1">
+        <div class="field-label">Country of Origin</div>
+        <div id="countryDisplay" class="no-selection">← Click a country on the map</div>
+        <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;">
+          Select the country where your goods are manufactured or substantially transformed. This determines which tariff schedule applies.
+        </div>
+        <button class="btn-next" id="toStep2" disabled>Next: Select Product →</button>
+      </div>
+
+      <!-- STEP 2: Product -->
+      <div class="form-section" id="step2">
+        <div class="field-label" style="margin-bottom:.8rem;">Product Category</div>
+        <div class="product-grid" id="productGrid"></div>
+        <button class="btn-next" id="toStep3" disabled>Next: Enter Value →</button>
+        <button class="btn-reset" onclick="goToStep(1)">← Change Country</button>
+      </div>
+
+      <!-- STEP 3: Value + Calculate -->
+      <div class="form-section" id="step3">
+        <div class="field-label">Import Value (USD)</div>
+        <div class="value-input-wrap">
+          <span class="value-prefix">$</span>
+          <input class="value-input" id="importValue" type="number" min="1" placeholder="e.g. 50000"/>
+        </div>
+        <div style="font-family:var(--mono);font-size:.6rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;">
+          Enter the customs value — typically the transaction value (price paid) plus insurance and freight to US port of entry.
+        </div>
+
+        <!-- Summary -->
+        <div id="calcSummary" style="background:var(--panel);border:1px solid rgba(0,229,255,.12);padding:.8rem 1rem;margin-bottom:1rem;font-family:var(--mono);font-size:.62rem;color:var(--muted);line-height:1.8;display:none;">
+        </div>
+
+        <button class="btn-calc" id="calcBtn" disabled onclick="calculate()">Calculate Tariff →</button>
+        <button class="btn-reset" onclick="goToStep(2)" style="margin-top:.6rem;">← Change Product</button>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- MAP -->
+  <div class="map-area">
+    <div class="map-container" id="mapContainer">
+      <div class="map-hint" id="mapHint">// CLICK A COUNTRY TO SELECT ORIGIN</div>
+      <svg id="world-map" viewBox="0 0 1000 500" preserveAspectRatio="xMidYMid meet"></svg>
+      <div class="zoom-controls">
+        <button class="zoom-btn" onclick="zoomIn()">+</button>
+        <button class="zoom-btn" onclick="zoomOut()">−</button>
+        <button class="zoom-btn" style="font-size:.5rem;font-family:var(--mono);" onclick="zoomReset()">RST</button>
+      </div>
+    </div>
+
+    <!-- RESULTS PANEL -->
+    <div class="results-panel" id="resultsPanel">
+      <div class="results-inner">
+        <div class="results-header">
+          <div class="results-title">Tariff <span>Analysis</span></div>
+          <button class="results-close" onclick="closeResults()">✕ Close</button>
+        </div>
+        <div id="resultsContent"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// ── PRODUCTS ──────────────────────────────────────────────────────────────────
+const PRODUCTS = [
+  { id:'electronics',  icon:'💻', name:'Electronics & Tech',    hts:'HTS Ch. 84–85' },
+  { id:'steel',        icon:'🔩', name:'Steel & Metals',        hts:'HTS Ch. 72–73, 76' },
+  { id:'autos',        icon:'🚗', name:'Autos & Auto Parts',    hts:'HTS Ch. 87' },
+  { id:'textiles',     icon:'👕', name:'Textiles & Apparel',    hts:'HTS Ch. 50–63' },
+  { id:'agriculture',  icon:'🌾', name:'Agriculture & Food',    hts:'HTS Ch. 1–24' },
+  { id:'chemicals',    icon:'⚗️', name:'Chemicals & Pharma',   hts:'HTS Ch. 28–29, 30' },
+  { id:'furniture',    icon:'🪑', name:'Furniture & Wood',      hts:'HTS Ch. 44, 94' },
+  { id:'machinery',    icon:'⚙️', name:'Industrial Machinery', hts:'HTS Ch. 84' },
+  { id:'plastics',     icon:'🧴', name:'Plastics & Rubber',     hts:'HTS Ch. 39–40' },
+  { id:'solar',        icon:'☀️', name:'Solar & Clean Energy',  hts:'HTS Ch. 85.41' },
+  { id:'medical',      icon:'🏥', name:'Medical Devices',       hts:'HTS Ch. 90' },
+  { id:'toys',         icon:'🧸', name:'Toys & Games',          hts:'HTS Ch. 95' },
+  { id:'footwear',     icon:'👟', name:'Footwear',              hts:'HTS Ch. 64' },
+  { id:'seafood',      icon:'🐟', name:'Seafood & Marine',      hts:'HTS Ch. 3, 16' },
+  { id:'lumber',       icon:'🪵', name:'Lumber & Softwood',     hts:'HTS Ch. 44' },
+  { id:'other',        icon:'📦', name:'Other / General',       hts:'Mixed HTS codes' },
+];
+
+// Build product grid
+const grid = document.getElementById('productGrid');
+PRODUCTS.forEach(p => {
+  const btn = document.createElement('button');
+  btn.className = 'product-btn';
+  btn.dataset.id = p.id;
+  btn.innerHTML = `<span class="product-icon">${p.icon}</span><div class="product-name">${p.name}</div><div class="product-hts">${p.hts}</div>`;
+  btn.onclick = () => selectProduct(p.id);
+  grid.appendChild(btn);
+});
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let selectedCountry = null;
+let selectedProduct = null;
+let svgScale = 1, svgX = 0, svgY = 0, isDragging = false, dragStart = null;
+
+// ── STEP NAVIGATION ───────────────────────────────────────────────────────────
+function goToStep(n) {
+  [1,2,3].forEach(i => {
+    document.getElementById(`step${i}`).classList.toggle('active', i===n);
+    const btn = document.getElementById(`step${i}btn`);
+    btn.classList.remove('active','done');
+    if(i===n) btn.classList.add('active');
+    else if(i<n) btn.classList.add('done');
+  });
+  updateCalcSummary();
+}
+
+function selectCountry(name) {
+  selectedCountry = name;
+  // Update display
+  document.getElementById('countryDisplay').outerHTML = `<div id="countryDisplay" class="selected-country"><div><div class="selected-country-name">${name}</div><div class="selected-country-hint" style="font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.2rem;">Selected as origin country</div></div><span style="color:var(--accent);font-size:1.2rem;">✓</span></div>`;
+  document.getElementById('toStep2').disabled = false;
+  // Hide hint
+  document.getElementById('mapHint').classList.add('hidden');
+  // Highlight selected path
+  document.querySelectorAll('.country-path').forEach(p => p.classList.remove('selected'));
+  document.querySelectorAll(`.country-path[data-name="${name}"]`).forEach(p => p.classList.add('selected'));
+}
+
+function selectProduct(id) {
+  selectedProduct = id;
+  document.querySelectorAll('.product-btn').forEach(b => b.classList.toggle('selected', b.dataset.id===id));
+  document.getElementById('toStep3').disabled = false;
+}
+
+document.getElementById('toStep2').onclick = () => goToStep(2);
+document.getElementById('toStep3').onclick = () => goToStep(3);
+
+document.getElementById('importValue').addEventListener('input', function() {
+  document.getElementById('calcBtn').disabled = !this.value || parseFloat(this.value) <= 0;
+  updateCalcSummary();
+});
+
+function updateCalcSummary() {
+  const el = document.getElementById('calcSummary');
+  const val = document.getElementById('importValue').value;
+  if(selectedCountry && selectedProduct && val) {
+    const prod = PRODUCTS.find(p=>p.id===selectedProduct);
+    el.style.display = 'block';
+    el.innerHTML = `Origin: <span style="color:var(--text)">${selectedCountry}</span><br>Product: <span style="color:var(--text)">${prod.name}</span><br>Value: <span style="color:var(--accent)">$${parseFloat(val).toLocaleString()}</span>`;
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ── CALCULATE ─────────────────────────────────────────────────────────────────
+async function calculate() {
+  const val = parseFloat(document.getElementById('importValue').value);
+  const prod = PRODUCTS.find(p=>p.id===selectedProduct);
+  if(!selectedCountry || !prod || !val) return;
+
+  // Show results panel with loading state
+  const panel = document.getElementById('resultsPanel');
+  const content = document.getElementById('resultsContent');
+  panel.classList.add('open');
+  content.innerHTML = `
+    <div class="loading-result">
+      <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+      <span class="loading-text">// QUERYING TARIFF DATA...</span>
+    </div>`;
+
+  const prompt = `You are a US import tariff expert. A user wants to import goods into the United States.
+
+Country of Origin: ${selectedCountry}
+Product Category: ${prod.name} (${prod.hts})
+Import Value: $${val.toLocaleString()} USD
+
+Provide a detailed tariff analysis. You must respond ONLY with a valid JSON object in exactly this format:
+{
+  "baseRate": <number, the standard MFN tariff rate as a percentage, e.g. 7.5>,
+  "additionalRate": <number, any Section 301, Section 232, reciprocal/retaliatory, or other additional tariff rate as a percentage, 0 if none>,
+  "totalRate": <number, base + additional>,
+  "estimatedDuty": <number, dollar amount of total duty on the import value>,
+  "totalLandedCost": <number, import value + estimated duty>,
+  "tradePrograms": <string, any applicable trade agreements or exemptions, e.g. "USMCA - may qualify for 0% if rules of origin met" or "None" or "GSP suspended">,
+  "rateBreakdown": <string, 1-2 sentence explanation of what makes up the rate>,
+  "keyRisks": [<string>, <string>, <string>],
+  "recentChanges": <string, any notable recent tariff changes for this country/product combination, especially executive orders or Section 301 actions>,
+  "disclaimer": "Tariff rates are subject to change. Verify current rates with CBP, an import broker, or the USITC HTS database before making business decisions."
+}
+
+Be accurate with current US tariff rates as of early 2025. Include Section 301 China tariffs if applicable, Section 232 steel/aluminum tariffs, and any reciprocal tariffs announced. Only return the JSON object, no other text.`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    const data = await resp.json();
+    const raw = data.content.map(c => c.text||'').join('');
+    // Strip any markdown fences
+    const cleaned = raw.replace(/```json|```/g,'').trim();
+    const result = JSON.parse(cleaned);
+    renderResults(result, prod, val);
+  } catch(e) {
+    content.innerHTML = `<div style="font-family:var(--mono);font-size:.72rem;color:var(--accent2);padding:1rem 0;">// ERROR: ${e.message}<br><span style="color:var(--muted)">Please try again.</span></div>`;
+  }
+}
+
+function renderResults(r, prod, val) {
+  const content = document.getElementById('resultsContent');
+  const barPct = Math.min(r.totalRate * 2, 100); // visual scale
+
+  content.innerHTML = `
+    <div class="results-meta">
+      <div class="meta-item"><div class="meta-label">Origin</div><div class="meta-val">${selectedCountry}</div></div>
+      <div class="meta-item"><div class="meta-label">Product</div><div class="meta-val">${prod.icon} ${prod.name}</div></div>
+      <div class="meta-item"><div class="meta-label">Import Value</div><div class="meta-val" style="color:var(--accent)">$${val.toLocaleString()}</div></div>
+    </div>
+
+    <div class="results-numbers">
+      <div class="result-num">
+        <div class="result-num-label">Total Tariff Rate</div>
+        <div class="result-num-val">${r.totalRate}%</div>
+        <div class="result-num-sub">${r.baseRate}% base + ${r.additionalRate}% additional</div>
+        <div class="tariff-bar-wrap" style="margin-top:.6rem;"><div class="tariff-bar" id="tariffBar" style="width:0%"></div></div>
+      </div>
+      <div class="result-num">
+        <div class="result-num-label">Estimated Duty</div>
+        <div class="result-num-val" style="color:var(--accent2)">$${r.estimatedDuty.toLocaleString()}</div>
+        <div class="result-num-sub">Due at customs</div>
+      </div>
+      <div class="result-num">
+        <div class="result-num-label">Total Landed Cost</div>
+        <div class="result-num-val" style="color:var(--accent3)">$${r.totalLandedCost.toLocaleString()}</div>
+        <div class="result-num-sub">Value + duty</div>
+      </div>
+    </div>
+
+    <div class="results-body">
+      <h4>Rate Breakdown</h4>
+      <p>${r.rateBreakdown}</p>
+
+      <h4>Trade Programs & Exemptions</h4>
+      <p>${r.tradePrograms}</p>
+
+      <h4>Recent Changes & Context</h4>
+      <p>${r.recentChanges}</p>
+
+      <h4>Key Risks to Monitor</h4>
+      <ul>${r.keyRisks.map(k=>`<li>${k}</li>`).join('')}</ul>
+
+      <p class="disclaimer">⚠ ${r.disclaimer}</p>
+    </div>
+  `;
+
+  // Animate bar
+  setTimeout(() => {
+    const bar = document.getElementById('tariffBar');
+    if(bar) bar.style.width = barPct + '%';
+  }, 100);
+}
+
+function closeResults() {
+  document.getElementById('resultsPanel').classList.remove('open');
+}
+
+// ── MAP RENDERING ─────────────────────────────────────────────────────────────
+const COUNTRY_NAMES = {
+  "004":"Afghanistan","008":"Albania","012":"Algeria","024":"Angola","032":"Argentina",
+  "036":"Australia","040":"Austria","031":"Azerbaijan","050":"Bangladesh","112":"Belarus",
+  "056":"Belgium","068":"Bolivia","076":"Brazil","100":"Bulgaria","116":"Cambodia",
+  "120":"Cameroon","124":"Canada","152":"Chile","156":"China","170":"Colombia",
+  "191":"Croatia","192":"Cuba","203":"Czech Republic","208":"Denmark","218":"Ecuador",
+  "818":"Egypt","246":"Finland","250":"France","276":"Germany","288":"Ghana",
+  "320":"Guatemala","356":"India","360":"Indonesia","364":"Iran","368":"Iraq",
+  "372":"Ireland","376":"Israel","380":"Italy","392":"Japan","400":"Jordan",
+  "398":"Kazakhstan","404":"Kenya","414":"Kuwait","418":"Laos","422":"Lebanon",
+  "458":"Malaysia","484":"Mexico","504":"Morocco","104":"Myanmar","524":"Nepal",
+  "528":"Netherlands","554":"New Zealand","566":"Nigeria","408":"North Korea",
+  "578":"Norway","586":"Pakistan","608":"Philippines","616":"Poland","620":"Portugal",
+  "634":"Qatar","642":"Romania","643":"Russia","682":"Saudi Arabia","686":"Senegal",
+  "710":"South Africa","728":"South Sudan","724":"Spain","144":"Sri Lanka","752":"Sweden",
+  "756":"Switzerland","760":"Syria","762":"Tajikistan","764":"Thailand","792":"Turkey",
+  "804":"Ukraine","784":"United Arab Emirates","826":"United Kingdom",
+  "840":"United States","860":"Uzbekistan","862":"Venezuela","704":"Vietnam",
+  "887":"Yemen","894":"Zambia","716":"Zimbabwe","688":"Serbia","250":"France",
+  "703":"Slovakia","705":"Slovenia","348":"Hungary","233":"Estonia","428":"Latvia",
+  "440":"Lithuania","498":"Moldova","051":"Armenia","268":"Georgia","070":"Bosnia & Herz.",
+  "807":"North Macedonia","499":"Montenegro","300":"Greece","792":"Turkey","196":"Cyprus",
+  "470":"Malta","442":"Luxembourg","756":"Switzerland","liechtenstein":"Liechtenstein",
+  "703":"Slovakia","svn":"Slovenia","dnk":"Denmark",
+  // More
+  "012":"Algeria","504":"Morocco","788":"Tunisia","434":"Libya","818":"Egypt",
+  "729":"Sudan","706":"Somalia","231":"Ethiopia","646":"Rwanda","800":"Uganda",
+  "834":"Tanzania","508":"Mozambique","716":"Zimbabwe","710":"South Africa",
+  "454":"Malawi","894":"Zambia","072":"Botswana","516":"Namibia","748":"Swaziland",
+  "426":"Lesotho","450":"Madagascar","480":"Mauritius","174":"Comoros",
+  "690":"Seychelles","462":"Maldives","144":"Sri Lanka","524":"Nepal",
+  "064":"Bhutan","104":"Myanmar","116":"Cambodia","418":"Laos","704":"Vietnam",
+  "764":"Thailand","458":"Malaysia","702":"Singapore","096":"Brunei",
+  "360":"Indonesia","626":"Timor-Leste","608":"Philippines","036":"Australia",
+  "598":"Papua New Guinea","090":"Solomon Islands","548":"Vanuatu","242":"Fiji",
+  "554":"New Zealand","882":"Samoa","776":"Tonga","798":"Tuvalu","296":"Kiribati",
+  "584":"Marshall Islands","583":"Micronesia","520":"Nauru","585":"Palau",
+  "732":"Western Sahara","388":"Jamaica","192":"Cuba","214":"Dominican Republic",
+  "332":"Haiti","630":"Puerto Rico","076":"Brazil","032":"Argentina","152":"Chile",
+  "604":"Peru","218":"Ecuador","170":"Colombia","862":"Venezuela","591":"Panama",
+  "558":"Nicaragua","222":"El Salvador","320":"Guatemala","084":"Belize",
+  "340":"Honduras","188":"Costa Rica","600":"Paraguay","858":"Uruguay",
+  "068":"Bolivia","328":"Guyana","740":"Suriname","288":"Ghana","566":"Nigeria",
+  "204":"Benin","768":"Togo","384":"Côte d'Ivoire","430":"Liberia","694":"Sierra Leone",
+  "324":"Guinea","624":"Guinea-Bissau","686":"Senegal","270":"Gambia","466":"Mali",
+  "854":"Burkina Faso","562":"Niger","148":"Chad","140":"Central African Rep.",
+  "120":"Cameroon","180":"Congo (Dem. Rep.)","178":"Congo","266":"Gabon",
+  "226":"Equatorial Guinea","410":"South Korea","496":"Mongolia","792":"Turkey"
+};
+
+function applyTransform() {
+  const g = document.getElementById('mapGroup');
+  if(g) g.setAttribute('transform',`translate(${svgX},${svgY}) scale(${svgScale})`);
+}
+function zoomIn(){svgScale=Math.min(svgScale*1.4,12);applyTransform();}
+function zoomOut(){svgScale=Math.max(svgScale/1.4,1);if(svgScale===1){svgX=0;svgY=0;}applyTransform();}
+function zoomReset(){svgScale=1;svgX=0;svgY=0;applyTransform();}
+
+const mapC = document.getElementById('mapContainer');
+mapC.addEventListener('mousedown',e=>{if(svgScale>1){isDragging=true;dragStart={x:e.clientX-svgX,y:e.clientY-svgY};mapC.style.cursor='grabbing';}});
+mapC.addEventListener('mousemove',e=>{if(isDragging){svgX=e.clientX-dragStart.x;svgY=e.clientY-dragStart.y;applyTransform();}});
+mapC.addEventListener('mouseup',()=>{isDragging=false;mapC.style.cursor='';});
+mapC.addEventListener('wheel',e=>{e.preventDefault();const d=e.deltaY>0?.85:1.18;svgScale=Math.min(Math.max(svgScale*d,1),12);if(svgScale===1){svgX=0;svgY=0;}applyTransform();},{passive:false});
+
+// Tooltip
+const tt = document.getElementById('tooltip');
+function showTT(e,name){
+  const isUS = name==='United States';
+  tt.innerHTML=`<div class="tt-country">${name}</div><div class="tt-hint">${isUS?'// US IS THE IMPORTER':'// CLICK TO SELECT AS ORIGIN'}</div>`;
+  tt.classList.add('visible');
+  moveTT(e);
+}
+function moveTT(e){let x=e.clientX+14,y=e.clientY-8;if(x+180>window.innerWidth)x=e.clientX-184;tt.style.left=x+'px';tt.style.top=y+'px';}
+function hideTT(){tt.classList.remove('visible');}
+
+async function initMap() {
+  const resp = await fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json');
+  const topo = await resp.json();
+  const svg = document.getElementById('world-map');
+  const countries = topojson.feature(topo, topo.objects.countries);
+  const projection = d3.geoNaturalEarth1().scale(153).translate([500,250]);
+  const path = d3.geoPath().projection(projection);
+
+  const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.id='mapGroup';
+  svg.appendChild(g);
+
+  countries.features.forEach(feat => {
+    const id = String(feat.id).padStart(3,'0');
+    const name = COUNTRY_NAMES[id];
+    const isUS = name === 'United States';
+
+    const el = document.createElementNS('http://www.w3.org/2000/svg','path');
+    el.setAttribute('d', path(feat));
+    el.setAttribute('data-name', name||id);
+    el.setAttribute('fill', isUS ? 'rgba(0,229,255,.12)' : (name ? '#1e3a50' : '#111d2a'));
+    el.setAttribute('class', 'country-path' + (name ? '' : ' no-data'));
+
+    if(name && !isUS) {
+      el.addEventListener('mouseenter', e=>showTT(e,name));
+      el.addEventListener('mousemove', moveTT);
+      el.addEventListener('mouseleave', hideTT);
+      el.addEventListener('click', () => {
+        hideTT();
+        selectCountry(name);
+        // If already past step 1, update and stay
+        goToStep(1);
+        // Re-enable flow
+        document.getElementById('toStep2').disabled = false;
+      });
+    } else if(isUS) {
+      el.addEventListener('mouseenter', e=>showTT(e,name));
+      el.addEventListener('mousemove', moveTT);
+      el.addEventListener('mouseleave', hideTT);
+    }
+    g.appendChild(el);
+  });
+}
+
+initMap().catch(console.error);
+</script>
+</body>
+</html>
