@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Company Risk Intelligence | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root {
+  --bg:#050a0f;--bg2:#080f18;--panel:#0b1622;--panel2:#0d1a28;
+  --accent:#00e5ff;--accent2:#ff6b35;--accent3:#39ff14;--accent4:#ffd700;
+  --text:#e8f4f8;--muted:#6a8fa8;--border:rgba(0,229,255,.15);
+  --mono:'Share Tech Mono',monospace;--head:'Barlow Condensed',sans-serif;--body:'Barlow',sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.02) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
+.nav-back{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .2s;}
+.nav-back:hover{color:var(--accent);}
+
+/* HERO SEARCH */
+.hero{position:relative;z-index:1;padding:4rem 2rem 2rem;max-width:900px;margin:0 auto;}
+.hero-tag{font-family:var(--mono);font-size:.65rem;color:var(--accent2);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.hero-tag::before{content:'';width:24px;height:1px;background:var(--accent2);}
+.hero-title{font-family:var(--head);font-size:clamp(2.5rem,5vw,4rem);font-weight:900;text-transform:uppercase;line-height:.95;margin-bottom:.5rem;}
+.hero-title em{font-style:normal;color:var(--accent);}
+.hero-sub{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.08em;margin-bottom:2.5rem;line-height:1.8;}
+
+/* SEARCH BAR */
+.search-wrap{position:relative;margin-bottom:1rem;}
+.search-input{width:100%;background:var(--panel);border:1px solid rgba(0,229,255,.2);color:var(--text);font-family:var(--mono);font-size:1rem;padding:1rem 1.2rem 1rem 3.2rem;outline:none;transition:border-color .2s,box-shadow .2s;letter-spacing:.04em;}
+.search-input:focus{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),0 0 32px rgba(0,229,255,.08);}
+.search-input::placeholder{color:var(--muted);}
+.search-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--accent);font-size:1rem;pointer-events:none;}
+.search-btn{width:100%;font-family:var(--mono);font-size:.75rem;letter-spacing:.15em;padding:.85rem;background:var(--accent);color:var(--bg);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,opacity .2s;margin-top:.5rem;}
+.search-btn:hover{box-shadow:0 0 28px rgba(0,229,255,.4);}
+.search-btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+.search-hint{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.6rem;letter-spacing:.08em;line-height:1.7;}
+
+/* LOADING */
+.loading-bar{height:2px;background:var(--border);position:relative;overflow:hidden;margin:1.5rem 0;}
+.loading-bar::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:sweep 1.2s ease-in-out infinite;}
+@keyframes sweep{to{left:100%;}}
+.loading-wrap{display:flex;align-items:center;gap:.8rem;padding:1.5rem 0;}
+.ldot{width:6px;height:6px;background:var(--accent);border-radius:50%;animation:ldot 1.2s ease-in-out infinite;}
+.ldot:nth-child(2){animation-delay:.2s;background:var(--accent2);}
+.ldot:nth-child(3){animation-delay:.4s;background:var(--accent3);}
+@keyframes ldot{0%,80%,100%{opacity:.2;transform:scale(.7)}40%{opacity:1;transform:scale(1.2)}}
+.loading-text{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.1em;}
+
+/* ENTITY LIST */
+.section{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 2rem 2rem;}
+.section-label{font-family:var(--mono);font-size:.62rem;color:var(--accent2);text-transform:uppercase;letter-spacing:.15em;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.section-label::before{content:'//';color:var(--muted);}
+
+.entity-grid{display:flex;flex-direction:column;gap:2px;margin-bottom:2rem;}
+.entity-card{background:var(--panel);border:1px solid rgba(0,229,255,.08);padding:1rem 1.2rem;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:1fr auto;align-items:center;gap:1rem;position:relative;overflow:hidden;}
+.entity-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);transform:scaleY(0);transform-origin:bottom;transition:transform .25s;}
+.entity-card:hover{border-color:rgba(0,229,255,.3);background:var(--panel2);}
+.entity-card:hover::before{transform:scaleY(1);}
+.entity-card.selected{border-color:var(--accent);background:rgba(0,229,255,.05);}
+.entity-card.selected::before{transform:scaleY(1);}
+.entity-name{font-family:var(--head);font-size:1.1rem;font-weight:700;text-transform:uppercase;letter-spacing:.03em;}
+.entity-meta{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.25rem;line-height:1.6;}
+.entity-badge{font-family:var(--mono);font-size:.58rem;padding:.3rem .7rem;border:1px solid;text-transform:uppercase;letter-spacing:.1em;white-space:nowrap;}
+.badge-high{border-color:var(--accent2);color:var(--accent2);}
+.badge-med{border-color:var(--accent4);color:var(--accent4);}
+.badge-low{border-color:var(--accent3);color:var(--accent3);}
+.badge-unk{border-color:var(--muted);color:var(--muted);}
+
+.btn-analyze{width:100%;font-family:var(--mono);font-size:.78rem;letter-spacing:.15em;padding:1rem;background:transparent;border:1px solid var(--accent);color:var(--accent);cursor:pointer;transition:background .2s,color .2s;text-transform:uppercase;margin-bottom:2rem;}
+.btn-analyze:hover{background:rgba(0,229,255,.08);}
+.btn-analyze:disabled{opacity:.35;cursor:not-allowed;}
+
+/* RESULTS */
+.results-section{display:none;}
+.results-section.visible{display:block;}
+
+.company-header{background:var(--panel);border:1px solid var(--border);padding:1.5rem 1.8rem;margin-bottom:1.5px;display:grid;grid-template-columns:1fr auto;align-items:start;gap:2rem;}
+.company-name-big{font-family:var(--head);font-size:2rem;font-weight:900;text-transform:uppercase;line-height:1;}
+.company-name-big span{color:var(--accent);}
+.company-jurisdiction{font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-top:.4rem;letter-spacing:.08em;}
+.overall-score{text-align:right;}
+.overall-score-num{font-family:var(--head);font-size:3rem;font-weight:900;line-height:1;}
+.overall-score-label{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem;}
+
+/* RISK METERS */
+.risk-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.5px;margin-bottom:1.5px;}
+.risk-card{background:var(--panel);padding:1.2rem 1.4rem;}
+.risk-card-label{font-family:var(--mono);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.6rem;}
+.risk-card-name{font-family:var(--head);font-size:1.1rem;font-weight:700;text-transform:uppercase;margin-bottom:.8rem;}
+.risk-bar-track{height:6px;background:rgba(255,255,255,.06);margin-bottom:.5rem;position:relative;}
+.risk-bar-fill{height:100%;transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+.risk-score-row{display:flex;justify-content:space-between;align-items:center;}
+.risk-score-val{font-family:var(--head);font-size:1.6rem;font-weight:900;}
+.risk-tier{font-family:var(--mono);font-size:.6rem;text-transform:uppercase;letter-spacing:.1em;}
+
+/* DETAIL SECTIONS */
+.detail-block{background:var(--panel);border:1px solid var(--border);padding:1.4rem 1.6rem;margin-bottom:1.5px;}
+.detail-block h3{font-family:var(--head);font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--accent2);margin-bottom:.8rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);}
+.detail-block p{font-size:.88rem;color:var(--muted);line-height:1.8;margin-bottom:.8rem;}
+.detail-block p:last-child{margin-bottom:0;}
+.detail-block strong{color:var(--text);}
+.detail-block ul{padding-left:1.2rem;margin-top:.4rem;}
+.detail-block li{font-size:.85rem;color:var(--muted);line-height:1.8;margin-bottom:.2rem;}
+.detail-block li::marker{color:var(--accent);}
+
+.flag-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;}
+.flag-item{display:flex;align-items:flex-start;gap:.7rem;padding:.6rem .8rem;background:rgba(255,107,53,.06);border-left:2px solid var(--accent2);}
+.flag-icon{font-size:.9rem;flex-shrink:0;margin-top:.1rem;}
+.flag-text{font-family:var(--mono);font-size:.65rem;color:var(--text);line-height:1.6;}
+
+.rec-list{display:flex;flex-direction:column;gap:.5rem;margin-top:.5rem;}
+.rec-item{display:flex;align-items:flex-start;gap:.7rem;padding:.6rem .8rem;background:rgba(57,255,20,.04);border-left:2px solid var(--accent3);}
+.rec-num{font-family:var(--head);font-size:.9rem;font-weight:900;color:var(--accent3);flex-shrink:0;min-width:20px;}
+.rec-text{font-size:.83rem;color:var(--muted);line-height:1.6;}
+
+/* PDF BUTTON */
+.pdf-bar{background:var(--panel2);border:1px solid var(--border);padding:1.2rem 1.6rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5px;flex-wrap:wrap;}
+.pdf-bar-info{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.06em;line-height:1.7;}
+.pdf-bar-info strong{color:var(--accent);display:block;font-size:.8rem;margin-bottom:.2rem;}
+.btn-pdf{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;padding:.8rem 1.6rem;background:var(--accent2);color:var(--bg);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s;white-space:nowrap;}
+.btn-pdf:hover{box-shadow:0 0 24px rgba(255,107,53,.4);}
+
+.btn-new-search{width:100%;font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;padding:.8rem;border:1px solid rgba(0,229,255,.15);color:var(--muted);background:transparent;cursor:pointer;transition:color .2s,border-color .2s;text-transform:uppercase;margin-top:2rem;margin-bottom:3rem;}
+.btn-new-search:hover{color:var(--accent);border-color:var(--accent);}
+
+.error-msg{background:rgba(255,107,53,.08);border:1px solid var(--accent2);padding:1rem 1.2rem;font-family:var(--mono);font-size:.7rem;color:var(--accent2);letter-spacing:.06em;margin:1rem 0;}
+
+/* DISCLAIMER */
+.disclaimer-bar{background:var(--panel);border-top:1px solid var(--border);padding:1rem 2rem;font-family:var(--mono);font-size:.58rem;color:rgba(106,143,168,.5);text-align:center;letter-spacing:.06em;line-height:1.8;position:relative;z-index:1;}
+
+/* RISK COLORS */
+.risk-critical{color:#ff3b30;}.fill-critical{background:#ff3b30;}
+.risk-high{color:var(--accent2);}.fill-high{background:var(--accent2);}
+.risk-medium{color:var(--accent4);}.fill-medium{background:var(--accent4);}
+.risk-low{color:var(--accent3);}.fill-low{background:var(--accent3);}
+.risk-minimal{color:var(--muted);}.fill-minimal{background:var(--muted);}
+
+/* HIDDEN */
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span>BS</a>
+  <div class="nav-title">// Company Risk Intelligence</div>
+  <a href="/" class="nav-back">← Back to Home</a>
+</nav>
+
+<!-- HERO + SEARCH -->
+<div class="hero">
+  <div class="hero-tag">Risk Intelligence</div>
+  <h1 class="hero-title">Company <em>Risk</em><br>Screening</h1>
+  <p class="hero-sub">// HUMAN RIGHTS · SUPPLY CHAIN · TRADE EXPOSURE · ESG DUE DILIGENCE</p>
+
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
+    <input class="search-input" id="searchInput" type="text" placeholder="Enter company name (e.g. Foxconn, H&M, Apple Inc.)" autocomplete="off"/>
+  </div>
+  <button class="search-btn" id="searchBtn" onclick="runSearch()">Search Companies →</button>
+  <p class="search-hint">// Searches across corporate entities, subsidiaries, and parent companies. Powered by AI — verify with primary sources before decisions.</p>
+</div>
+
+<!-- PHASE 1: ENTITY SELECTION -->
+<div class="section" id="phase1" style="display:none;">
+  <div id="loadingPhase1" class="hidden">
+    <div class="loading-bar"></div>
+    <div class="loading-wrap"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div><span class="loading-text">// IDENTIFYING CORPORATE ENTITIES...</span></div>
+  </div>
+  <div id="entityResults" class="hidden">
+    <div class="section-label">Select Entity</div>
+    <div class="entity-grid" id="entityGrid"></div>
+    <button class="btn-analyze" id="analyzeBtn" disabled onclick="runAnalysis()">Analyze Selected Entity →</button>
+  </div>
+  <div id="errorPhase1" class="error-msg hidden"></div>
+</div>
+
+<!-- PHASE 2: FULL ANALYSIS -->
+<div class="section results-section" id="phase2">
+  <div id="loadingPhase2" class="hidden">
+    <div class="loading-bar"></div>
+    <div class="loading-wrap"><div class="ldot"></div><div class="ldot"></div><div class="ldot"></div><span class="loading-text" id="loadingText2">// RUNNING RISK ANALYSIS...</span></div>
+  </div>
+  <div id="analysisResults" class="hidden">
+
+    <!-- COMPANY HEADER -->
+    <div class="company-header" id="companyHeader"></div>
+
+    <!-- RISK METERS -->
+    <div class="risk-grid" id="riskGrid"></div>
+
+    <!-- PDF BAR -->
+    <div class="pdf-bar">
+      <div class="pdf-bar-info">
+        <strong>📄 Downloadable Report Ready</strong>
+        Standardized PDF report · Includes all risk categories · Branded with date stamp · Suitable for due diligence files
+      </div>
+      <button class="btn-pdf" onclick="generatePDF()">↓ Download PDF Report</button>
+    </div>
+
+    <!-- DETAIL SECTIONS -->
+    <div class="detail-block" id="detailHR"></div>
+    <div class="detail-block" id="detailTrade"></div>
+    <div class="detail-block" id="detailFlags"></div>
+    <div class="detail-block" id="detailRecs"></div>
+
+    <button class="btn-new-search" onclick="resetAll()">← New Search</button>
+  </div>
+  <div id="errorPhase2" class="error-msg hidden"></div>
+</div>
+
+<div class="disclaimer-bar">
+  ⚠ This tool provides AI-generated risk intelligence for screening purposes only. It does not constitute legal, financial, or compliance advice. Always verify findings with primary sources, official registries, and qualified professionals before making business decisions. 3D Business Solutions accepts no liability for decisions made based on this output.
+</div>
+
+<script>
+const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+let selectedEntity = null;
+let analysisData = null;
+
+// ── SEARCH INPUT ENTER KEY ────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') runSearch();
+});
+
+// ── PHASE 1: ENTITY SEARCH ────────────────────────────────────────────────────
+async function runSearch() {
+  const query = document.getElementById('searchInput').value.trim();
+  if (!query) return;
+
+  selectedEntity = null;
+  document.getElementById('analyzeBtn').disabled = true;
+  document.getElementById('phase1').style.display = 'block';
+  document.getElementById('phase2').classList.remove('visible');
+  document.getElementById('analysisResults').classList.add('hidden');
+  document.getElementById('loadingPhase1').classList.remove('hidden');
+  document.getElementById('entityResults').classList.add('hidden');
+  document.getElementById('errorPhase1').classList.add('hidden');
+  document.getElementById('searchBtn').disabled = true;
+
+  const prompt = `You are a corporate intelligence researcher. The user has searched for: "${query}"
+
+Return a JSON array of 4-6 distinct corporate entities that match this search. Include parent companies, major subsidiaries, or regional entities where relevant. Each entry should represent a real, distinct legal or operational entity.
+
+Respond ONLY with a valid JSON array in exactly this format:
+[
+  {
+    "id": "unique_id_1",
+    "name": "Full Legal Entity Name",
+    "type": "Parent Company / Subsidiary / Regional Entity / Joint Venture",
+    "jurisdiction": "Country or Region",
+    "sector": "Industry sector",
+    "description": "1-2 sentence description of this entity and its relevance",
+    "riskIndicator": "high" | "medium" | "low" | "unknown"
+  }
+]
+
+Be accurate. Only include real entities. If the search term is ambiguous, show the most likely matches. Only return the JSON array, no other text.`;
+
+  try {
+    const data = await callWorker(prompt, 800);
+    const entities = JSON.parse(data);
+    renderEntities(entities);
+  } catch(e) {
+    document.getElementById('loadingPhase1').classList.add('hidden');
+    const err = document.getElementById('errorPhase1');
+    err.classList.remove('hidden');
+    err.textContent = `// ERROR: ${e.message}. Please try again.`;
+  }
+  document.getElementById('searchBtn').disabled = false;
+}
+
+function renderEntities(entities) {
+  document.getElementById('loadingPhase1').classList.add('hidden');
+  document.getElementById('entityResults').classList.remove('hidden');
+
+  const grid = document.getElementById('entityGrid');
+  grid.innerHTML = '';
+
+  entities.forEach(entity => {
+    const badgeClass = {high:'badge-high',medium:'badge-med',low:'badge-low',unknown:'badge-unk'}[entity.riskIndicator] || 'badge-unk';
+    const badgeLabel = {high:'⚠ High Risk Indicator',medium:'◆ Medium Risk Indicator',low:'✓ Low Risk Indicator',unknown:'? Risk Unknown'}[entity.riskIndicator] || '? Unknown';
+
+    const card = document.createElement('div');
+    card.className = 'entity-card';
+    card.dataset.id = entity.id;
+    card.innerHTML = `
+      <div>
+        <div class="entity-name">${entity.name}</div>
+        <div class="entity-meta">${entity.type} &nbsp;·&nbsp; ${entity.jurisdiction} &nbsp;·&nbsp; ${entity.sector}<br>${entity.description}</div>
+      </div>
+      <div class="entity-badge ${badgeClass}">${badgeLabel}</div>`;
+    card.onclick = () => selectEntity(entity, card);
+    grid.appendChild(card);
+  });
+}
+
+function selectEntity(entity, card) {
+  document.querySelectorAll('.entity-card').forEach(c => c.classList.remove('selected'));
+  card.classList.add('selected');
+  selectedEntity = entity;
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+// ── PHASE 2: FULL ANALYSIS ────────────────────────────────────────────────────
+async function runAnalysis() {
+  if (!selectedEntity) return;
+
+  document.getElementById('phase2').classList.add('visible');
+  document.getElementById('loadingPhase2').classList.remove('hidden');
+  document.getElementById('analysisResults').classList.add('hidden');
+  document.getElementById('errorPhase2').classList.add('hidden');
+  document.getElementById('analyzeBtn').disabled = true;
+
+  // Scroll to results
+  setTimeout(() => document.getElementById('phase2').scrollIntoView({behavior:'smooth'}), 100);
+
+  const steps = ['// ANALYZING SUPPLY CHAIN GEOGRAPHY...','// REVIEWING HUMAN RIGHTS EXPOSURE...','// CHECKING TRADE & SANCTIONS DATA...','// GENERATING RISK ASSESSMENT...'];
+  let si = 0;
+  const ticker = setInterval(() => {
+    document.getElementById('loadingText2').textContent = steps[si++ % steps.length];
+  }, 1800);
+
+  const prompt = `You are a senior ESG and trade risk analyst. Produce a detailed risk intelligence report for the following corporate entity:
+
+Company: ${selectedEntity.name}
+Type: ${selectedEntity.type}
+Jurisdiction: ${selectedEntity.jurisdiction}
+Sector: ${selectedEntity.sector}
+
+Respond ONLY with a valid JSON object in exactly this format:
+{
+  "companyName": "Full company name",
+  "jurisdiction": "Country/Region",
+  "sector": "Industry",
+  "reportDate": "Month Year",
+  "overallRisk": <number 0-100>,
+  "overallTier": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "MINIMAL",
+  "executiveSummary": "2-3 sentences summarizing the company's risk profile",
+  "humanRightsScore": <number 0-100>,
+  "humanRightsTier": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "MINIMAL",
+  "humanRightsSummary": "2-3 sentences on human rights exposure",
+  "humanRightsDetails": "3-4 sentences on specific forced labor, child labor, modern slavery risks in supply chain",
+  "supplyChainScore": <number 0-100>,
+  "supplyChainTier": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "MINIMAL",
+  "supplyChainSummary": "2-3 sentences on supply chain risk",
+  "supplyChainDetails": "3-4 sentences on geographic exposure, key sourcing countries, and risk factors",
+  "tradeScore": <number 0-100>,
+  "tradeTier": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "MINIMAL",
+  "tradeSummary": "2-3 sentences on trade and tariff risk",
+  "tradeDetails": "3-4 sentences on tariff exposure, sanctions risk, export controls, and trade policy vulnerability",
+  "esgScore": <number 0-100>,
+  "esgTier": "CRITICAL" | "HIGH" | "MEDIUM" | "LOW" | "MINIMAL",
+  "esgSummary": "2-3 sentences on ESG and governance risk",
+  "esgDetails": "3-4 sentences on transparency, reporting standards, controversies, and governance quality",
+  "redFlags": [
+    {"severity": "high" | "medium" | "low", "flag": "Specific red flag description"},
+    {"severity": "high" | "medium" | "low", "flag": "Specific red flag description"},
+    {"severity": "high" | "medium" | "low", "flag": "Specific red flag description"},
+    {"severity": "high" | "medium" | "low", "flag": "Specific red flag description"}
+  ],
+  "recommendations": [
+    "Specific actionable recommendation 1",
+    "Specific actionable recommendation 2",
+    "Specific actionable recommendation 3",
+    "Specific actionable recommendation 4",
+    "Specific actionable recommendation 5"
+  ],
+  "keySourcesNote": "Brief note on data sources and limitations for this company"
+}
+
+Be accurate and specific. Use real known facts about this company where available. Only return the JSON object, no other text.`;
+
+  try {
+    const data = await callWorker(prompt, 1800);
+    clearInterval(ticker);
+    const clean = data.replace(/```json|```/g,'').trim();
+    analysisData = JSON.parse(clean);
+    renderAnalysis(analysisData);
+  } catch(e) {
+    clearInterval(ticker);
+    document.getElementById('loadingPhase2').classList.add('hidden');
+    const err = document.getElementById('errorPhase2');
+    err.classList.remove('hidden');
+    err.textContent = `// ERROR: ${e.message}. Please try again.`;
+  }
+  document.getElementById('analyzeBtn').disabled = false;
+}
+
+function renderAnalysis(d) {
+  document.getElementById('loadingPhase2').classList.add('hidden');
+  document.getElementById('analysisResults').classList.remove('hidden');
+
+  const tierColor = t => ({'CRITICAL':'#ff3b30','HIGH':'#ff6b35','MEDIUM':'#ffd700','LOW':'#39ff14','MINIMAL':'#6a8fa8'}[t]||'#6a8fa8');
+  const tierClass = t => ({'CRITICAL':'risk-critical','HIGH':'risk-high','MEDIUM':'risk-medium','LOW':'risk-low','MINIMAL':'risk-minimal'}[t]||'risk-minimal');
+  const fillClass = t => ({'CRITICAL':'fill-critical','HIGH':'fill-high','MEDIUM':'fill-medium','LOW':'fill-low','MINIMAL':'fill-minimal'}[t]||'fill-minimal');
+
+  // Header
+  document.getElementById('companyHeader').innerHTML = `
+    <div>
+      <div class="company-name-big">${d.companyName.replace(/\s(\S+)$/, ' <span>$1</span>')}</div>
+      <div class="company-jurisdiction">${d.jurisdiction} &nbsp;·&nbsp; ${d.sector} &nbsp;·&nbsp; Report: ${d.reportDate}</div>
+      <div style="font-size:.85rem;color:var(--muted);margin-top:.8rem;line-height:1.7;max-width:540px;">${d.executiveSummary}</div>
+    </div>
+    <div class="overall-score">
+      <div class="overall-score-num" style="color:${tierColor(d.overallTier)}">${d.overallRisk}</div>
+      <div class="overall-score-label">Overall Risk<br><span style="color:${tierColor(d.overallTier)}">${d.overallTier}</span></div>
+    </div>`;
+
+  // Risk cards
+  const risks = [
+    {label:'Human Rights',name:'Human Rights & Labour',score:d.humanRightsScore,tier:d.humanRightsTier,summary:d.humanRightsSummary},
+    {label:'Supply Chain',name:'Supply Chain Exposure',score:d.supplyChainScore,tier:d.supplyChainTier,summary:d.supplyChainSummary},
+    {label:'Trade & Tariff',name:'Trade & Sanctions',score:d.tradeScore,tier:d.tradeTier,summary:d.tradeSummary},
+    {label:'ESG & Governance',name:'ESG & Governance',score:d.esgScore,tier:d.esgTier,summary:d.esgSummary},
+  ];
+
+  document.getElementById('riskGrid').innerHTML = risks.map(r => `
+    <div class="risk-card">
+      <div class="risk-card-label">${r.label}</div>
+      <div class="risk-card-name">${r.name}</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill ${fillClass(r.tier)}" id="bar_${r.label.replace(/\W/g,'')}" style="width:0%"></div></div>
+      <div class="risk-score-row">
+        <div class="risk-score-val ${tierClass(r.tier)}">${r.score}<span style="font-size:1rem;font-family:var(--mono)">/100</span></div>
+        <div class="risk-tier ${tierClass(r.tier)}">${r.tier}</div>
+      </div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:.6rem;line-height:1.6;">${r.summary}</div>
+    </div>`).join('');
+
+  // Animate bars
+  setTimeout(() => {
+    risks.forEach(r => {
+      const bar = document.getElementById('bar_' + r.label.replace(/\W/g,''));
+      if(bar) bar.style.width = r.score + '%';
+    });
+  }, 100);
+
+  // Detail blocks
+  document.getElementById('detailHR').innerHTML = `
+    <h3>Human Rights & Supply Chain Risk</h3>
+    <p>${d.humanRightsDetails}</p>
+    <p>${d.supplyChainDetails}</p>`;
+
+  document.getElementById('detailTrade').innerHTML = `
+    <h3>Trade, Tariff & Sanctions Exposure</h3>
+    <p>${d.tradeDetails}</p>
+    <p>${d.esgDetails}</p>`;
+
+  const flagIcons = {high:'🔴',medium:'🟠',low:'🟡'};
+  document.getElementById('detailFlags').innerHTML = `
+    <h3>Red Flags & Key Concerns</h3>
+    <div class="flag-list">${d.redFlags.map(f => `
+      <div class="flag-item">
+        <span class="flag-icon">${flagIcons[f.severity]||'⚠'}</span>
+        <span class="flag-text">${f.flag}</span>
+      </div>`).join('')}
+    </div>`;
+
+  document.getElementById('detailRecs').innerHTML = `
+    <h3>Recommendations</h3>
+    <div class="rec-list">${d.recommendations.map((r,i) => `
+      <div class="rec-item">
+        <span class="rec-num">${String(i+1).padStart(2,'0')}</span>
+        <span class="rec-text">${r}</span>
+      </div>`).join('')}
+    </div>
+    <p style="margin-top:1rem;font-size:.78rem;"><strong>Data Note:</strong> ${d.keySourcesNote}</p>`;
+}
+
+// ── PDF GENERATION ────────────────────────────────────────────────────────────
+function generatePDF() {
+  if (!analysisData) return;
+  const d = analysisData;
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, ML = 18, MR = 192, cw = MR - ML;
+  let y = 0;
+
+  const addPage = () => { doc.addPage(); y = 20; };
+  const checkY = (needed = 20) => { if (y + needed > 270) addPage(); };
+
+  const tierColor = t => ({'CRITICAL':[255,59,48],'HIGH':[255,107,53],'MEDIUM':[255,215,0],'LOW':[57,255,20],'MINIMAL':[106,143,168]}[t]||[106,143,168]);
+
+  // ── COVER ──────────────────────────────────────────────────────────────────
+  doc.setFillColor(5,10,15);
+  doc.rect(0,0,W,297,'F');
+
+  // Accent line
+  doc.setFillColor(0,229,255);
+  doc.rect(0,0,W,2,'F');
+
+  // Logo
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(11);
+  doc.setTextColor(0,229,255);
+  doc.text('3D.BS', ML, 22);
+  doc.setFontSize(7);
+  doc.setTextColor(106,143,168);
+  doc.text('3D BUSINESS SOLUTIONS', ML, 27);
+
+  // Report type tag
+  doc.setFontSize(7);
+  doc.setTextColor(255,107,53);
+  doc.text('// RISK INTELLIGENCE REPORT', ML, 60);
+
+  // Company name
+  doc.setFontSize(28);
+  doc.setTextColor(232,244,248);
+  doc.setFont('helvetica','bold');
+  const nameParts = d.companyName.split(' ');
+  const lastName = nameParts.pop();
+  const firstName = nameParts.join(' ');
+  if (firstName) {
+    doc.text(firstName, ML, 78);
+    doc.setTextColor(0,229,255);
+    doc.text(lastName, ML, 91);
+  } else {
+    doc.text(d.companyName, ML, 78);
+  }
+
+  // Meta
+  doc.setFontSize(8);
+  doc.setTextColor(106,143,168);
+  doc.setFont('helvetica','normal');
+  doc.text(`${d.jurisdiction}  ·  ${d.sector}  ·  ${d.reportDate}`, ML, 101);
+
+  // Overall score box
+  const [r,g,b] = tierColor(d.overallTier);
+  doc.setFillColor(r,g,b);
+  doc.rect(ML, 115, 50, 28, 'F');
+  doc.setFillColor(5,10,15);
+  doc.rect(ML+1, 116, 48, 26, 'F');
+  doc.setFontSize(22);
+  doc.setTextColor(r,g,b);
+  doc.setFont('helvetica','bold');
+  doc.text(String(d.overallRisk), ML+10, 131);
+  doc.setFontSize(7);
+  doc.setTextColor(r,g,b);
+  doc.text('OVERALL RISK', ML+27, 127);
+  doc.setFontSize(9);
+  doc.text(d.overallTier, ML+27, 133);
+
+  // Executive summary
+  doc.setFontSize(8);
+  doc.setTextColor(150,180,200);
+  doc.setFont('helvetica','normal');
+  const sumLines = doc.splitTextToSize(d.executiveSummary, cw);
+  doc.text(sumLines, ML, 155);
+
+  // Risk scores grid on cover
+  const cats = [
+    {name:'Human Rights', score:d.humanRightsScore, tier:d.humanRightsTier},
+    {name:'Supply Chain',  score:d.supplyChainScore, tier:d.supplyChainTier},
+    {name:'Trade & Sanctions', score:d.tradeScore, tier:d.tradeTier},
+    {name:'ESG & Governance',  score:d.esgScore, tier:d.esgTier},
+  ];
+  let gx = ML;
+  const gw = cw / 4 - 2;
+  cats.forEach(cat => {
+    const [cr,cg,cb] = tierColor(cat.tier);
+    doc.setFillColor(11,22,40);
+    doc.rect(gx, 190, gw, 22, 'F');
+    doc.setFillColor(cr,cg,cb);
+    doc.rect(gx, 190, gw*cat.score/100, 2, 'F');
+    doc.setFontSize(14);
+    doc.setTextColor(cr,cg,cb);
+    doc.setFont('helvetica','bold');
+    doc.text(String(cat.score), gx+3, 204);
+    doc.setFontSize(6);
+    doc.setTextColor(106,143,168);
+    doc.setFont('helvetica','normal');
+    doc.text(cat.name.toUpperCase(), gx+3, 209);
+    gx += gw + 2.5;
+  });
+
+  // Footer
+  doc.setFontSize(6);
+  doc.setTextColor(60,90,110);
+  doc.text('Confidential · For Internal Use Only · 3D Business Solutions · 3dbusinesssolutions.com', ML, 285);
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`, MR - 40, 285);
+
+  // ── PAGE 2: DETAIL ─────────────────────────────────────────────────────────
+  addPage();
+  doc.setFillColor(5,10,15);
+  doc.rect(0,0,W,297,'F');
+  doc.setFillColor(0,229,255);
+  doc.rect(0,0,W,1,'F');
+
+  const section = (title, color=[0,229,255]) => {
+    checkY(14);
+    doc.setFillColor(...color, 0.15);
+    doc.setDrawColor(...color);
+    doc.setFillColor(11,22,40);
+    doc.rect(ML, y, cw, 8, 'F');
+    doc.setFillColor(...color);
+    doc.rect(ML, y, 3, 8, 'F');
+    doc.setFontSize(8);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(...color);
+    doc.text(title.toUpperCase(), ML+6, y+5.5);
+    y += 12;
+  };
+
+  const body = (text, indent=0) => {
+    const lines = doc.splitTextToSize(text, cw - indent);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(150,180,200);
+    lines.forEach(line => {
+      checkY(6);
+      doc.text(line, ML + indent, y);
+      y += 5;
+    });
+    y += 2;
+  };
+
+  // HR section
+  section('Human Rights & Labour Risk', [0,229,255]);
+  body(d.humanRightsDetails);
+  body(d.supplyChainDetails);
+
+  // Trade section
+  section('Trade, Tariff & Sanctions', [255,107,53]);
+  body(d.tradeDetails);
+  body(d.esgDetails);
+
+  // Red flags
+  section('Red Flags & Key Concerns', [255,59,48]);
+  d.redFlags.forEach(f => {
+    checkY(10);
+    const [fr,fg,fb] = {high:[255,59,48],medium:[255,107,53],low:[255,215,0]}[f.severity]||[106,143,168];
+    doc.setFillColor(fr,fg,fb);
+    doc.rect(ML, y-1, 2, 6, 'F');
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(150,180,200);
+    const flines = doc.splitTextToSize(f.flag, cw-8);
+    flines.forEach((line,i) => {
+      checkY(6);
+      doc.text(line, ML+5, y + i*4.5);
+    });
+    y += flines.length * 4.5 + 3;
+  });
+
+  // Recommendations
+  section('Recommendations', [57,255,20]);
+  d.recommendations.forEach((r,i) => {
+    checkY(10);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(57,255,20);
+    doc.text(`${String(i+1).padStart(2,'0')}.`, ML, y);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(150,180,200);
+    const rlines = doc.splitTextToSize(r, cw-10);
+    rlines.forEach((line,li) => {
+      checkY(6);
+      doc.text(line, ML+8, y + li*4.5);
+    });
+    y += rlines.length * 4.5 + 3;
+  });
+
+  // Data note
+  checkY(16);
+  y += 4;
+  doc.setFontSize(7);
+  doc.setFont('helvetica','italic');
+  doc.setTextColor(80,110,130);
+  const noteLines = doc.splitTextToSize('Data Note: ' + d.keySourcesNote, cw);
+  noteLines.forEach(line => { doc.text(line, ML, y); y += 4.5; });
+
+  // Disclaimer
+  checkY(20);
+  y += 6;
+  doc.setFontSize(6.5);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(60,90,110);
+  const disc = 'DISCLAIMER: This report is generated by AI for screening and informational purposes only. It does not constitute legal, financial, compliance, or investment advice. All findings should be verified with primary sources, official registries, and qualified professionals before making any business, procurement, or investment decisions. 3D Business Solutions accepts no liability for decisions made based on this output.';
+  const discLines = doc.splitTextToSize(disc, cw);
+  discLines.forEach(line => {
+    checkY(5);
+    doc.text(line, ML, y);
+    y += 4;
+  });
+
+  // Footer every page
+  const total = doc.getNumberOfPages();
+  for(let i=1;i<=total;i++) {
+    doc.setPage(i);
+    doc.setFillColor(5,10,15);
+    doc.rect(0,277,W,20,'F');
+    doc.setFontSize(6);
+    doc.setTextColor(60,90,110);
+    doc.text('3D Business Solutions · Confidential Risk Intelligence Report', ML, 285);
+    doc.text(`Page ${i} of ${total}`, MR-12, 285);
+  }
+
+  const safeName = d.companyName.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
+  doc.save(`3dbs-risk-report-${safeName}-${Date.now()}.pdf`);
+}
+
+// ── API CALL ──────────────────────────────────────────────────────────────────
+async function callWorker(prompt, maxTokens=1000) {
+  const resp = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      messages: [{ role: 'user', content: prompt }]
+    })
+  });
+  if (!resp.ok) throw new Error(`Worker responded with ${resp.status}`);
+  const data = await resp.json();
+  if (data.error) throw new Error(data.error.message || JSON.stringify(data.error));
+  return data.content.map(c => c.text||'').join('');
+}
+
+// ── RESET ─────────────────────────────────────────────────────────────────────
+function resetAll() {
+  selectedEntity = null;
+  analysisData = null;
+  document.getElementById('searchInput').value = '';
+  document.getElementById('phase1').style.display = 'none';
+  document.getElementById('phase2').classList.remove('visible');
+  document.getElementById('entityResults').classList.add('hidden');
+  document.getElementById('analysisResults').classList.add('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
