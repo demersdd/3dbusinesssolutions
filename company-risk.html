@@ -402,8 +402,7 @@ Respond ONLY with a valid JSON array in exactly this format:
     "type": "Parent Company / Subsidiary / Regional Entity / Joint Venture",
     "jurisdiction": "Country or Region",
     "sector": "Industry sector",
-    "description": "1-2 sentence description of this entity and its relevance",
-    "riskIndicator": "high" | "medium" | "low" | "unknown"
+    "description": "1-2 sentence description of this entity and its relevance"
   }
 ]
 
@@ -430,9 +429,6 @@ function renderEntities(entities) {
   grid.innerHTML = '';
 
   entities.forEach(entity => {
-    const badgeClass = {high:'badge-high',medium:'badge-med',low:'badge-low',unknown:'badge-unk'}[entity.riskIndicator] || 'badge-unk';
-    const badgeLabel = {high:'⚠ High Risk Indicator',medium:'◆ Medium Risk Indicator',low:'✓ Low Risk Indicator',unknown:'? Risk Unknown'}[entity.riskIndicator] || '? Unknown';
-
     const card = document.createElement('div');
     card.className = 'entity-card';
     card.dataset.id = entity.id;
@@ -440,8 +436,7 @@ function renderEntities(entities) {
       <div>
         <div class="entity-name">${entity.name}</div>
         <div class="entity-meta">${entity.type} &nbsp;·&nbsp; ${entity.jurisdiction} &nbsp;·&nbsp; ${entity.sector}<br>${entity.description}</div>
-      </div>
-      <div class="entity-badge ${badgeClass}">${badgeLabel}</div>`;
+      </div>`;
     card.onclick = () => selectEntity(entity, card);
     grid.appendChild(card);
   });
@@ -782,30 +777,62 @@ function generatePDF() {
   doc.setFillColor(5,10,15); doc.rect(0,0,W,297,'F');
   doc.setFillColor(0,229,255); doc.rect(0,0,W,1.5,'F');
 
-  // Sanctions
+
+  // Sanctions — pull everything from DOM to match page exactly
   section('Sanctions & Watchlist Screening (OpenSanctions)', [255,59,48]);
-  const sanctionsBadge = document.getElementById('sanctionsBadge')?.textContent || '';
+  const sanctionsBadge = document.getElementById('sanctionsBadge')?.textContent?.trim() || '';
   body('Screening result: ' + sanctionsBadge);
+
   const sanctionHits = document.getElementById('sanctionsBody')?.querySelectorAll('.sanctions-hit');
   if (sanctionHits?.length) {
     sanctionHits.forEach(hit => {
-      checkY(18);
-      const name = hit.querySelector('.sanctions-hit-name')?.textContent || '';
-      const meta = hit.querySelector('.sanctions-hit-meta')?.textContent?.replace(/\s+/g,' ').trim() || '';
-      doc.setFillColor(30,8,8); doc.rect(ML, y-1, cw, 14, 'F');
-      doc.setFillColor(255,59,48); doc.rect(ML, y-1, 2, 14, 'F');
-      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(255,100,100);
-      doc.text(name, ML+5, y+5);
-      doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(150,130,130);
-      const mlines = doc.splitTextToSize(meta, cw-8);
-      doc.text(mlines[0]||'', ML+5, y+10);
-      y += 17;
+      checkY(24);
+      const name = hit.querySelector('.sanctions-hit-name')?.textContent?.trim() || '';
+      const aka = [...hit.querySelectorAll('div')].find(d=>d.textContent.includes('Also known'))?.textContent?.replace('Also known as:','AKA:').trim() || '';
+
+      // All meta field lines from the meta div
+      const metaDiv = hit.querySelector('.sanctions-hit-meta');
+      const metaFields = metaDiv ? [...metaDiv.children].map(el => el.textContent?.replace(/\s+/g,' ').trim()).filter(t=>t&&t.length>2&&!t.includes('↗')) : [];
+
+      const datasets = [...hit.querySelectorAll('.sanctions-dataset')].map(el => el.textContent.trim());
+
+      // Hit header row
+      doc.setFillColor(20,5,5); doc.rect(ML, y-1, cw, 8, 'F');
+      doc.setFillColor(255,59,48); doc.rect(ML, y-1, 2, 8, 'F');
+      doc.setFontSize(8.5); doc.setFont('helvetica','bold'); doc.setTextColor(255,120,120);
+      doc.text(name, ML+5, y+5.5);
+      y += 10;
+
+      if (aka) { doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(130,90,90); doc.text(aka, ML+5, y); y += 5; }
+
+      // Meta fields
+      metaFields.forEach(line => {
+        const parts = line.split(':');
+        const label = parts[0]?.trim();
+        const val = parts.slice(1).join(':').trim();
+        if (!val) { body('  ' + line, [140,110,110]); return; }
+        checkY(5);
+        doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(150,100,100);
+        doc.text(label + ':', ML+5, y);
+        doc.setFont('helvetica','normal'); doc.setTextColor(180,150,150);
+        const vlines = doc.splitTextToSize(val, cw-52);
+        doc.text(vlines, ML+50, y);
+        y += Math.max(5, vlines.length * 4.5);
+      });
+
+      // Datasets
+      if (datasets.length) {
+        checkY(5);
+        doc.setFontSize(6); doc.setFont('helvetica','normal'); doc.setTextColor(100,70,70);
+        doc.text('Datasets: ' + datasets.join(', '), ML+5, y); y += 5;
+      }
+      y += 4;
     });
   } else {
     body('No sanctions matches found in screened datasets.');
   }
 
-  // GLEIF
+  // GLEIF — from stored window data
   const gleif = window._gleifData;
   if (gleif && gleif.leiCode && gleif.leiCode !== '—') {
     section('Legal Entity Intelligence (GLEIF)', [0,229,255]);
@@ -817,7 +844,7 @@ function generatePDF() {
     chip('Legal Form', gleif.legalForm);
     chip('Registered Address', gleif.addressParts);
     if (gleif.regAuthId && gleif.regAuthId !== '—') chip('Registration Authority', gleif.regAuthId);
-    if (gleif.regEntityId && gleif.regEntityId !== '—') chip('Registration ID (Tax/Reg)', gleif.regEntityId);
+    if (gleif.regEntityId && gleif.regEntityId !== '—') chip('Registration ID', gleif.regEntityId);
     if (gleif.otherNames && gleif.otherNames !== '—') chip('Other Names', gleif.otherNames);
     if (gleif.hasParent) chip('Direct Parent', 'LEI record available');
     if (gleif.hasUltimateParent) chip('Ultimate Parent', 'LEI record available');
@@ -827,41 +854,54 @@ function generatePDF() {
     y += 3;
   }
 
-  // Officers
-  const officersData = window._officersData;
-  if (officersData?.officers?.length) {
-    section(`Officers & Directors (${officersData.adapter})`, [255,215,0]);
-    const co = officersData.detail?.company;
-    if (co) {
-      if (co.ein) chip('EIN (Tax ID)', co.ein);
-      if (co.ticker) chip('Ticker / Exchange', `${co.ticker}  ·  ${co.exchange||'—'}`);
-      if (co.registrationNumber) chip('Registration No.', co.registrationNumber);
-      if (co.industry) chip('Industry (SIC)', co.industry);
-      if (co.address) chip('Business Address', co.address);
-      if (co.formerNames?.length) chip('Former Names', co.formerNames.join(', '));
-      y += 2;
-    }
-    officersData.officers.slice(0,20).forEach(o => {
-      checkY(11);
-      const start = o.startDate ? new Date(o.startDate).toLocaleDateString('en-US',{year:'numeric',month:'short'}) : '—';
-      const end = o.endDate ? new Date(o.endDate).toLocaleDateString('en-US',{year:'numeric',month:'short'}) : o.isActive ? 'Present' : '—';
-      const elId = `sanction_${o.id.replace(/\W/g,'_')}`;
-      const sanctResult = document.getElementById(elId)?.textContent?.trim() || '';
-      doc.setFillColor(o.isActive?11:8, o.isActive?22:15, o.isActive?40:25);
-      doc.rect(ML, y-1, cw, 9, 'F');
+  // Officers — pull from DOM table rows to mirror page exactly
+  const officersBadgeText = document.getElementById('officersBadge')?.textContent?.trim() || '';
+  const officersBody = document.getElementById('officersBody');
+  if (officersBody && !officersBadgeText.includes('QUERYING') && !officersBadgeText.includes('UNAVAILABLE')) {
+    const adapterSrc = window._officersData?.adapter || 'Registry';
+    section(`Officers & Directors (${adapterSrc})`, [255,215,0]);
+
+    // Company meta chips from DOM
+    const metaChips = [...officersBody.querySelectorAll('.oc-chip')];
+    metaChips.forEach(c => {
+      const strong = c.querySelector('strong')?.textContent?.trim() || '';
+      const val = c.textContent.replace(strong,'').trim();
+      if (strong && val && !val.includes('↗')) chip(strong, val);
+    });
+    if (metaChips.length) y += 3;
+
+    // Officer rows
+    const rows = [...officersBody.querySelectorAll('tbody tr')];
+    rows.forEach(row => {
+      checkY(13);
+      const oName = row.querySelector('.officer-name')?.textContent?.trim() || '';
+      const oPos = row.querySelector('.officer-position')?.textContent?.trim() || '';
+      const cells = row.querySelectorAll('td');
+      const tenure = cells[1]?.textContent?.trim() || '';
+      const status = cells[2]?.textContent?.trim() || '';
+      const nationality = cells[3]?.textContent?.trim() || '';
+      const notes = cells[4]?.textContent?.trim() || '';
+      const sanctEl = row.querySelector('[id^="sanction_"]');
+      const sanctResult = sanctEl?.textContent?.trim() || '';
+      const isActive = status.includes('ACTIVE');
+
+      doc.setFillColor(isActive?11:8, isActive?22:15, isActive?40:25);
+      doc.rect(ML, y-1, cw, 11, 'F');
       doc.setFontSize(8); doc.setFont('helvetica','bold');
-      doc.setTextColor(o.isActive?232:106, o.isActive?244:143, o.isActive?248:168);
-      doc.text(o.name, ML+3, y+4.5);
+      doc.setTextColor(isActive?232:106, isActive?244:143, isActive?248:168);
+      doc.text(oName, ML+3, y+5);
       doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(106,143,168);
-      doc.text(`${o.position||'—'}  ·  ${start} → ${end}  ·  ${o.isActive?'ACTIVE':'FORMER'}`, ML+3, y+8);
-      if (sanctResult && !sanctResult.includes('checking')) {
+      const sub = [oPos, tenure, nationality !== '—' ? nationality : '', notes !== '—' ? notes : ''].filter(Boolean).join('  ·  ');
+      doc.text(doc.splitTextToSize(sub, cw-35)[0]||'', ML+3, y+9);
+      if (sanctResult && !sanctResult.includes('checking') && !sanctResult.includes('N/A')) {
         const sc = sanctResult.includes('SANCTIONS')?[255,59,48]:sanctResult.includes('PEP')||sanctResult.includes('WATCH')?[255,107,53]:[57,255,20];
-        doc.setTextColor(...sc); doc.setFontSize(6.5);
-        doc.text(sanctResult, MR-28, y+4.5);
+        doc.setFontSize(6); doc.setTextColor(...sc);
+        doc.text(sanctResult, MR-28, y+5);
       }
-      y += 12;
+      y += 13;
     });
   }
+
 
   // Data note + disclaimer
   checkY(20); y += 4;
@@ -952,23 +992,83 @@ function renderSanctions(data) {
 
   body.innerHTML = hits.map(hit => {
     const props = hit.properties || {};
-    const name = props.name?.[0] || hit.caption || 'Unknown';
-    const country = props.country?.join(', ') || props.jurisdiction?.join(', ') || '—';
-    const topics = hit.topics?.join(', ') || '—';
-    const datasets = hit.datasets || [];
     const score = Math.round((hit.score || 0) * 100);
 
+    // Surface every useful field OpenSanctions returns
+    const names = [...new Set([...(props.name||[]), ...(props.alias||[])])].filter(Boolean);
+    const displayName = names[0] || hit.caption || 'Unknown';
+    const aliases = names.slice(1);
+    const countries = [...new Set([...(props.country||[]), ...(props.jurisdiction||[])])];
+    const topics = hit.topics || [];
+    const datasets = hit.datasets || [];
+    const addresses = props.address || [];
+    const incorporationDate = props.incorporationDate?.[0] || null;
+    const dissolutionDate = props.dissolutionDate?.[0] || null;
+    const registrationNumber = props.registrationNumber?.[0] || null;
+    const legalForm = props.legalForm?.[0] || null;
+    const sanctionPrograms = props.program || [];
+    const sanctionAuthorities = props.authority || [];
+    const startDate = props.startDate?.[0] || null;
+    const endDate = props.endDate?.[0] || null;
+    const sourceUrls = props.sourceUrl || [];
+    const summary = props.summary?.[0] || null;
+    const notes = props.notes?.[0] || null;
+    const entityId = hit.id || '—';
+    const schema = hit.schema || '—';
+
+    // Classify topics into readable labels
+    const topicLabels = topics.map(t => ({
+      'sanction': '🔴 SANCTIONED',
+      'role.pep': '◆ POLITICALLY EXPOSED PERSON',
+      'role.rca': '◆ RELATIVE/CLOSE ASSOCIATE OF PEP',
+      'crime': '⚠ CRIMINAL',
+      'crime.fraud': '⚠ FRAUD',
+      'crime.corruption': '⚠ CORRUPTION',
+      'crime.war': '⚠ WAR CRIME',
+      'crime.terror': '⚠ TERRORISM',
+      'debarment': '🚫 DEBARRED',
+      'wanted': '⚠ WANTED',
+      'export.control': '🚫 EXPORT CONTROLLED',
+      'poi': '◆ PERSON OF INTEREST',
+    }[t] || `◆ ${t.toUpperCase()}`));
+
     return `<div class="sanctions-hit">
-      <span class="sanctions-score">${score}%</span>
-      <div class="sanctions-hit-name">${name}</div>
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:.6rem">
+        <div>
+          <div class="sanctions-hit-name">${displayName}</div>
+          ${aliases.length ? `<div style="font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-top:.2rem">Also known as: ${aliases.join(' · ')}</div>` : ''}
+        </div>
+        <span class="sanctions-score" style="flex-shrink:0">${score}%<br><span style="font-size:.5rem;font-family:var(--mono);color:var(--muted)">MATCH</span></span>
+      </div>
+
+      ${topicLabels.length ? `<div style="display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.7rem">${topicLabels.map(t => {
+        const isRed = t.includes('SANCTION')||t.includes('TERROR')||t.includes('WAR')||t.includes('DEBARR');
+        const isOrange = t.includes('CRIME')||t.includes('WANTED')||t.includes('EXPORT');
+        const col = isRed ? '#ff3b30' : isOrange ? 'var(--accent2)' : 'var(--accent4)';
+        return `<span style="font-family:var(--mono);font-size:.58rem;padding:.2rem .6rem;border:1px solid ${col};color:${col};background:rgba(255,59,48,.06)">${t}</span>`;
+      }).join('')}</div>` : ''}
+
       <div class="sanctions-hit-meta">
-        Country: ${country}<br>
-        Topics: ${topics}<br>
-        Match score: ${score}% · Entity ID: ${hit.id || '—'}
+        ${countries.length ? `<div><span style="color:var(--text)">Country/Jurisdiction:</span> ${countries.map(c=>c.toUpperCase()).join(', ')}</div>` : ''}
+        ${schema !== '—' ? `<div><span style="color:var(--text)">Entity Type:</span> ${schema}</div>` : ''}
+        ${registrationNumber ? `<div><span style="color:var(--text)">Registration No.:</span> ${registrationNumber}</div>` : ''}
+        ${legalForm ? `<div><span style="color:var(--text)">Legal Form:</span> ${legalForm}</div>` : ''}
+        ${incorporationDate ? `<div><span style="color:var(--text)">Incorporated:</span> ${incorporationDate}</div>` : ''}
+        ${dissolutionDate ? `<div><span style="color:var(--text)">Dissolved:</span> ${dissolutionDate}</div>` : ''}
+        ${sanctionPrograms.length ? `<div><span style="color:var(--text)">Sanction Programs:</span> ${sanctionPrograms.join(', ')}</div>` : ''}
+        ${sanctionAuthorities.length ? `<div><span style="color:var(--text)">Issuing Authority:</span> ${sanctionAuthorities.join(', ')}</div>` : ''}
+        ${startDate ? `<div><span style="color:var(--text)">Sanction Start:</span> ${startDate}${endDate ? ` → ${endDate}` : ' (ongoing)'}</div>` : ''}
+        ${addresses.length ? `<div><span style="color:var(--text)">Address:</span> ${addresses.slice(0,2).join(' | ')}</div>` : ''}
+        ${summary ? `<div style="margin-top:.4rem;padding:.4rem .5rem;background:rgba(255,59,48,.05);border-left:2px solid rgba(255,59,48,.3);line-height:1.6"><span style="color:var(--text)">Summary:</span> ${summary}</div>` : ''}
+        ${notes ? `<div style="margin-top:.3rem;font-style:italic">${notes}</div>` : ''}
+        <div style="margin-top:.4rem;color:rgba(106,143,168,.6);font-size:.55rem">Entity ID: ${entityId} · Match Score: ${score}%</div>
+        ${sourceUrls.length ? `<div style="margin-top:.2rem;font-size:.55rem">${sourceUrls.slice(0,2).map(u=>`<a href="${u}" target="_blank" style="color:var(--accent);text-decoration:none">↗ Source</a>`).join(' ')}</div>` : ''}
       </div>
-      <div class="sanctions-hit-datasets">
+
+      ${datasets.length ? `<div class="sanctions-hit-datasets" style="margin-top:.6rem">
+        <span style="font-family:var(--mono);font-size:.55rem;color:var(--muted);margin-right:.3rem">Datasets:</span>
         ${datasets.map(ds => `<span class="sanctions-dataset">${ds}</span>`).join('')}
-      </div>
+      </div>` : ''}
     </div>`;
   }).join('');
 }
