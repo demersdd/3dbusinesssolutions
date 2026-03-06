@@ -123,7 +123,28 @@ nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between
 .rec-num{font-family:var(--head);font-size:.9rem;font-weight:900;color:var(--accent3);flex-shrink:0;min-width:20px;}
 .rec-text{font-size:.83rem;color:var(--muted);line-height:1.6;}
 
-/* PDF BUTTON */
+/* RESULTS TWO-COLUMN LAYOUT */
+.results-layout{display:grid;grid-template-columns:200px 1fr;gap:1.5px;align-items:start;}
+@media(max-width:700px){.results-layout{grid-template-columns:1fr;}}
+.results-sidebar{position:sticky;top:60px;display:flex;flex-direction:column;gap:1.5px;}
+.results-main{display:flex;flex-direction:column;gap:1.5px;min-width:0;}
+.sidebar-card{background:var(--panel);border:1px solid var(--border);padding:1rem;}
+.sidebar-label{font-family:var(--mono);font-size:.55rem;color:var(--muted);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.7rem;}
+.sidebar-pdf-note{font-family:var(--mono);font-size:.55rem;color:var(--muted);margin-top:.6rem;line-height:1.7;}
+.btn-pdf{width:100%;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;padding:.75rem .8rem;background:var(--accent2);color:var(--bg);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s;}
+.btn-pdf:hover{box-shadow:0 0 24px rgba(255,107,53,.4);}
+.sidebar-score-item{display:flex;flex-direction:column;gap:.3rem;padding:.5rem 0;border-bottom:1px solid var(--border);}
+.sidebar-score-item:last-child{border-bottom:none;}
+.sidebar-score-label{font-family:var(--mono);font-size:.52rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;}
+.sidebar-score-row{display:flex;align-items:center;justify-content:space-between;gap:.4rem;}
+.sidebar-score-val{font-family:var(--head);font-size:1.1rem;font-weight:900;}
+.sidebar-score-tier{font-family:var(--mono);font-size:.5rem;text-transform:uppercase;letter-spacing:.08em;}
+.sidebar-score-bar{height:3px;background:rgba(255,255,255,.06);margin-top:.2rem;}
+.sidebar-score-fill{height:100%;transition:width 1.2s cubic-bezier(.16,1,.3,1);}
+.btn-new-search-sm{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;padding:.7rem;border:1px solid rgba(0,229,255,.12);color:var(--muted);background:transparent;cursor:pointer;transition:color .2s,border-color .2s;text-transform:uppercase;}
+.btn-new-search-sm:hover{color:var(--accent);border-color:var(--accent);}
+
+/* PDF BUTTON (old - remove) */
 .pdf-bar{background:var(--panel2);border:1px solid var(--border);padding:1.2rem 1.6rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5px;flex-wrap:wrap;}
 .pdf-bar-info{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.06em;line-height:1.7;}
 .pdf-bar-info strong{color:var(--accent);display:block;font-size:.8rem;margin-bottom:.2rem;}
@@ -269,14 +290,24 @@ nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between
     <!-- RISK METERS -->
     <div class="risk-grid" id="riskGrid"></div>
 
-    <!-- PDF BAR -->
-    <div class="pdf-bar">
-      <div class="pdf-bar-info">
-        <strong>📄 Downloadable Report Ready</strong>
-        Standardized PDF report · Includes all risk categories · Branded with date stamp · Suitable for due diligence files
+    <!-- TWO-COLUMN LAYOUT: sidebar + main content -->
+    <div class="results-layout">
+
+      <!-- STICKY SIDEBAR -->
+      <div class="results-sidebar">
+        <div class="sidebar-card">
+          <div class="sidebar-label">// Report</div>
+          <button class="btn-pdf" onclick="generatePDF()">↓ Download PDF</button>
+          <div class="sidebar-pdf-note">Full report · All sections · Due diligence ready</div>
+        </div>
+        <div class="sidebar-card" id="sidebarScores">
+          <!-- score summary populated by JS -->
+        </div>
+        <button class="btn-new-search-sm" onclick="resetAll()">← New Search</button>
       </div>
-      <button class="btn-pdf" onclick="generatePDF()">↓ Download PDF Report</button>
-    </div>
+
+      <!-- MAIN CONTENT -->
+      <div class="results-main">
 
     <!-- SANCTIONS PANEL -->
     <div class="sanctions-panel" id="sanctionsPanel">
@@ -323,8 +354,10 @@ nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between
     <div class="detail-block" id="detailFlags"></div>
     <div class="detail-block" id="detailRecs"></div>
 
-    <button class="btn-new-search" onclick="resetAll()">← New Search</button>
-  </div>
+      </div><!-- end results-main -->
+    </div><!-- end results-layout -->
+
+    </div>
   <div id="errorPhase2" class="error-msg hidden"></div>
 </div>
 
@@ -559,15 +592,31 @@ function renderAnalysis(d) {
     });
   }, 100);
 
-  // Detail blocks
+  // Populate sidebar score summary
+  const tc = t => ({'CRITICAL':'#ff3b30','HIGH':'#ff6b35','MEDIUM':'#ffd700','LOW':'#39ff14','MINIMAL':'#6a8fa8'}[t]||'#6a8fa8');
+  const fc = t => ({'CRITICAL':'fill-critical','HIGH':'fill-high','MEDIUM':'fill-medium','LOW':'fill-low','MINIMAL':'fill-minimal'}[t]||'fill-minimal');
+  document.getElementById('sidebarScores').innerHTML = `
+    <div class="sidebar-label">// Risk Scores</div>
+    ${risks.map(r => `<div class="sidebar-score-item">
+      <div class="sidebar-score-label">${r.label}</div>
+      <div class="sidebar-score-row">
+        <div class="sidebar-score-val" style="color:${tc(r.tier)}">${r.score}</div>
+        <div class="sidebar-score-tier" style="color:${tc(r.tier)}">${r.tier}</div>
+      </div>
+      <div class="sidebar-score-bar"><div class="sidebar-score-fill ${fc(r.tier)}" style="width:${r.score}%"></div></div>
+    </div>`).join('')}`;
+
+  // Detail blocks — each category gets its own section
   document.getElementById('detailHR').innerHTML = `
-    <h3>Human Rights & Supply Chain Risk</h3>
-    <p>${d.humanRightsDetails}</p>
-    <p>${d.supplyChainDetails}</p>`;
+    <h3>Human Rights & Labour Risk</h3>
+    <p>${d.humanRightsDetails}</p>`;
 
   document.getElementById('detailTrade').innerHTML = `
-    <h3>Trade, Tariff & Sanctions Exposure</h3>
+    <h3>Supply Chain Exposure</h3>
+    <p>${d.supplyChainDetails}</p>
+    <h3 style="margin-top:1.2rem">Trade, Tariff & Sanctions</h3>
     <p>${d.tradeDetails}</p>
+    <h3 style="margin-top:1.2rem">ESG & Governance</h3>
     <p>${d.esgDetails}</p>`;
 
   const flagIcons = {high:'🔴',medium:'🟠',low:'🟡'};
@@ -602,76 +651,70 @@ function generatePDF() {
 
   const addPage = () => { doc.addPage(); y = 20; };
   const checkY = (needed = 20) => { if (y + needed > 270) addPage(); };
-
   const tierColor = t => ({'CRITICAL':[255,59,48],'HIGH':[255,107,53],'MEDIUM':[255,215,0],'LOW':[57,255,20],'MINIMAL':[106,143,168]}[t]||[106,143,168]);
 
-  // ── COVER ──────────────────────────────────────────────────────────────────
-  doc.setFillColor(5,10,15);
-  doc.rect(0,0,W,297,'F');
+  const section = (title, color=[0,229,255]) => {
+    checkY(16);
+    doc.setFillColor(11,22,40);
+    doc.rect(ML, y, cw, 8, 'F');
+    doc.setFillColor(...color);
+    doc.rect(ML, y, 3, 8, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...color);
+    doc.text(title.toUpperCase(), ML+6, y+5.5);
+    y += 12;
+  };
 
-  // Accent line
-  doc.setFillColor(0,229,255);
-  doc.rect(0,0,W,2,'F');
+  const body = (text) => {
+    if (!text) return;
+    const lines = doc.splitTextToSize(String(text), cw);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(150,180,200);
+    lines.forEach(line => { checkY(6); doc.text(line, ML, y); y += 4.8; });
+    y += 2;
+  };
 
-  // Logo
-  doc.setFont('helvetica','bold');
-  doc.setFontSize(11);
-  doc.setTextColor(0,229,255);
+  const chip = (label, value) => {
+    if (!value || value === '—') return;
+    doc.setFontSize(7); doc.setFont('helvetica','bold'); doc.setTextColor(106,143,168);
+    doc.text(label + ':', ML, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(180,210,220);
+    const vlines = doc.splitTextToSize(String(value), cw - 46);
+    doc.text(vlines, ML+45, y);
+    y += Math.max(5, vlines.length * 4.5);
+  };
+
+  // ── PAGE 1: COVER ──────────────────────────────────────────────────────────
+  doc.setFillColor(5,10,15); doc.rect(0,0,W,297,'F');
+  doc.setFillColor(0,229,255); doc.rect(0,0,W,1.5,'F');
+
+  doc.setFontSize(18); doc.setFont('helvetica','bold'); doc.setTextColor(232,244,248);
   doc.text('3D.BS', ML, 22);
-  doc.setFontSize(7);
-  doc.setTextColor(106,143,168);
+  doc.setFontSize(7); doc.setTextColor(106,143,168); doc.setFont('helvetica','normal');
   doc.text('3D BUSINESS SOLUTIONS', ML, 27);
-
-  // Report type tag
-  doc.setFontSize(7);
-  doc.setTextColor(255,107,53);
+  doc.setFontSize(7); doc.setTextColor(255,107,53);
   doc.text('// RISK INTELLIGENCE REPORT', ML, 60);
 
-  // Company name
-  doc.setFontSize(28);
-  doc.setTextColor(232,244,248);
-  doc.setFont('helvetica','bold');
+  doc.setFontSize(28); doc.setTextColor(232,244,248); doc.setFont('helvetica','bold');
   const nameParts = d.companyName.split(' ');
   const lastName = nameParts.pop();
   const firstName = nameParts.join(' ');
-  if (firstName) {
-    doc.text(firstName, ML, 78);
-    doc.setTextColor(0,229,255);
-    doc.text(lastName, ML, 91);
-  } else {
-    doc.text(d.companyName, ML, 78);
-  }
-
-  // Meta
-  doc.setFontSize(8);
-  doc.setTextColor(106,143,168);
-  doc.setFont('helvetica','normal');
+  if (firstName) { doc.text(firstName, ML, 78); doc.setTextColor(0,229,255); doc.text(lastName, ML, 91); }
+  else { doc.text(d.companyName, ML, 78); }
+  doc.setFontSize(8); doc.setTextColor(106,143,168); doc.setFont('helvetica','normal');
   doc.text(`${d.jurisdiction}  ·  ${d.sector}  ·  ${d.reportDate}`, ML, 101);
 
-  // Overall score box
-  const [r,g,b] = tierColor(d.overallTier);
-  doc.setFillColor(r,g,b);
-  doc.rect(ML, 115, 50, 28, 'F');
-  doc.setFillColor(5,10,15);
-  doc.rect(ML+1, 116, 48, 26, 'F');
-  doc.setFontSize(22);
-  doc.setTextColor(r,g,b);
-  doc.setFont('helvetica','bold');
-  doc.text(String(d.overallRisk), ML+10, 131);
-  doc.setFontSize(7);
-  doc.setTextColor(r,g,b);
-  doc.text('OVERALL RISK', ML+27, 127);
-  doc.setFontSize(9);
-  doc.text(d.overallTier, ML+27, 133);
+  const [tr,tg,tb] = tierColor(d.overallTier);
+  doc.setFillColor(tr,tg,tb); doc.rect(ML, 112, 50, 28, 'F');
+  doc.setFillColor(5,10,15); doc.rect(ML+1, 113, 48, 26, 'F');
+  doc.setFontSize(22); doc.setTextColor(tr,tg,tb); doc.setFont('helvetica','bold');
+  doc.text(String(d.overallRisk), ML+10, 128);
+  doc.setFontSize(7); doc.text('OVERALL RISK', ML+27, 124);
+  doc.setFontSize(9); doc.text(d.overallTier, ML+27, 131);
 
-  // Executive summary
-  doc.setFontSize(8);
-  doc.setTextColor(150,180,200);
-  doc.setFont('helvetica','normal');
+  doc.setFontSize(8); doc.setTextColor(150,180,200); doc.setFont('helvetica','normal');
   const sumLines = doc.splitTextToSize(d.executiveSummary, cw);
-  doc.text(sumLines, ML, 155);
+  doc.text(sumLines, ML, 152);
+  y = 152 + sumLines.length * 5 + 8;
 
-  // Risk scores grid on cover
   const cats = [
     {name:'Human Rights', score:d.humanRightsScore, tier:d.humanRightsTier},
     {name:'Supply Chain',  score:d.supplyChainScore, tier:d.supplyChainTier},
@@ -681,163 +724,162 @@ function generatePDF() {
   let gx = ML;
   const gw = cw / 4 - 2;
   cats.forEach(cat => {
-    const [cr,cg,cb] = tierColor(cat.tier);
-    doc.setFillColor(11,22,40);
-    doc.rect(gx, 190, gw, 22, 'F');
-    doc.setFillColor(cr,cg,cb);
-    doc.rect(gx, 190, gw*cat.score/100, 2, 'F');
-    doc.setFontSize(14);
-    doc.setTextColor(cr,cg,cb);
-    doc.setFont('helvetica','bold');
-    doc.text(String(cat.score), gx+3, 204);
-    doc.setFontSize(6);
-    doc.setTextColor(106,143,168);
-    doc.setFont('helvetica','normal');
-    doc.text(cat.name.toUpperCase(), gx+3, 209);
+    const [cr,cg2,cb] = tierColor(cat.tier);
+    doc.setFillColor(11,22,40); doc.rect(gx, y, gw, 22, 'F');
+    doc.setFillColor(cr,cg2,cb); doc.rect(gx, y, gw*cat.score/100, 2, 'F');
+    doc.setFontSize(14); doc.setTextColor(cr,cg2,cb); doc.setFont('helvetica','bold');
+    doc.text(String(cat.score), gx+3, y+14);
+    doc.setFontSize(6); doc.setTextColor(106,143,168); doc.setFont('helvetica','normal');
+    doc.text(cat.name.toUpperCase(), gx+3, y+19);
     gx += gw + 2.5;
   });
 
-  // Footer
-  doc.setFontSize(6);
-  doc.setTextColor(60,90,110);
-  doc.text('Confidential · For Internal Use Only · 3D Business Solutions · 3dbusinesssolutions.com', ML, 285);
-  doc.text(`Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`, MR - 40, 285);
+  doc.setFontSize(6); doc.setTextColor(60,90,110);
+  doc.text('Confidential · For Internal Use Only · 3D Business Solutions', ML, 285);
+  doc.text(`Generated: ${new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})}`, MR-45, 285);
 
-  // ── PAGE 2: DETAIL ─────────────────────────────────────────────────────────
+  // ── PAGE 2: RISK ANALYSIS ──────────────────────────────────────────────────
   addPage();
-  doc.setFillColor(5,10,15);
-  doc.rect(0,0,W,297,'F');
-  doc.setFillColor(0,229,255);
-  doc.rect(0,0,W,1,'F');
+  doc.setFillColor(5,10,15); doc.rect(0,0,W,297,'F');
+  doc.setFillColor(0,229,255); doc.rect(0,0,W,1.5,'F');
 
-  const section = (title, color=[0,229,255]) => {
-    checkY(14);
-    doc.setFillColor(...color, 0.15);
-    doc.setDrawColor(...color);
-    doc.setFillColor(11,22,40);
-    doc.rect(ML, y, cw, 8, 'F');
-    doc.setFillColor(...color);
-    doc.rect(ML, y, 3, 8, 'F');
-    doc.setFontSize(8);
-    doc.setFont('helvetica','bold');
-    doc.setTextColor(...color);
-    doc.text(title.toUpperCase(), ML+6, y+5.5);
-    y += 12;
-  };
-
-  const body = (text, indent=0) => {
-    const lines = doc.splitTextToSize(text, cw - indent);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica','normal');
-    doc.setTextColor(150,180,200);
-    lines.forEach(line => {
-      checkY(6);
-      doc.text(line, ML + indent, y);
-      y += 5;
-    });
-    y += 2;
-  };
-
-  // HR section
   section('Human Rights & Labour Risk', [0,229,255]);
   body(d.humanRightsDetails);
+
+  section('Supply Chain Exposure', [0,200,220]);
   body(d.supplyChainDetails);
 
-  // Trade section
   section('Trade, Tariff & Sanctions', [255,107,53]);
   body(d.tradeDetails);
+
+  section('ESG & Governance', [255,215,0]);
   body(d.esgDetails);
 
-  // Red flags
   section('Red Flags & Key Concerns', [255,59,48]);
   d.redFlags.forEach(f => {
     checkY(10);
     const [fr,fg,fb] = {high:[255,59,48],medium:[255,107,53],low:[255,215,0]}[f.severity]||[106,143,168];
-    doc.setFillColor(fr,fg,fb);
-    doc.rect(ML, y-1, 2, 6, 'F');
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica','normal');
-    doc.setTextColor(150,180,200);
-    const flines = doc.splitTextToSize(f.flag, cw-8);
-    flines.forEach((line,i) => {
-      checkY(6);
-      doc.text(line, ML+5, y + i*4.5);
-    });
-    y += flines.length * 4.5 + 3;
+    doc.setFillColor(fr,fg,fb); doc.rect(ML, y-1, 2, 5, 'F');
+    const flines = doc.splitTextToSize(`[${(f.severity||'').toUpperCase()}] ${f.flag}`, cw-6);
+    doc.setFontSize(7.5); doc.setFont('helvetica','normal'); doc.setTextColor(150,180,200);
+    flines.forEach((line,i) => { checkY(6); doc.text(line, ML+5, y+i*4.5); });
+    y += flines.length * 4.5 + 4;
   });
 
-  // GLEIF section
-  const gleif = window._gleifData;
-  if (gleif && gleif.leiCode !== '—') {
-    section('Legal Entity Intelligence (GLEIF)', [0,229,255]);
-    const gleifLines = [
-      `LEI Code: ${gleif.leiCode}`,
-      `Legal Name: ${gleif.legalName}`,
-      `Entity Status: ${gleif.status}  |  LEI Renewal: ${gleif.renewalStatus}`,
-      `Jurisdiction: ${gleif.jurisdiction}  |  Legal Form: ${gleif.legalForm}`,
-      gleif.addressParts ? `Registered Address: ${gleif.addressParts}` : null,
-      gleif.regAuthId !== '—' ? `Registration Authority: ${gleif.regAuthId}` : null,
-      gleif.regEntityId !== '—' ? `Registration ID: ${gleif.regEntityId}` : null,
-      gleif.otherNames !== '—' ? `Other Names: ${gleif.otherNames}` : null,
-      gleif.hasParent ? `Direct Parent: LEI record available` : null,
-      gleif.hasUltimateParent ? `Ultimate Parent: LEI record available` : null,
-      `Last Updated: ${gleif.lastUpdate}  |  Next Renewal: ${gleif.nextRenewal}`,
-      `Source: GLEIF Global LEI Index (gleif.org) · Open Data CC0`,
-    ].filter(Boolean);
-    gleifLines.forEach(line => body(line));
+  section('Recommendations', [57,255,20]);
+  d.recommendations.forEach((rec,i) => {
+    checkY(10);
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(57,255,20);
+    doc.text(`${String(i+1).padStart(2,'0')}.`, ML, y);
+    doc.setFont('helvetica','normal'); doc.setTextColor(150,180,200);
+    const rlines = doc.splitTextToSize(rec, cw-10);
+    rlines.forEach((line,li) => { checkY(6); doc.text(line, ML+8, y+li*4.5); });
+    y += rlines.length * 4.5 + 4;
+  });
+
+  // ── PAGE 3: REGISTRY & COMPLIANCE ─────────────────────────────────────────
+  addPage();
+  doc.setFillColor(5,10,15); doc.rect(0,0,W,297,'F');
+  doc.setFillColor(0,229,255); doc.rect(0,0,W,1.5,'F');
+
+  // Sanctions
+  section('Sanctions & Watchlist Screening (OpenSanctions)', [255,59,48]);
+  const sanctionsBadge = document.getElementById('sanctionsBadge')?.textContent || '';
+  body('Screening result: ' + sanctionsBadge);
+  const sanctionHits = document.getElementById('sanctionsBody')?.querySelectorAll('.sanctions-hit');
+  if (sanctionHits?.length) {
+    sanctionHits.forEach(hit => {
+      checkY(18);
+      const name = hit.querySelector('.sanctions-hit-name')?.textContent || '';
+      const meta = hit.querySelector('.sanctions-hit-meta')?.textContent?.replace(/\s+/g,' ').trim() || '';
+      doc.setFillColor(30,8,8); doc.rect(ML, y-1, cw, 14, 'F');
+      doc.setFillColor(255,59,48); doc.rect(ML, y-1, 2, 14, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(255,100,100);
+      doc.text(name, ML+5, y+5);
+      doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(150,130,130);
+      const mlines = doc.splitTextToSize(meta, cw-8);
+      doc.text(mlines[0]||'', ML+5, y+10);
+      y += 17;
+    });
+  } else {
+    body('No sanctions matches found in screened datasets.');
   }
 
-  // Recommendations
-  section('Recommendations', [57,255,20]);
-  d.recommendations.forEach((r,i) => {
-    checkY(10);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica','bold');
-    doc.setTextColor(57,255,20);
-    doc.text(`${String(i+1).padStart(2,'0')}.`, ML, y);
-    doc.setFont('helvetica','normal');
-    doc.setTextColor(150,180,200);
-    const rlines = doc.splitTextToSize(r, cw-10);
-    rlines.forEach((line,li) => {
-      checkY(6);
-      doc.text(line, ML+8, y + li*4.5);
+  // GLEIF
+  const gleif = window._gleifData;
+  if (gleif && gleif.leiCode && gleif.leiCode !== '—') {
+    section('Legal Entity Intelligence (GLEIF)', [0,229,255]);
+    chip('LEI Code', gleif.leiCode);
+    chip('Legal Name', gleif.legalName);
+    chip('Entity Status', gleif.status);
+    chip('LEI Renewal', gleif.renewalStatus);
+    chip('Jurisdiction', gleif.jurisdiction);
+    chip('Legal Form', gleif.legalForm);
+    chip('Registered Address', gleif.addressParts);
+    if (gleif.regAuthId && gleif.regAuthId !== '—') chip('Registration Authority', gleif.regAuthId);
+    if (gleif.regEntityId && gleif.regEntityId !== '—') chip('Registration ID (Tax/Reg)', gleif.regEntityId);
+    if (gleif.otherNames && gleif.otherNames !== '—') chip('Other Names', gleif.otherNames);
+    if (gleif.hasParent) chip('Direct Parent', 'LEI record available');
+    if (gleif.hasUltimateParent) chip('Ultimate Parent', 'LEI record available');
+    chip('Next LEI Renewal', gleif.nextRenewal);
+    chip('Last Updated', gleif.lastUpdate);
+    chip('Source', 'GLEIF Global LEI Index · gleif.org · Open Data CC0');
+    y += 3;
+  }
+
+  // Officers
+  const officersData = window._officersData;
+  if (officersData?.officers?.length) {
+    section(`Officers & Directors (${officersData.adapter})`, [255,215,0]);
+    const co = officersData.detail?.company;
+    if (co) {
+      if (co.ein) chip('EIN (Tax ID)', co.ein);
+      if (co.ticker) chip('Ticker / Exchange', `${co.ticker}  ·  ${co.exchange||'—'}`);
+      if (co.registrationNumber) chip('Registration No.', co.registrationNumber);
+      if (co.industry) chip('Industry (SIC)', co.industry);
+      if (co.address) chip('Business Address', co.address);
+      if (co.formerNames?.length) chip('Former Names', co.formerNames.join(', '));
+      y += 2;
+    }
+    officersData.officers.slice(0,20).forEach(o => {
+      checkY(11);
+      const start = o.startDate ? new Date(o.startDate).toLocaleDateString('en-US',{year:'numeric',month:'short'}) : '—';
+      const end = o.endDate ? new Date(o.endDate).toLocaleDateString('en-US',{year:'numeric',month:'short'}) : o.isActive ? 'Present' : '—';
+      const elId = `sanction_${o.id.replace(/\W/g,'_')}`;
+      const sanctResult = document.getElementById(elId)?.textContent?.trim() || '';
+      doc.setFillColor(o.isActive?11:8, o.isActive?22:15, o.isActive?40:25);
+      doc.rect(ML, y-1, cw, 9, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica','bold');
+      doc.setTextColor(o.isActive?232:106, o.isActive?244:143, o.isActive?248:168);
+      doc.text(o.name, ML+3, y+4.5);
+      doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(106,143,168);
+      doc.text(`${o.position||'—'}  ·  ${start} → ${end}  ·  ${o.isActive?'ACTIVE':'FORMER'}`, ML+3, y+8);
+      if (sanctResult && !sanctResult.includes('checking')) {
+        const sc = sanctResult.includes('SANCTIONS')?[255,59,48]:sanctResult.includes('PEP')||sanctResult.includes('WATCH')?[255,107,53]:[57,255,20];
+        doc.setTextColor(...sc); doc.setFontSize(6.5);
+        doc.text(sanctResult, MR-28, y+4.5);
+      }
+      y += 12;
     });
-    y += rlines.length * 4.5 + 3;
-  });
+  }
 
-  // Data note
-  checkY(16);
-  y += 4;
-  doc.setFontSize(7);
-  doc.setFont('helvetica','italic');
-  doc.setTextColor(80,110,130);
-  const noteLines = doc.splitTextToSize('Data Note: ' + d.keySourcesNote, cw);
-  noteLines.forEach(line => { doc.text(line, ML, y); y += 4.5; });
-
-  // Disclaimer
-  checkY(20);
-  y += 6;
-  doc.setFontSize(6.5);
-  doc.setFont('helvetica','normal');
-  doc.setTextColor(60,90,110);
-  const disc = 'DISCLAIMER: This report is generated by AI for screening and informational purposes only. It does not constitute legal, financial, compliance, or investment advice. All findings should be verified with primary sources, official registries, and qualified professionals before making any business, procurement, or investment decisions. 3D Business Solutions accepts no liability for decisions made based on this output.';
-  const discLines = doc.splitTextToSize(disc, cw);
-  discLines.forEach(line => {
-    checkY(5);
-    doc.text(line, ML, y);
-    y += 4;
-  });
+  // Data note + disclaimer
+  checkY(20); y += 4;
+  doc.setFontSize(7); doc.setFont('helvetica','italic'); doc.setTextColor(80,110,130);
+  doc.splitTextToSize('Data Note: ' + d.keySourcesNote, cw).forEach(line => { checkY(5); doc.text(line, ML, y); y += 4.5; });
+  checkY(20); y += 6;
+  doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(60,90,110);
+  doc.splitTextToSize('DISCLAIMER: This report is AI-generated for screening purposes only. It does not constitute legal, financial, compliance, or investment advice. All findings should be verified with primary sources and qualified professionals. 3D Business Solutions accepts no liability for decisions made based on this output.', cw)
+    .forEach(line => { checkY(5); doc.text(line, ML, y); y += 4; });
 
   // Footer every page
   const total = doc.getNumberOfPages();
-  for(let i=1;i<=total;i++) {
-    doc.setPage(i);
-    doc.setFillColor(5,10,15);
-    doc.rect(0,277,W,20,'F');
-    doc.setFontSize(6);
-    doc.setTextColor(60,90,110);
+  for(let p=1;p<=total;p++) {
+    doc.setPage(p);
+    doc.setFillColor(5,10,15); doc.rect(0,277,W,20,'F');
+    doc.setFontSize(6); doc.setTextColor(60,90,110);
     doc.text('3D Business Solutions · Confidential Risk Intelligence Report', ML, 285);
-    doc.text(`Page ${i} of ${total}`, MR-12, 285);
+    doc.text(`Page ${p} of ${total}`, MR-12, 285);
   }
 
   const safeName = d.companyName.replace(/[^a-zA-Z0-9]/g,'-').toLowerCase();
