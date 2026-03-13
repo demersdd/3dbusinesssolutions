@@ -945,7 +945,12 @@ async function callWorker(prompt, maxTokens=1000) {
 
 // ── OPENSANCTIONS CHECK ───────────────────────────────────────────────────────
 async function runSanctionsCheck(entity) {
+  const cacheKey = `os_company_${entity.name}_${entity.jurisdiction}`;
   try {
+    // Return cached result for the same entity within this session
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) { renderSanctions(JSON.parse(cached)); return; }
+
     const payload = {
       _service: 'opensanctions',
       _path: '/match/default',
@@ -966,6 +971,7 @@ async function runSanctionsCheck(entity) {
     });
     if (!resp.ok) throw new Error(`${resp.status}`);
     const data = await resp.json();
+    sessionStorage.setItem(cacheKey, JSON.stringify(data));
     renderSanctions(data);
   } catch(e) {
     document.getElementById('sanctionsBadge').textContent = '// UNAVAILABLE';
@@ -1402,15 +1408,29 @@ function renderOfficerPanel(detail, adapter, entity) {
 
   window._officersData = { detail, adapter: adapter.name, officers: sorted };
 
-  // Screen each officer against OpenSanctions
-  sorted.slice(0, 10).forEach(o => checkOfficerSanctions(o));
+  // Screen all officers in a single batched OpenSanctions request
+  checkAllOfficerSanctions(sorted.slice(0, 10));
 }
 
-// ── INDIVIDUAL SANCTIONS SCREEN ───────────────────────────────────────────────
-async function checkOfficerSanctions(officer) {
-  const elId = `sanction_${officer.id.replace(/\W/g,'_')}`;
-  const el = document.getElementById(elId);
-  if (!el) return;
+// ── BATCHED OFFICER SANCTIONS SCREEN ──────────────────────────────────────────
+// Sends all officer queries in one API call instead of one call per officer,
+// which prevents bursting OpenSanctions rate limits.
+async function checkAllOfficerSanctions(officers) {
+  if (!officers.length) return;
+
+  // Build a query key per officer so we can map results back
+  const queries = {};
+  officers.forEach((o, i) => {
+    queries[`person_${i}`] = {
+      schema: 'Person',
+      properties: {
+        name: [o.name],
+        nationality: o.nationality ? [o.nationality] : []
+      }
+    };
+  });
+
+  let responses = {};
   try {
     const resp = await fetch(WORKER_URL, {
       method: 'POST',
@@ -1418,19 +1438,24 @@ async function checkOfficerSanctions(officer) {
       body: JSON.stringify({
         _service: 'opensanctions',
         _path: '/match/default',
-        queries: {
-          person: {
-            schema: 'Person',
-            properties: {
-              name: [officer.name],
-              nationality: officer.nationality ? [officer.nationality] : []
-            }
-          }
-        }
+        queries
       })
     });
     const data = await resp.json();
-    const results = data.responses?.person?.results || [];
+    responses = data.responses || {};
+  } catch(e) {
+    // On failure mark all as N/A — don't leave them spinning
+    officers.forEach(o => {
+      const el = document.getElementById(`sanction_${o.id.replace(/\W/g,'_')}`);
+      if (el) el.textContent = '// N/A';
+    });
+    return;
+  }
+
+  officers.forEach((o, i) => {
+    const el = document.getElementById(`sanction_${o.id.replace(/\W/g,'_')}`);
+    if (!el) return;
+    const results = responses[`person_${i}`]?.results || [];
     const hits = results.filter(r => r.score >= 0.75);
     const isSanctioned = hits.some(h => h.topics?.includes('sanction'));
     const isPep = hits.some(h => h.topics?.some(t => t.startsWith('role.')));
@@ -1448,9 +1473,7 @@ async function checkOfficerSanctions(officer) {
       el.style.cssText = 'border:1px solid var(--accent3);color:var(--accent3);font-family:var(--mono);font-size:.55rem;padding:.15rem .4rem;display:inline-block;margin-top:.3rem';
       el.textContent = '✓ CLEAR';
     }
-  } catch(e) {
-    el.textContent = '// N/A';
-  }
+  });
 }
 
 // ── GLEIF CHECK ───────────────────────────────────────────────────────────────
