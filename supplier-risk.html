@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Bulk Supplier Risk Screening | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+<style>
+:root {
+  --bg:#050a0f;--bg2:#080f18;--panel:#0b1622;--panel2:#0d1a28;
+  --accent:#00e5ff;--accent2:#ff6b35;--accent3:#39ff14;--accent4:#ffd700;
+  --text:#e8f4f8;--muted:#6a8fa8;--border:rgba(0,229,255,.15);
+  --mono:'Share Tech Mono',monospace;--head:'Barlow Condensed',sans-serif;--body:'Barlow',sans-serif;
+  --critical:#ff3b30;--high:#ff6b35;--medium:#ffd166;--low:#06d6a0;--minimal:#2dc653;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.02) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
+.nav-back{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .2s;}
+.nav-back:hover{color:var(--accent);}
+
+/* HERO */
+.hero{position:relative;z-index:1;padding:4rem 2rem 2rem;max-width:900px;margin:0 auto;}
+.hero-tag{font-family:var(--mono);font-size:.65rem;color:var(--accent2);letter-spacing:.2em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.hero-tag::before{content:'';width:24px;height:1px;background:var(--accent2);}
+.hero-title{font-family:var(--head);font-size:clamp(2.2rem,5vw,3.6rem);font-weight:900;text-transform:uppercase;line-height:.95;margin-bottom:.5rem;}
+.hero-title em{font-style:normal;color:var(--accent);}
+.hero-sub{font-family:var(--mono);font-size:.72rem;color:var(--muted);letter-spacing:.08em;margin-bottom:2.5rem;line-height:1.8;}
+
+/* TEMPLATE DOWNLOAD */
+.template-bar{display:flex;align-items:center;gap:1rem;margin-bottom:1.8rem;padding:1rem 1.2rem;background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.12);}
+.template-bar-text{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.06em;line-height:1.7;flex:1;}
+.template-bar-text strong{color:var(--text);}
+.btn-template{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;padding:.6rem 1.1rem;background:transparent;border:1px solid var(--accent2);color:var(--accent2);cursor:pointer;text-transform:uppercase;white-space:nowrap;transition:background .2s,color .2s;}
+.btn-template:hover{background:rgba(255,107,53,.1);}
+
+/* UPLOAD ZONE */
+.upload-zone{border:2px dashed rgba(0,229,255,.25);padding:3rem 2rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;position:relative;background:rgba(0,229,255,.02);}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);background:rgba(0,229,255,.05);}
+.upload-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.upload-icon{font-size:2.5rem;margin-bottom:1rem;display:block;}
+.upload-title{font-family:var(--head);font-size:1.4rem;font-weight:700;text-transform:uppercase;margin-bottom:.4rem;}
+.upload-sub{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.08em;}
+.upload-hint{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:1.2rem;letter-spacing:.06em;line-height:1.7;}
+.upload-hint strong{color:var(--accent);}
+
+/* SECTION */
+.section{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:0 2rem 2rem;}
+.section-label{font-family:var(--mono);font-size:.62rem;color:var(--accent2);text-transform:uppercase;letter-spacing:.15em;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;}
+.section-label::before{content:'//';color:var(--muted);}
+
+/* VALIDATION BAR */
+.validation-bar{display:flex;align-items:center;justify-content:space-between;padding:.7rem 1rem;background:var(--panel);border:1px solid var(--border);margin-bottom:1rem;}
+.val-info{font-family:var(--mono);font-size:.65rem;color:var(--muted);letter-spacing:.06em;}
+.val-info strong{color:var(--accent3);}
+.val-error{color:var(--critical);}
+.val-warn{color:var(--medium);}
+.btn-reset{font-family:var(--mono);font-size:.62rem;color:var(--muted);background:none;border:none;cursor:pointer;letter-spacing:.08em;text-transform:uppercase;transition:color .2s;}
+.btn-reset:hover{color:var(--accent);}
+
+/* PREVIEW TABLE */
+.preview-wrap{overflow-x:auto;margin-bottom:1rem;}
+.preview-table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:.68rem;}
+.preview-table th{background:var(--panel2);color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:.55rem .8rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+.preview-table td{padding:.5rem .8rem;border-bottom:1px solid rgba(0,229,255,.05);color:var(--text);}
+.preview-table tr:hover td{background:rgba(0,229,255,.02);}
+.preview-more{font-family:var(--mono);font-size:.62rem;color:var(--muted);padding:.6rem .8rem;text-align:center;}
+.col-req{color:var(--accent);}
+.col-opt{color:var(--muted);}
+
+/* ANALYZE BUTTON */
+.btn-analyze{width:100%;font-family:var(--mono);font-size:.78rem;letter-spacing:.15em;padding:1rem;background:var(--accent);color:var(--bg);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,opacity .2s;margin-top:.5rem;}
+.btn-analyze:hover{box-shadow:0 0 28px rgba(0,229,255,.4);}
+.btn-analyze:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+
+/* PROGRESS */
+.progress-track{height:3px;background:var(--border);margin:1.5rem 0;position:relative;}
+.progress-fill{height:100%;background:var(--accent);width:0%;transition:width .5s ease;}
+.status-log{display:flex;flex-direction:column;gap:.4rem;padding:.8rem 0;}
+.status-line{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;display:flex;align-items:center;gap:.6rem;}
+.status-line.done{color:var(--accent3);}
+.status-line.active{color:var(--accent);}
+.status-line.err{color:var(--critical);}
+.status-line.wait{color:var(--muted);}
+
+/* SUMMARY STATS */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5px;margin-bottom:1.5rem;}
+@media(max-width:640px){.stats-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:var(--panel);padding:1.1rem 1.3rem;}
+.stat-label{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.4rem;}
+.stat-val{font-family:var(--head);font-size:2rem;font-weight:900;line-height:1;}
+.stat-sub{font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-top:.2rem;letter-spacing:.06em;}
+
+/* EXPORT BAR */
+.export-bar{display:flex;align-items:center;gap:.6rem;margin-bottom:1.5rem;flex-wrap:wrap;}
+.btn-export{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;padding:.6rem 1.1rem;background:transparent;border:1px solid;cursor:pointer;text-transform:uppercase;transition:background .2s;}
+.btn-export-csv{border-color:var(--accent3);color:var(--accent3);}
+.btn-export-csv:hover{background:rgba(57,255,20,.08);}
+.btn-export-pdf{border-color:var(--accent2);color:var(--accent2);}
+.btn-export-pdf:hover{background:rgba(255,107,53,.08);}
+.btn-new{border-color:var(--muted);color:var(--muted);}
+.btn-new:hover{border-color:var(--accent);color:var(--accent);}
+.export-bar-spacer{flex:1;}
+
+/* RESULTS TABLE */
+.results-wrap{overflow-x:auto;margin-bottom:2rem;}
+.results-table{width:100%;border-collapse:collapse;font-size:.8rem;}
+.results-table th{background:var(--panel2);font-family:var(--mono);font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;padding:.6rem .8rem;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;transition:color .15s;}
+.results-table th:hover{color:var(--accent);}
+.results-table th.sorted{color:var(--accent);}
+.results-table th .sort-arrow{margin-left:.3rem;opacity:.5;}
+.results-table th.sorted .sort-arrow{opacity:1;}
+.results-table td{padding:.6rem .8rem;border-bottom:1px solid rgba(0,229,255,.04);vertical-align:middle;}
+.results-table tr.result-row:hover td{background:rgba(0,229,255,.02);}
+.results-table tr.detail-row td{padding:0;}
+.supplier-name-cell{font-weight:600;color:var(--text);white-space:nowrap;}
+.supplier-country-cell{font-family:var(--mono);font-size:.7rem;color:var(--muted);}
+.supplier-sector-cell{font-family:var(--mono);font-size:.68rem;color:var(--muted);}
+
+/* RISK BADGE */
+.risk-badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;padding:.25rem .6rem;display:inline-flex;align-items:center;gap:.35rem;white-space:nowrap;}
+.risk-badge.critical{background:rgba(255,59,48,.1);color:var(--critical);border:1px solid rgba(255,59,48,.3);}
+.risk-badge.high{background:rgba(255,107,53,.1);color:var(--high);border:1px solid rgba(255,107,53,.3);}
+.risk-badge.medium{background:rgba(255,209,102,.1);color:var(--medium);border:1px solid rgba(255,209,102,.3);}
+.risk-badge.low{background:rgba(6,214,160,.1);color:var(--low);border:1px solid rgba(6,214,160,.3);}
+.risk-badge.minimal{background:rgba(45,198,83,.1);color:var(--minimal);border:1px solid rgba(45,198,83,.3);}
+
+/* SANCTIONS BADGE */
+.sanctions-badge{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;padding:.25rem .6rem;white-space:nowrap;}
+.sanctions-badge.hit{background:rgba(255,59,48,.12);color:var(--critical);border:1px solid rgba(255,59,48,.35);}
+.sanctions-badge.clear{background:rgba(45,198,83,.08);color:var(--minimal);border:1px solid rgba(45,198,83,.2);}
+.sanctions-badge.skip{background:rgba(106,143,168,.08);color:var(--muted);border:1px solid rgba(106,143,168,.2);}
+
+/* EXPAND BUTTON */
+.expand-btn{background:none;border:1px solid rgba(0,229,255,.15);color:var(--muted);cursor:pointer;font-family:var(--mono);font-size:.7rem;width:24px;height:24px;display:flex;align-items:center;justify-content:center;transition:border-color .15s,color .15s;}
+.expand-btn:hover{border-color:var(--accent);color:var(--accent);}
+.expand-btn.open{border-color:var(--accent);color:var(--accent);}
+
+/* DETAIL ROW */
+.detail-content{background:var(--panel2);padding:1rem 1.2rem;border-bottom:2px solid var(--accent);display:grid;grid-template-columns:1fr auto;gap:1.5rem;}
+@media(max-width:640px){.detail-content{grid-template-columns:1fr;}}
+.detail-summary{font-size:.82rem;color:var(--muted);line-height:1.75;}
+.detail-summary strong{color:var(--text);}
+.detail-flags{display:flex;flex-direction:column;gap:.4rem;min-width:200px;}
+.detail-flags-label{font-family:var(--mono);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:.2rem;}
+.flag-chip{font-family:var(--mono);font-size:.62rem;padding:.3rem .6rem;background:rgba(255,107,53,.08);border-left:2px solid var(--accent2);color:var(--text);line-height:1.5;}
+.sanctions-detail-block{margin-top:.6rem;font-family:var(--mono);font-size:.62rem;color:var(--muted);line-height:1.7;}
+.sanctions-hit-name{color:var(--critical);}
+
+/* SCORE CELL */
+.score-cell{display:flex;align-items:center;gap:.5rem;}
+.score-bar-wrap{width:48px;height:4px;background:rgba(255,255,255,.06);flex-shrink:0;}
+.score-bar-inner{height:100%;}
+.score-num{font-family:var(--head);font-size:1rem;font-weight:700;}
+
+/* LOADING */
+.loading-bar{height:2px;background:var(--border);position:relative;overflow:hidden;margin:1.5rem 0;}
+.loading-bar::after{content:'';position:absolute;top:0;left:-100%;width:100%;height:100%;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:sweep 1.2s ease-in-out infinite;}
+@keyframes sweep{to{left:100%;}}
+
+/* DISCLAIMER */
+.disclaimer{font-family:var(--mono);font-size:.6rem;color:var(--muted);line-height:1.8;padding:1rem 1.2rem;background:var(--panel);border:1px solid var(--border);margin-bottom:3rem;}
+.disclaimer strong{color:var(--text);}
+
+@media(max-width:768px){
+  .hero{padding:2rem 1rem 1rem;}
+  .section{padding:0 1rem 1.5rem;}
+  nav{padding:.7rem 1rem;}
+  .nav-title{display:none;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);}
+  .template-bar{flex-direction:column;align-items:flex-start;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span></a>
+  <span class="nav-title">// BULK SUPPLIER RISK SCREENING</span>
+  <a href="/" class="nav-back">← Back to Tools</a>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     HERO / UPLOAD SECTION
+══════════════════════════════════════════════ -->
+<div class="hero" id="upload-section">
+  <div class="hero-tag">Supply Chain Intelligence</div>
+  <h1 class="hero-title">Bulk Supplier<br><em>Risk Screening</em></h1>
+  <p class="hero-sub">
+    Upload a CSV with your supplier list for rapid risk scoring across your supply chain.<br>
+    Combines AI analysis, sanctions screening, and country-level human rights data.
+  </p>
+
+  <div class="template-bar">
+    <div class="template-bar-text">
+      <strong>Download the CSV template</strong> — Required columns: <strong>supplier_name</strong>, <strong>country</strong>.
+      Optional: sector, website, annual_spend_usd, notes.
+    </div>
+    <button class="btn-template" onclick="downloadTemplate()">⬇ Download Template</button>
+  </div>
+
+  <div class="upload-zone" id="upload-zone">
+    <input type="file" id="file-input" accept=".csv,text/csv" onchange="handleFileInput(event)"/>
+    <span class="upload-icon">📋</span>
+    <div class="upload-title">Drop your CSV here</div>
+    <div class="upload-sub">or click to browse files</div>
+    <div class="upload-hint">
+      Accepted: <strong>.csv</strong> · Max recommended: <strong>100 suppliers</strong><br>
+      Required columns: supplier_name, country
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PREVIEW SECTION
+══════════════════════════════════════════════ -->
+<div class="section" id="preview-section" style="display:none;">
+  <div class="section-label">CSV Preview</div>
+  <div class="validation-bar">
+    <span class="val-info" id="val-info">0 suppliers loaded</span>
+    <button class="btn-reset" onclick="resetAll()">✕ Remove file</button>
+  </div>
+  <div class="preview-wrap">
+    <table class="preview-table" id="preview-table">
+      <thead id="preview-thead"></thead>
+      <tbody id="preview-tbody"></tbody>
+    </table>
+    <div class="preview-more" id="preview-more" style="display:none;"></div>
+  </div>
+  <button class="btn-analyze" id="analyze-btn" onclick="runAnalysis()">
+    Run Risk Analysis →
+  </button>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PROCESSING SECTION
+══════════════════════════════════════════════ -->
+<div class="section" id="processing-section" style="display:none;">
+  <div class="section-label">Analysis in Progress</div>
+  <div class="progress-track">
+    <div class="progress-fill" id="progress-fill"></div>
+  </div>
+  <div class="status-log" id="status-log"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     RESULTS SECTION
+══════════════════════════════════════════════ -->
+<div class="section" id="results-section" style="display:none;">
+  <div class="section-label">Screening Results</div>
+
+  <div class="stats-grid" id="stats-grid"></div>
+
+  <div class="export-bar">
+    <button class="btn-export btn-export-csv" onclick="exportCSV()">⬇ Export CSV</button>
+    <button class="btn-export btn-export-pdf" onclick="exportPDF()">⬇ Export PDF</button>
+    <span class="export-bar-spacer"></span>
+    <button class="btn-export btn-new" onclick="resetAll()">+ New Analysis</button>
+  </div>
+
+  <div class="results-wrap">
+    <table class="results-table" id="results-table">
+      <thead id="results-thead"></thead>
+      <tbody id="results-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="disclaimer">
+    <strong>Data Sources & Disclaimer:</strong> Country risk scores are derived from ILO 2024 and Walk Free GSI 2023 data.
+    Sanctions screening is powered by OpenSanctions (opensanctions.org). AI risk assessments are generated by Claude and based on
+    publicly available sector and jurisdiction knowledge as of the model's training date. This tool provides indicative screening only
+    and does not constitute legal, compliance, or financial advice. Always perform full due diligence before making procurement decisions.
+    Scores reflect risk indicators, not confirmed violations.
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   CONSTANTS & DATA
+═══════════════════════════════════════════ */
+const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+
+// Country → composite risk score (0-100), from ILO 2024 / Walk Free GSI 2023
+const COUNTRY_RISK = {
+  'Afghanistan':80.1,'Albania':34.7,'Angola':74.7,'Argentina':28.5,'Armenia':32.6,
+  'Australia':11.1,'Austria':11.1,'Azerbaijan':43.8,'Bangladesh':54.9,'Belarus':47.1,
+  'Belgium':11.8,'Belize':41.3,'Benin':74.7,'Bolivia':55.8,'Bosnia & Herz.':35.3,
+  'Brazil':30.8,'Bulgaria':31.7,'Burkina Faso':82.2,'Burundi':78.8,'Cambodia':57.4,
+  'Cameroon':73.4,'Canada':11.1,'Central African Rep.':89.0,'Chad':86.9,'Chile':23.3,
+  'China':48.0,'Colombia':36.2,'Congo (Dem. Rep.)':83.2,'Costa Rica':26.5,
+  "Côte d'Ivoire":64.0,'Croatia':22.4,'Cuba':46.5,'Czech Republic':14.4,
+  'Denmark':8.1,'Dominican Republic':40.1,'Ecuador':37.6,'Egypt':44.4,
+  'El Salvador':36.8,'Eritrea':97.9,'Ethiopia':77.4,'Finland':8.1,'France':13.7,
+  'Gambia':64.0,'Georgia':34.3,'Germany':10.2,'Ghana':55.5,'Guatemala':58.3,
+  'Guinea':75.4,'Guinea-Bissau':78.3,'Haiti':71.2,'Honduras':46.1,'Hungary':25.5,
+  'India':50.4,'Indonesia':45.6,'Iran':56.5,'Iraq':57.4,'Ireland':11.3,
+  'Israel':20.9,'Italy':18.0,'Japan':16.9,'Jordan':43.1,'Kazakhstan':40.5,
+  'Kenya':60.6,'Kuwait':49.7,'Kyrgyzstan':48.3,'Laos':55.0,'Lebanon':49.3,
+  'Lesotho':62.6,'Liberia':73.4,'Libya':63.5,'Madagascar':67.9,'Malawi':72.8,
+  'Malaysia':36.1,'Mali':78.4,'Mauritania':70.9,'Mexico':36.8,'Moldova':40.5,
+  'Mongolia':40.0,'Morocco':36.1,'Mozambique':78.0,'Myanmar':76.1,'Nepal':55.4,
+  'Netherlands':11.8,'New Zealand':10.2,'Nicaragua':47.4,'Niger':82.2,'Nigeria':64.5,
+  'North Korea':98.0,'Norway':5.0,'Pakistan':61.1,'Panama':32.8,
+  'Papua New Guinea':61.2,'Paraguay':39.0,'Peru':36.5,'Philippines':43.9,
+  'Poland':18.1,'Portugal':13.2,'Qatar':48.5,'Romania':35.7,'Russia':51.1,
+  'Rwanda':45.6,'Saudi Arabia':53.8,'Senegal':56.8,'Serbia':30.6,'Sierra Leone':71.0,
+  'Somalia':84.1,'South Africa':41.7,'South Sudan':84.9,'Spain':15.1,'Sri Lanka':37.7,
+  'Sudan':80.0,'Sweden':8.7,'Switzerland':8.1,'Syria':68.4,'Tajikistan':63.5,
+  'Tanzania':65.3,'Thailand':38.9,'Togo':64.0,'Tunisia':34.3,'Turkey':48.0,
+  'Turkmenistan':65.2,'Uganda':69.3,'Ukraine':40.2,'United Arab Emirates':43.8,
+  'United Kingdom':12.4,'United States':17.5,'Uzbekistan':53.7,'Venezuela':57.5,
+  'Vietnam':49.2,'Yemen':70.8,'Zambia':66.7,'Zimbabwe':64.0
+};
+
+// Normalise common aliases → canonical name
+const COUNTRY_ALIASES = {
+  'usa':'United States','us':'United States','u.s.':'United States','u.s.a.':'United States',
+  'united states of america':'United States','america':'United States',
+  'uk':'United Kingdom','great britain':'United Kingdom','england':'United Kingdom',
+  'britain':'United Kingdom','u.k.':'United Kingdom',
+  'uae':'United Arab Emirates','emirates':'United Arab Emirates',
+  'drc':'Congo (Dem. Rep.)','dr congo':'Congo (Dem. Rep.)',
+  'democratic republic of the congo':'Congo (Dem. Rep.)',
+  'dprk':'North Korea','korea (north)':'North Korea','korea, north':'North Korea',
+  'czechia':'Czech Republic','czech rep':'Czech Republic',
+  'ivory coast':"Côte d'Ivoire",'cote d\'ivoire':"Côte d'Ivoire",'cote divoire':"Côte d'Ivoire",
+  'viet nam':'Vietnam','myanmar (burma)':'Myanmar','burma':'Myanmar',
+  'russian federation':'Russia','russian fed.':'Russia',
+  'taiwan':'Taiwan','hong kong':'China','macau':'China',
+  'south korea':'South Korea','republic of korea':'South Korea','korea (south)':'South Korea',
+  'taiwan, province of china':'Taiwan',
+  'laos':'Laos','lao pdr':'Laos','lao':'Laos',
+  'palestine':'Palestinian Territories','west bank':'Palestinian Territories',
+  'car':'Central African Rep.','central african republic':'Central African Rep.',
+  'trinidad':'Trinidad and Tobago','t&t':'Trinidad and Tobago',
+  'papua new guinea':'Papua New Guinea','png':'Papua New Guinea',
+};
+
+const TEMPLATE_ROWS = [
+  ['supplier_name','country','sector','website','annual_spend_usd','notes'],
+  ['Acme Manufacturing Co','China','Electronics','','50000','PCB supplier'],
+  ['Global Textiles Ltd','Bangladesh','Apparel','globaltextiles.com','','Tier-1 garment supplier'],
+  ['Nordic Components AB','Sweden','Automotive','','120000',''],
+  ['Dhaka Packaging Ltd','Bangladesh','Packaging','','','Optional: remove rows below header'],
+];
+
+/* ═══════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════ */
+let parsedSuppliers = [];
+let analysisResults = [];
+let sortCol = 'overall';
+let sortDir = 'desc';
+
+/* ═══════════════════════════════════════════
+   UTILITIES
+═══════════════════════════════════════════ */
+function getTier(score) {
+  if (score >= 75) return { label:'CRITICAL', cls:'critical', color:'#ff3b30' };
+  if (score >= 55) return { label:'HIGH',     cls:'high',     color:'#ff6b35' };
+  if (score >= 35) return { label:'MEDIUM',   cls:'medium',   color:'#ffd166' };
+  if (score >= 15) return { label:'LOW',      cls:'low',      color:'#06d6a0' };
+  return               { label:'MINIMAL',  cls:'minimal',  color:'#2dc653' };
+}
+
+function normaliseCountry(raw) {
+  const lower = (raw || '').trim().toLowerCase();
+  if (COUNTRY_ALIASES[lower]) return COUNTRY_ALIASES[lower];
+  // try to find by partial match in canonical names
+  for (const [canon] of Object.entries(COUNTRY_RISK)) {
+    if (canon.toLowerCase() === lower) return canon;
+  }
+  // fuzzy: canonical name contains input or vice versa
+  for (const [canon] of Object.entries(COUNTRY_RISK)) {
+    if (canon.toLowerCase().includes(lower) || lower.includes(canon.toLowerCase())) return canon;
+  }
+  return raw.trim(); // return as-is
+}
+
+function getCountryRiskScore(country) {
+  const canon = normaliseCountry(country);
+  return COUNTRY_RISK[canon] !== undefined ? COUNTRY_RISK[canon] : null;
+}
+
+function escHtml(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function setProgress(pct, msg, cls = 'active') {
+  document.getElementById('progress-fill').style.width = pct + '%';
+  if (msg) addStatusLine(msg, cls);
+}
+
+function addStatusLine(msg, cls = 'active') {
+  const log = document.getElementById('status-log');
+  const el = document.createElement('div');
+  el.className = 'status-line ' + cls;
+  const prefix = cls === 'done' ? '✓' : cls === 'err' ? '✗' : cls === 'wait' ? '○' : '⟳';
+  el.textContent = prefix + '  ' + msg;
+  log.appendChild(el);
+  log.scrollTop = log.scrollHeight;
+}
+
+/* ═══════════════════════════════════════════
+   TEMPLATE DOWNLOAD
+═══════════════════════════════════════════ */
+function downloadTemplate() {
+  const csv = TEMPLATE_ROWS.map(r => r.map(c => `"${c}"`).join(',')).join('\n');
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'supplier_risk_template.csv';
+  a.click();
+}
+
+/* ═══════════════════════════════════════════
+   FILE UPLOAD
+═══════════════════════════════════════════ */
+function setupUploadZone() {
+  const zone = document.getElementById('upload-zone');
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('dragover');
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  });
+}
+
+function handleFileInput(evt) {
+  const f = evt.target.files[0];
+  if (f) handleFile(f);
+}
+
+function handleFile(file) {
+  if (!file.name.toLowerCase().endsWith('.csv') && file.type !== 'text/csv') {
+    alert('Please upload a .csv file.');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => parseCSV(e.target.result);
+  reader.readAsText(file);
+}
+
+/* ═══════════════════════════════════════════
+   CSV PARSING
+═══════════════════════════════════════════ */
+function parseCSV(content) {
+  const result = Papa.parse(content, {
+    header: true,
+    skipEmptyLines: true,
+    transformHeader: h => h.trim().toLowerCase().replace(/\s+/g,'_'),
+  });
+
+  const rows = result.data;
+  const headers = result.meta.fields || [];
+
+  // Find name and country columns (flexible matching)
+  const nameCol = headers.find(h => /supplier.?name|name|company/i.test(h));
+  const countryCol = headers.find(h => /country|nation|location/i.test(h));
+  const sectorCol = headers.find(h => /sector|industry|category/i.test(h));
+  const websiteCol = headers.find(h => /website|url|web|domain/i.test(h));
+  const spendCol = headers.find(h => /spend|amount|value|usd|cost/i.test(h));
+  const notesCol = headers.find(h => /note|comment|remark/i.test(h));
+
+  if (!nameCol || !countryCol) {
+    showValError('Missing required columns. Your CSV must include a supplier name column and a country column.');
+    return;
+  }
+
+  const suppliers = rows
+    .map((r, i) => ({
+      id: i,
+      name: (r[nameCol] || '').trim(),
+      country: (r[countryCol] || '').trim(),
+      sector: sectorCol ? (r[sectorCol] || '').trim() : '',
+      website: websiteCol ? (r[websiteCol] || '').trim() : '',
+      spend: spendCol ? (r[spendCol] || '').trim() : '',
+      notes: notesCol ? (r[notesCol] || '').trim() : '',
+    }))
+    .filter(s => s.name && s.country);
+
+  if (suppliers.length === 0) {
+    showValError('No valid supplier rows found. Check that name and country columns have data.');
+    return;
+  }
+
+  parsedSuppliers = suppliers;
+  showPreview(suppliers, headers, { nameCol, countryCol, sectorCol, websiteCol, spendCol, notesCol });
+}
+
+function showValError(msg) {
+  document.getElementById('upload-section').style.display = '';
+  const info = document.getElementById('val-info');
+  if (info) info.innerHTML = `<span class="val-error">✗ ${escHtml(msg)}</span>`;
+  document.getElementById('preview-section').style.display = 'block';
+}
+
+/* ═══════════════════════════════════════════
+   PREVIEW TABLE
+═══════════════════════════════════════════ */
+function showPreview(suppliers, headers, colMap) {
+  document.getElementById('upload-section').style.display = 'none';
+  document.getElementById('preview-section').style.display = 'block';
+
+  const unknownCountries = suppliers.filter(s => getCountryRiskScore(s.country) === null).map(s => s.country);
+  let valHtml = `<strong>${suppliers.length}</strong> supplier${suppliers.length !== 1 ? 's' : ''} ready for screening`;
+  if (unknownCountries.length) {
+    const unique = [...new Set(unknownCountries)].slice(0, 3).join(', ');
+    valHtml += ` &nbsp;·&nbsp; <span class="val-warn">⚠ ${unknownCountries.length} unknown countr${unknownCountries.length !== 1 ? 'ies' : 'y'} (will use AI estimate): ${escHtml(unique)}${unknownCountries.length > 3 ? '…' : ''}</span>`;
+  }
+  document.getElementById('val-info').innerHTML = valHtml;
+
+  // Build preview columns
+  const cols = [
+    { key:'name', label:'Supplier Name', req:true },
+    { key:'country', label:'Country', req:true },
+    ...(colMap.sectorCol ? [{ key:'sector', label:'Sector', req:false }] : []),
+    ...(colMap.websiteCol ? [{ key:'website', label:'Website', req:false }] : []),
+    ...(colMap.spendCol ? [{ key:'spend', label:'Annual Spend', req:false }] : []),
+    ...(colMap.notesCol ? [{ key:'notes', label:'Notes', req:false }] : []),
+  ];
+
+  const thead = document.getElementById('preview-thead');
+  const tbody = document.getElementById('preview-tbody');
+  thead.innerHTML = `<tr>${cols.map(c => `<th class="${c.req ? 'col-req' : 'col-opt'}">${escHtml(c.label)}${c.req ? ' *' : ''}</th>`).join('')}</tr>`;
+
+  const show = suppliers.slice(0, 8);
+  tbody.innerHTML = show.map(s =>
+    `<tr>${cols.map(c => `<td>${escHtml(s[c.key] || '—')}</td>`).join('')}</tr>`
+  ).join('');
+
+  const more = document.getElementById('preview-more');
+  if (suppliers.length > 8) {
+    more.style.display = '';
+    more.textContent = `+ ${suppliers.length - 8} more rows not shown`;
+  } else {
+    more.style.display = 'none';
+  }
+
+  document.getElementById('analyze-btn').disabled = false;
+}
+
+/* ═══════════════════════════════════════════
+   RESET
+═══════════════════════════════════════════ */
+function resetAll() {
+  parsedSuppliers = [];
+  analysisResults = [];
+  document.getElementById('upload-section').style.display = '';
+  document.getElementById('preview-section').style.display = 'none';
+  document.getElementById('processing-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  document.getElementById('status-log').innerHTML = '';
+  document.getElementById('progress-fill').style.width = '0%';
+}
+
+/* ═══════════════════════════════════════════
+   ANALYSIS ORCHESTRATION
+═══════════════════════════════════════════ */
+async function runAnalysis() {
+  document.getElementById('preview-section').style.display = 'none';
+  document.getElementById('processing-section').style.display = 'block';
+  document.getElementById('analyze-btn').disabled = true;
+
+  const suppliers = parsedSuppliers;
+  setProgress(5, `Preparing ${suppliers.length} supplier${suppliers.length !== 1 ? 's' : ''} for analysis…`);
+
+  // Step 1: Country risk lookup (instant)
+  const countryRiskMap = {};
+  for (const s of suppliers) {
+    const score = getCountryRiskScore(s.country);
+    countryRiskMap[s.id] = score !== null ? score : null; // null = unknown, AI will handle
+  }
+  setProgress(10, 'Country risk scores applied from ILO / Walk Free data.', 'done');
+
+  // Step 2: Sanctions check (batch)
+  setProgress(15, `Running sanctions screening via OpenSanctions (${suppliers.length} entities)…`);
+  let sanctionsMap = {};
+  try {
+    sanctionsMap = await runSanctionsCheck(suppliers);
+    const hits = Object.values(sanctionsMap).filter(v => v.hit).length;
+    setProgress(45, `Sanctions check complete — ${hits} potential match${hits !== 1 ? 'es' : ''} flagged.`, 'done');
+  } catch (err) {
+    setProgress(45, `Sanctions check failed: ${err.message}. Continuing without sanctions data.`, 'err');
+  }
+
+  // Step 3: AI risk analysis (batch by 12)
+  setProgress(50, `Running AI risk analysis…`);
+  let aiMap = {};
+  try {
+    const BATCH = 12;
+    const batches = [];
+    for (let i = 0; i < suppliers.length; i += BATCH) batches.push(suppliers.slice(i, i + BATCH));
+
+    for (let b = 0; b < batches.length; b++) {
+      setProgress(50 + Math.round((b / batches.length) * 35),
+        `AI analysis: batch ${b + 1} of ${batches.length} (${batches[b].length} suppliers)…`);
+      const batchResult = await runAIBatch(batches[b], countryRiskMap);
+      Object.assign(aiMap, batchResult);
+    }
+    setProgress(85, `AI risk analysis complete for ${suppliers.length} suppliers.`, 'done');
+  } catch (err) {
+    setProgress(85, `AI analysis error: ${err.message}. Using fallback scores.`, 'err');
+  }
+
+  // Step 4: Combine and render
+  setProgress(90, 'Calculating final risk scores…');
+  analysisResults = combineResults(suppliers, countryRiskMap, sanctionsMap, aiMap);
+  setProgress(100, 'Analysis complete. Rendering results…', 'done');
+
+  await new Promise(r => setTimeout(r, 400));
+  renderResults();
+}
+
+/* ═══════════════════════════════════════════
+   OPENSANCTIONS BATCH CHECK
+═══════════════════════════════════════════ */
+async function runSanctionsCheck(suppliers) {
+  const BATCH = 25; // OpenSanctions handles up to ~50 but keep reasonable
+  const resultMap = {};
+
+  for (let i = 0; i < suppliers.length; i += BATCH) {
+    const batch = suppliers.slice(i, i + BATCH);
+    const queries = {};
+    for (const s of batch) {
+      queries[`s${s.id}`] = {
+        schema: 'Company',
+        properties: {
+          name: [s.name],
+          ...(s.country ? { country: [s.country] } : {}),
+        }
+      };
+    }
+
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _service: 'opensanctions', _path: '/match/default', queries }),
+    });
+
+    if (!resp.ok) throw new Error(`Sanctions API returned ${resp.status}`);
+    const data = await resp.json();
+    const results = data?.responses || data?.results || {};
+
+    for (const s of batch) {
+      const key = `s${s.id}`;
+      const entityResults = results[key]?.results || [];
+      const hits = entityResults.filter(r => r.match === true || r.score > 0.6);
+      resultMap[s.id] = {
+        hit: hits.length > 0,
+        matches: hits.slice(0, 3).map(r => ({
+          name: r.caption || (r.properties?.name?.[0] || 'Unknown'),
+          schema: r.schema || '',
+          datasets: r.datasets || [],
+          score: Math.round((r.score || 0) * 100),
+        })),
+      };
+    }
+  }
+
+  return resultMap;
+}
+
+/* ═══════════════════════════════════════════
+   AI RISK BATCH
+═══════════════════════════════════════════ */
+async function runAIBatch(suppliers, countryRiskMap) {
+  const supplierList = suppliers.map(s => ({
+    id: s.id,
+    name: s.name,
+    country: s.country,
+    ...(s.sector ? { sector: s.sector } : {}),
+    ...(countryRiskMap[s.id] === null ? { country_risk: 'unknown' } : {}),
+  }));
+
+  const prompt = `You are a supply chain risk intelligence analyst. Evaluate each supplier below for human rights, forced labour, sanctions, ESG, and governance risk.
+
+Suppliers:
+${JSON.stringify(supplierList, null, 2)}
+
+For each supplier return a JSON object with:
+- "id": the supplier's id number
+- "score": integer 0-100 risk score (0=negligible risk, 100=extreme risk)
+- "tier": one of CRITICAL|HIGH|MEDIUM|LOW|MINIMAL
+- "summary": 1-2 sentences describing the main risk drivers
+- "flags": array of 1-3 concise risk factors (e.g., "High forced labour risk in sector", "State-owned entity in sanctioned jurisdiction")
+
+Consider: sector-specific human rights risks, country governance quality, known corporate controversies, sanctions exposure, labour practices, and supply chain opacity.
+
+Respond with ONLY a valid JSON array — no markdown, no explanation.`;
+
+  const resp = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 2000,
+      messages: [{ role: 'user', content: prompt }],
+    }),
+  });
+
+  if (!resp.ok) throw new Error(`AI API returned ${resp.status}`);
+  const data = await resp.json();
+  const text = data?.content?.[0]?.text || '[]';
+
+  let parsed;
+  try {
+    // Strip markdown code fences if present
+    const clean = text.replace(/^```(?:json)?\n?/,'').replace(/\n?```$/,'').trim();
+    parsed = JSON.parse(clean);
+  } catch {
+    parsed = [];
+  }
+
+  const map = {};
+  for (const item of parsed) {
+    if (item.id !== undefined) {
+      map[item.id] = {
+        score: Math.min(100, Math.max(0, parseInt(item.score) || 50)),
+        tier: item.tier || 'MEDIUM',
+        summary: item.summary || '',
+        flags: Array.isArray(item.flags) ? item.flags : [],
+      };
+    }
+  }
+  return map;
+}
+
+/* ═══════════════════════════════════════════
+   COMBINE RESULTS
+═══════════════════════════════════════════ */
+function combineResults(suppliers, countryRiskMap, sanctionsMap, aiMap) {
+  return suppliers.map(s => {
+    const countryScore = countryRiskMap[s.id];
+    const sanctions = sanctionsMap[s.id] || { hit: false, matches: [] };
+    const ai = aiMap[s.id] || { score: 50, tier: 'MEDIUM', summary: 'AI analysis unavailable.', flags: [] };
+
+    // Weighted overall score
+    let base;
+    if (countryScore !== null) {
+      base = Math.round(countryScore * 0.45 + ai.score * 0.55);
+    } else {
+      base = ai.score; // rely fully on AI if country unknown
+    }
+
+    // Sanctions hit forces score to at least 80
+    const overall = sanctions.hit ? Math.max(base, 80) : base;
+
+    return {
+      id: s.id,
+      name: s.name,
+      country: s.country,
+      sector: s.sector,
+      website: s.website,
+      spend: s.spend,
+      notes: s.notes,
+      countryScore: countryScore !== null ? Math.round(countryScore * 10) / 10 : null,
+      countryTier: countryScore !== null ? getTier(countryScore) : null,
+      sanctionsHit: sanctions.hit,
+      sanctionsMatches: sanctions.matches,
+      aiScore: ai.score,
+      aiSummary: ai.summary,
+      aiFlags: ai.flags,
+      overall,
+      tier: getTier(overall),
+    };
+  });
+}
+
+/* ═══════════════════════════════════════════
+   RENDER RESULTS
+═══════════════════════════════════════════ */
+function renderResults() {
+  document.getElementById('processing-section').style.display = 'none';
+  document.getElementById('results-section').style.display = 'block';
+  window.scrollTo({ top: document.getElementById('results-section').offsetTop - 80, behavior: 'smooth' });
+
+  renderStats();
+  renderTable();
+}
+
+function renderStats() {
+  const results = analysisResults;
+  const total = results.length;
+  const highRisk = results.filter(r => r.overall >= 55).length;
+  const sanctionHits = results.filter(r => r.sanctionsHit).length;
+  const avgScore = total ? Math.round(results.reduce((a,r) => a + r.overall, 0) / total) : 0;
+  const avgTier = getTier(avgScore);
+
+  document.getElementById('stats-grid').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-label">Total Suppliers</div>
+      <div class="stat-val">${total}</div>
+      <div class="stat-sub">Screened in this batch</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">High / Critical Risk</div>
+      <div class="stat-val" style="color:${highRisk > 0 ? 'var(--high)' : 'var(--minimal)'}">${highRisk}</div>
+      <div class="stat-sub">${Math.round(highRisk/total*100)||0}% of screened suppliers</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Sanctions Flags</div>
+      <div class="stat-val" style="color:${sanctionHits > 0 ? 'var(--critical)' : 'var(--minimal)'}">${sanctionHits}</div>
+      <div class="stat-sub">Potential watchlist matches</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Avg Risk Score</div>
+      <div class="stat-val" style="color:${avgTier.color}">${avgScore}</div>
+      <div class="stat-sub">${avgTier.label} portfolio risk</div>
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════
+   RESULTS TABLE
+═══════════════════════════════════════════ */
+const COLS = [
+  { key:'name',         label:'Supplier',      sortable:true  },
+  { key:'country',      label:'Country',       sortable:true  },
+  { key:'sector',       label:'Sector',        sortable:false },
+  { key:'countryScore', label:'Country Risk',  sortable:true  },
+  { key:'sanctions',    label:'Sanctions',     sortable:true  },
+  { key:'aiScore',      label:'AI Score',      sortable:true  },
+  { key:'overall',      label:'Overall',       sortable:true  },
+  { key:'_expand',      label:'',              sortable:false },
+];
+
+function renderTable() {
+  // Sort
+  const sorted = [...analysisResults].sort((a, b) => {
+    let av, bv;
+    if (sortCol === 'sanctions') { av = a.sanctionsHit ? 1 : 0; bv = b.sanctionsHit ? 1 : 0; }
+    else if (sortCol === 'name')  { av = a.name.toLowerCase(); bv = b.name.toLowerCase(); }
+    else if (sortCol === 'country') { av = a.country.toLowerCase(); bv = b.country.toLowerCase(); }
+    else { av = a[sortCol] ?? 0; bv = b[sortCol] ?? 0; }
+
+    if (av < bv) return sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  // Thead
+  document.getElementById('results-thead').innerHTML = `<tr>${COLS.map(c => {
+    if (!c.sortable) return `<th></th>`;
+    const active = c.key === sortCol;
+    const arrow = active ? (sortDir === 'desc' ? '↓' : '↑') : '↕';
+    return `<th class="${active ? 'sorted' : ''}" onclick="toggleSort('${c.key}')">${escHtml(c.label)} <span class="sort-arrow">${arrow}</span></th>`;
+  }).join('')}</tr>`;
+
+  // Tbody
+  const tbody = document.getElementById('results-tbody');
+  tbody.innerHTML = '';
+
+  sorted.forEach((r, idx) => {
+    const tier = r.tier;
+    const cTier = r.countryTier;
+    const sTier = getTier(r.aiScore);
+
+    const countryScoreHtml = r.countryScore !== null
+      ? `<span class="risk-badge ${cTier.cls}">${r.countryScore} <small>${cTier.label}</small></span>`
+      : `<span class="risk-badge minimal" style="opacity:.5">—</span>`;
+
+    const sanctionsHtml = r.sanctionsHit
+      ? `<span class="sanctions-badge hit">⚠ HIT</span>`
+      : (r.sanctionsMatches !== undefined
+          ? `<span class="sanctions-badge clear">CLEAR</span>`
+          : `<span class="sanctions-badge skip">N/A</span>`);
+
+    const scoreBar = (score, color) =>
+      `<div class="score-cell"><div class="score-bar-wrap"><div class="score-bar-inner" style="width:${score}%;background:${color};"></div></div><span class="score-num" style="color:${color}">${score}</span></div>`;
+
+    // Main row
+    const tr = document.createElement('tr');
+    tr.className = 'result-row';
+    tr.dataset.id = r.id;
+    tr.innerHTML = `
+      <td class="supplier-name-cell">${escHtml(r.name)}</td>
+      <td class="supplier-country-cell">${escHtml(r.country)}</td>
+      <td class="supplier-sector-cell">${escHtml(r.sector || '—')}</td>
+      <td>${countryScoreHtml}</td>
+      <td>${sanctionsHtml}</td>
+      <td>${scoreBar(r.aiScore, sTier.color)}</td>
+      <td><span class="risk-badge ${tier.cls}">${r.overall} <small>${tier.label}</small></span></td>
+      <td><button class="expand-btn" id="ebtn-${r.id}" onclick="toggleDetail(${r.id})">▾</button></td>
+    `;
+    tbody.appendChild(tr);
+
+    // Detail row
+    const detailTr = document.createElement('tr');
+    detailTr.className = 'detail-row';
+    detailTr.id = `detail-${r.id}`;
+    detailTr.style.display = 'none';
+
+    const flagsHtml = r.aiFlags.length
+      ? r.aiFlags.map(f => `<div class="flag-chip">${escHtml(f)}</div>`).join('')
+      : '<div class="flag-chip" style="opacity:.5">No specific flags identified</div>';
+
+    const sanctionsDetailHtml = r.sanctionsHit && r.sanctionsMatches.length
+      ? `<div class="sanctions-detail-block"><strong style="color:var(--critical)">Sanctions matches:</strong><br>${
+          r.sanctionsMatches.map(m =>
+            `<span class="sanctions-hit-name">${escHtml(m.name)}</span> — Score: ${m.score}/100, Datasets: ${escHtml((m.datasets || []).slice(0,2).join(', '))||'N/A'}`
+          ).join('<br>')
+        }</div>`
+      : '';
+
+    detailTr.innerHTML = `<td colspan="8"><div class="detail-content">
+      <div class="detail-summary">
+        <strong>AI Risk Assessment:</strong> ${escHtml(r.aiSummary)}
+        ${r.spend ? `<br><strong>Annual Spend:</strong> ${escHtml(r.spend)}` : ''}
+        ${r.notes ? `<br><strong>Notes:</strong> ${escHtml(r.notes)}` : ''}
+        ${sanctionsDetailHtml}
+      </div>
+      <div class="detail-flags">
+        <div class="detail-flags-label">Risk Factors</div>
+        ${flagsHtml}
+      </div>
+    </div></td>`;
+    tbody.appendChild(detailTr);
+  });
+}
+
+function toggleDetail(id) {
+  const row = document.getElementById(`detail-${id}`);
+  const btn = document.getElementById(`ebtn-${id}`);
+  if (!row) return;
+  const open = row.style.display === '';
+  row.style.display = open ? 'none' : '';
+  btn.classList.toggle('open', !open);
+  btn.textContent = !open ? '▴' : '▾';
+}
+
+function toggleSort(col) {
+  if (sortCol === col) {
+    sortDir = sortDir === 'desc' ? 'asc' : 'desc';
+  } else {
+    sortCol = col;
+    sortDir = 'desc';
+  }
+  renderTable();
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT CSV
+═══════════════════════════════════════════ */
+function exportCSV() {
+  const headers = ['Supplier Name','Country','Sector','Country Risk Score','Country Risk Tier','Sanctions Hit','AI Score','Overall Risk Score','Risk Tier','AI Summary','Risk Flags'];
+  const rows = analysisResults.map(r => [
+    r.name, r.country, r.sector || '',
+    r.countryScore !== null ? r.countryScore : 'Unknown',
+    r.countryTier ? r.countryTier.label : 'Unknown',
+    r.sanctionsHit ? 'YES' : 'NO',
+    r.aiScore,
+    r.overall, r.tier.label,
+    r.aiSummary,
+    (r.aiFlags || []).join('; '),
+  ]);
+
+  const csv = [headers, ...rows].map(r =>
+    r.map(c => `"${String(c || '').replace(/"/g, '""')}"`).join(',')
+  ).join('\n');
+
+  const blob = new Blob([csv], { type:'text/csv' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  const date = new Date().toISOString().slice(0,10);
+  a.download = `supplier_risk_screening_${date}.csv`;
+  a.click();
+}
+
+/* ═══════════════════════════════════════════
+   EXPORT PDF
+═══════════════════════════════════════════ */
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit:'mm', format:'a4' });
+  const W = 210, H = 297;
+  const DARK = [5, 10, 15];
+  const PANEL = [11, 22, 40];
+  const CYAN = [0, 229, 255];
+  const ORANGE = [255, 107, 53];
+  const TEXT = [232, 244, 248];
+  const MUTED = [106, 143, 168];
+  const date = new Date().toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric' });
+
+  function tierColor(tier) {
+    if (!tier) return [106,143,168];
+    const t = typeof tier === 'string' ? tier : tier.label;
+    if (t === 'CRITICAL') return [255,59,48];
+    if (t === 'HIGH')     return [255,107,53];
+    if (t === 'MEDIUM')   return [255,209,102];
+    if (t === 'LOW')      return [6,214,160];
+    return [45,198,83];
+  }
+
+  // ── PAGE 1: COVER ──────────────────────────────
+  doc.setFillColor(...DARK); doc.rect(0, 0, W, H, 'F');
+
+  // Header band
+  doc.setFillColor(...PANEL); doc.rect(0, 0, W, 42, 'F');
+  doc.setFillColor(...CYAN); doc.rect(0, 40, W, 2, 'F');
+
+  doc.setFont('helvetica','bold');
+  doc.setFontSize(22); doc.setTextColor(...TEXT);
+  doc.text('BULK SUPPLIER RISK SCREENING', 15, 20);
+  doc.setFontSize(10); doc.setTextColor(...CYAN);
+  doc.text('3D Business Solutions — Confidential', 15, 30);
+  doc.setFontSize(8); doc.setTextColor(...MUTED);
+  doc.text(`Report Date: ${date}`, 15, 37);
+
+  // Stats
+  const total = analysisResults.length;
+  const highRisk = analysisResults.filter(r => r.overall >= 55).length;
+  const sanc = analysisResults.filter(r => r.sanctionsHit).length;
+  const avg = Math.round(analysisResults.reduce((a,r) => a + r.overall, 0) / (total||1));
+  const avgTierLabel = getTier(avg).label;
+
+  const cards = [
+    { label:'SUPPLIERS SCREENED', val:String(total), col:CYAN },
+    { label:'HIGH / CRITICAL RISK', val:String(highRisk), col:ORANGE },
+    { label:'SANCTIONS FLAGS', val:String(sanc), col:[255,59,48] },
+    { label:'AVG RISK SCORE', val:`${avg} ${avgTierLabel}`, col:tierColor(avgTierLabel) },
+  ];
+  cards.forEach((c, i) => {
+    const x = 15 + i * 47;
+    doc.setFillColor(...PANEL); doc.rect(x, 50, 44, 22, 'F');
+    doc.setFontSize(16); doc.setFont('helvetica','bold'); doc.setTextColor(...c.col);
+    doc.text(c.val, x + 22, 62, { align:'center' });
+    doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(...MUTED);
+    doc.text(c.label, x + 22, 68, { align:'center' });
+  });
+
+  // Table
+  const cols = [
+    { label:'SUPPLIER', w:52 }, { label:'COUNTRY', w:28 }, { label:'SECTOR', w:25 },
+    { label:'COUNTRY RISK', w:24 }, { label:'SANCTIONS', w:20 },
+    { label:'AI SCORE', w:18 }, { label:'OVERALL', w:22 },
+  ];
+  const startX = 10;
+  let y = 82;
+
+  // Table header
+  doc.setFillColor(...PANEL); doc.rect(startX, y, W-20, 7, 'F');
+  doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(...MUTED);
+  let cx = startX + 2;
+  for (const c of cols) { doc.text(c.label, cx, y + 4.5); cx += c.w; }
+  y += 7;
+
+  // Rows
+  doc.setFont('helvetica','normal');
+  const sorted = [...analysisResults].sort((a,b) => b.overall - a.overall);
+  for (const r of sorted) {
+    if (y > H - 20) {
+      doc.addPage();
+      doc.setFillColor(...DARK); doc.rect(0, 0, W, H, 'F');
+      y = 15;
+      // Re-draw header on new page
+      doc.setFillColor(...PANEL); doc.rect(startX, y, W-20, 7, 'F');
+      doc.setFontSize(5.5); doc.setFont('helvetica','bold'); doc.setTextColor(...MUTED);
+      cx = startX + 2;
+      for (const c of cols) { doc.text(c.label, cx, y + 4.5); cx += c.w; }
+      y += 7;
+      doc.setFont('helvetica','normal');
+    }
+
+    const rowH = 6;
+    const even = sorted.indexOf(r) % 2 === 0;
+    if (even) { doc.setFillColor(11,20,34); doc.rect(startX, y, W-20, rowH, 'F'); }
+
+    const tc = tierColor(r.tier);
+    cx = startX + 2;
+    const vals = [
+      r.name.slice(0,30), r.country.slice(0,14), (r.sector||'—').slice(0,14),
+      r.countryScore !== null ? `${r.countryScore} ${r.countryTier?.label||''}` : 'N/A',
+      r.sanctionsHit ? 'HIT' : 'CLEAR',
+      String(r.aiScore),
+      `${r.overall} ${r.tier.label}`,
+    ];
+
+    for (let vi = 0; vi < vals.length; vi++) {
+      if (vi === 6) { doc.setTextColor(...tc); doc.setFont('helvetica','bold'); }
+      else if (vi === 4 && r.sanctionsHit) { doc.setTextColor(255,59,48); doc.setFont('helvetica','bold'); }
+      else { doc.setTextColor(...TEXT); doc.setFont('helvetica','normal'); }
+      doc.setFontSize(6);
+      doc.text(vals[vi], cx, y + rowH - 1.8);
+      cx += cols[vi].w;
+    }
+    y += rowH;
+  }
+
+  // High-risk detail section
+  const highRiskItems = sorted.filter(r => r.overall >= 55).slice(0, 10);
+  if (highRiskItems.length) {
+    doc.addPage();
+    doc.setFillColor(...DARK); doc.rect(0, 0, W, H, 'F');
+    y = 15;
+    doc.setFontSize(12); doc.setFont('helvetica','bold'); doc.setTextColor(...ORANGE);
+    doc.text('HIGH & CRITICAL RISK — DETAIL', 15, y);
+    y += 10;
+
+    for (const r of highRiskItems) {
+      if (y > H - 40) { doc.addPage(); doc.setFillColor(...DARK); doc.rect(0,0,W,H,'F'); y = 15; }
+
+      const tc = tierColor(r.tier);
+      doc.setFillColor(...PANEL); doc.rect(10, y, W-20, 8, 'F');
+      doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...tc);
+      doc.text(`${r.name} — ${r.tier.label} (${r.overall}/100)`, 14, y + 5.5);
+      doc.setFontSize(6.5); doc.setFont('helvetica','normal'); doc.setTextColor(...MUTED);
+      doc.text(`${r.country}${r.sector ? ' · ' + r.sector : ''}${r.sanctionsHit ? ' · ⚠ SANCTIONS HIT' : ''}`, W - 14, y + 5.5, { align:'right' });
+      y += 10;
+
+      if (r.aiSummary) {
+        const lines = doc.splitTextToSize(r.aiSummary, W - 30);
+        doc.setFontSize(6.5); doc.setTextColor(...TEXT);
+        doc.text(lines, 14, y);
+        y += lines.length * 4 + 2;
+      }
+
+      if (r.aiFlags?.length) {
+        doc.setFontSize(6); doc.setTextColor(...ORANGE);
+        doc.text('Risk Factors: ' + r.aiFlags.join(' · '), 14, y);
+        y += 5;
+      }
+      y += 4;
+    }
+  }
+
+  // Footer on each page
+  const pageCount = doc.getNumberOfPages();
+  for (let p = 1; p <= pageCount; p++) {
+    doc.setPage(p);
+    doc.setFillColor(8,15,24); doc.rect(0, H-10, W, 10, 'F');
+    doc.setFontSize(5.5); doc.setFont('helvetica','normal'); doc.setTextColor(...MUTED);
+    doc.text('3D Business Solutions — Confidential — For Internal Use Only', 15, H-4);
+    doc.text(`Page ${p} of ${pageCount}`, W-15, H-4, { align:'right' });
+  }
+
+  const dateFmt = new Date().toISOString().slice(0,10);
+  doc.save(`supplier_risk_report_${dateFmt}.pdf`);
+}
+
+/* ═══════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', setupUploadZone);
+</script>
+</body>
+</html>
