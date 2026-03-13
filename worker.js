@@ -24,21 +24,33 @@ export default {
     try {
       const body = await request.json();
 
-      // Route to OpenSanctions
+      // Route to OpenSanctions (with retry + exponential backoff for 429s)
       if (body._service === 'opensanctions') {
         const { _service, _path, ...payload } = body;
         const url = `https://api.opensanctions.org${_path}`;
-        const response = await fetch(url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `ApiKey ${env.OPEN_SANCTIONS_KEY}`,
-          },
-          body: JSON.stringify(payload),
-        });
-        const data = await response.json();
+
+        let lastResponse;
+        for (let attempt = 0; attempt < 4; attempt++) {
+          if (attempt > 0) {
+            // Respect Retry-After header if present, otherwise exponential backoff
+            const retryAfter = lastResponse?.headers?.get('Retry-After');
+            const waitMs = retryAfter ? parseInt(retryAfter) * 1000 : (500 * Math.pow(2, attempt - 1));
+            await new Promise(r => setTimeout(r, waitMs));
+          }
+          lastResponse = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `ApiKey ${env.OPEN_SANCTIONS_KEY}`,
+            },
+            body: JSON.stringify(payload),
+          });
+          if (lastResponse.status !== 429) break;
+        }
+
+        const data = await lastResponse.json();
         return new Response(JSON.stringify(data), {
-          status: response.status,
+          status: lastResponse.status,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
