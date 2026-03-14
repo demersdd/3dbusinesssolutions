@@ -24,6 +24,33 @@ export default {
     try {
       const body = await request.json();
 
+      // Route to Over The Cap (proxy + HTML passthrough)
+      if (body._service === 'overthecap') {
+        const otcRes = await fetch('https://overthecap.com/salary-cap-space', {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+          },
+        });
+        if (!otcRes.ok) {
+          return new Response(JSON.stringify({ error: `HTTP ${otcRes.status}`, html: '' }), {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        const fullHtml = await otcRes.text();
+        // Return only the first <table>…</table> to keep payload small
+        const tableMatch = fullHtml.match(/<table[\s\S]*?<\/table>/i);
+        const html = tableMatch ? tableMatch[0] : '';
+        return new Response(JSON.stringify({ html, ok: true }), {
+          status: 200,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       // Route to OpenSanctions (with retry + exponential backoff for 429s)
       if (body._service === 'opensanctions') {
         const { _service, _path, ...payload } = body;

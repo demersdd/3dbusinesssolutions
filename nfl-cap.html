@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NFL Cap Space Map | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+<style>
+:root {
+  --bg: #050a0f; --bg2: #080f18; --panel: #0b1622;
+  --accent: #00e5ff; --accent2: #ff6b35; --accent3: #39ff14;
+  --text: #e8f4f8; --muted: #6a8fa8; --border: rgba(0,229,255,0.15);
+  --mono: 'Share Tech Mono', monospace; --head: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+  --cap-low: #e63946; --cap-mid: #ffd166; --cap-high: #39ff14;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-back{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .2s;}
+.nav-back:hover{color:var(--accent);}
+.nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
+
+/* LAYOUT */
+.layout{display:flex;height:100vh;padding-top:48px;position:relative;z-index:1;}
+
+/* SIDEBAR */
+.sidebar{width:300px;min-width:300px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.panel-header{padding:1.2rem 1.4rem .8rem;border-bottom:1px solid var(--border);}
+.panel-title{font-family:var(--head);font-size:1.5rem;font-weight:900;text-transform:uppercase;line-height:1;}
+.panel-title em{font-style:normal;color:var(--accent);}
+.panel-sub{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.4rem;letter-spacing:.08em;}
+
+/* DATA SOURCE BADGE */
+.source-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border:1px solid var(--border);margin-top:.7rem;}
+.source-badge.live{border-color:var(--accent3);color:var(--accent3);}
+.source-badge.cached{border-color:var(--accent2);color:var(--accent2);}
+.source-badge.loading{border-color:var(--muted);color:var(--muted);animation:pulse 1.4s ease-in-out infinite;}
+.source-badge.error{border-color:var(--cap-low);color:var(--cap-low);}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* SEARCH */
+.search-wrap{padding:.8rem 1.2rem;border-bottom:1px solid var(--border);}
+.search-input{width:100%;background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.75rem;padding:.55rem .8rem;letter-spacing:.05em;outline:none;transition:border-color .2s;}
+.search-input::placeholder{color:var(--muted);}
+.search-input:focus{border-color:var(--accent);}
+
+/* LEGEND */
+.legend{padding:.8rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.6rem;}
+.legend-label{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.08em;flex-shrink:0;}
+.legend-bar{flex:1;height:6px;background:linear-gradient(to right,var(--cap-low),var(--cap-mid),var(--cap-high));border-radius:2px;}
+
+/* TEAM LIST */
+.team-list{flex:1;overflow-y:auto;}
+.team-list::-webkit-scrollbar{width:3px;}
+.team-list::-webkit-scrollbar-thumb{background:var(--border);}
+.team-item{display:flex;align-items:center;gap:.8rem;padding:.65rem 1.2rem;border-bottom:1px solid rgba(0,229,255,.05);cursor:pointer;transition:background .15s;position:relative;}
+.team-item:hover,.team-item.active{background:var(--panel);}
+.team-item.hidden{display:none;}
+.team-rank{font-family:var(--mono);font-size:.58rem;color:var(--muted);width:1.4rem;text-align:right;flex-shrink:0;}
+.team-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;border:1px solid rgba(255,255,255,.2);}
+.team-info{flex:1;min-width:0;}
+.team-name{font-family:var(--head);font-size:.9rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.team-bar-wrap{height:3px;background:rgba(255,255,255,.06);margin-top:.3rem;border-radius:1px;}
+.team-bar{height:100%;border-radius:1px;transition:width .4s ease;}
+.team-cap{font-family:var(--mono);font-size:.7rem;flex-shrink:0;text-align:right;}
+.team-cap.positive{color:var(--accent3);}
+.team-cap.negative{color:var(--cap-low);}
+
+/* LOADING STATE */
+.team-skeleton{padding:.65rem 1.2rem;border-bottom:1px solid rgba(0,229,255,.05);}
+.skel{background:rgba(0,229,255,.06);border-radius:2px;animation:shimmer 1.4s ease-in-out infinite;}
+@keyframes shimmer{0%,100%{opacity:.4}50%{opacity:.9}}
+
+/* MAP AREA */
+.map-area{flex:1;position:relative;overflow:hidden;}
+#mapSvg{width:100%;height:100%;}
+
+/* STATE PATHS */
+.state{fill:#0c1825;stroke:rgba(0,229,255,.12);stroke-width:.5px;}
+.state-border{fill:none;stroke:rgba(0,229,255,.18);stroke-width:.8px;}
+
+/* TEAM MARKERS */
+.team-marker{cursor:pointer;transition:r .15s;}
+.team-marker:hover{filter:brightness(1.3);}
+.team-label{font-family:var(--mono);font-size:7px;fill:rgba(255,255,255,.8);pointer-events:none;text-anchor:middle;dominant-baseline:middle;}
+
+/* TOOLTIP */
+#tooltip{
+  position:absolute;z-index:50;pointer-events:none;
+  background:rgba(8,15,24,.97);border:1px solid var(--accent);
+  padding:1rem 1.2rem;min-width:220px;
+  opacity:0;transition:opacity .15s;
+  box-shadow:0 0 24px rgba(0,229,255,.15);
+}
+#tooltip.visible{opacity:1;}
+.tt-team{font-family:var(--head);font-size:1.1rem;font-weight:900;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.15rem;}
+.tt-city{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.1em;margin-bottom:.8rem;padding-bottom:.7rem;border-bottom:1px solid var(--border);}
+.tt-row{display:flex;justify-content:space-between;align-items:center;gap:1.5rem;margin-bottom:.35rem;}
+.tt-label{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+.tt-value{font-family:var(--mono);font-size:.75rem;font-weight:700;}
+.tt-value.positive{color:var(--accent3);}
+.tt-value.negative{color:var(--cap-low);}
+.tt-value.neutral{color:var(--text);}
+.tt-source{font-family:var(--mono);font-size:.55rem;color:var(--muted);margin-top:.7rem;padding-top:.6rem;border-top:1px solid var(--border);}
+.tt-source a{color:var(--accent);text-decoration:none;}
+
+/* MAP FOOTER */
+.map-footer{position:absolute;bottom:.8rem;right:1rem;font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.08em;z-index:10;}
+.map-footer a{color:var(--accent2);text-decoration:none;}
+.map-footer a:hover{color:var(--accent);}
+
+/* LOADING OVERLAY */
+#loadOverlay{position:absolute;inset:0;background:rgba(5,10,15,.7);display:flex;align-items:center;justify-content:center;z-index:40;backdrop-filter:blur(2px);}
+#loadOverlay.hidden{display:none;}
+.load-box{text-align:center;}
+.load-spinner{width:40px;height:40px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.load-text{font-family:var(--mono);font-size:.7rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;}
+
+@media(max-width:800px){
+  .sidebar{width:260px;min-width:260px;}
+  .nav-title{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span>BS</a>
+  <a href="/" class="nav-back">← Back to Home</a>
+  <span class="nav-title">NFL Cap Space Map</span>
+</nav>
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="panel-header">
+      <div class="panel-title">NFL <em>Cap Map</em></div>
+      <div class="panel-sub">2025 season · salary cap space by team</div>
+      <div class="source-badge loading" id="sourceBadge">
+        <span class="badge-dot"></span>
+        <span id="badgeText">Fetching live data…</span>
+      </div>
+    </div>
+
+    <div class="search-wrap">
+      <input type="text" class="search-input" id="searchInput" placeholder="Search team…" autocomplete="off"/>
+    </div>
+
+    <div class="legend">
+      <span class="legend-label">Low</span>
+      <div class="legend-bar"></div>
+      <span class="legend-label">High cap space</span>
+    </div>
+
+    <div class="team-list" id="teamList">
+      <!-- Skeleton loaders -->
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:60%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:80%"></div></div>
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:50%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:70%"></div></div>
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:65%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:75%"></div></div>
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:55%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:85%"></div></div>
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:70%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:65%"></div></div>
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:45%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:80%"></div></div>
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:60%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:72%"></div></div>
+      <div class="team-skeleton"><div class="skel" style="height:10px;width:58%;margin-bottom:6px"></div><div class="skel" style="height:6px;width:68%"></div></div>
+    </div>
+  </aside>
+
+  <!-- MAP -->
+  <main class="map-area" id="mapArea">
+    <svg id="mapSvg"></svg>
+    <div id="tooltip">
+      <div class="tt-team" id="ttTeam"></div>
+      <div class="tt-city" id="ttCity"></div>
+      <div class="tt-row"><span class="tt-label">Cap Space</span><span class="tt-value" id="ttSpace"></span></div>
+      <div class="tt-row"><span class="tt-label">Active Cap</span><span class="tt-value tt-neutral" id="ttUsed"></span></div>
+      <div class="tt-row"><span class="tt-label">Dead Cap</span><span class="tt-value tt-neutral" id="ttDead"></span></div>
+      <div class="tt-source">Source: <a href="https://overthecap.com/salary-cap-space" target="_blank" rel="noopener">overthecap.com</a></div>
+    </div>
+    <div class="map-footer">Data: <a href="https://overthecap.com/salary-cap-space" target="_blank" rel="noopener">overthecap.com</a></div>
+    <div id="loadOverlay">
+      <div class="load-box">
+        <div class="load-spinner"></div>
+        <div class="load-text">Loading cap data…</div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+
+// ─── NFL TEAMS ────────────────────────────────────────────────────────────────
+const TEAMS = [
+  { abbr:'ARI', name:'Arizona Cardinals',      city:'Glendale, AZ',        lat:33.5277,  lng:-112.2626 },
+  { abbr:'ATL', name:'Atlanta Falcons',         city:'Atlanta, GA',         lat:33.7573,  lng:-84.4008  },
+  { abbr:'BAL', name:'Baltimore Ravens',        city:'Baltimore, MD',       lat:39.2780,  lng:-76.6227  },
+  { abbr:'BUF', name:'Buffalo Bills',           city:'Orchard Park, NY',    lat:42.7738,  lng:-78.7870  },
+  { abbr:'CAR', name:'Carolina Panthers',       city:'Charlotte, NC',       lat:35.2258,  lng:-80.8528  },
+  { abbr:'CHI', name:'Chicago Bears',           city:'Chicago, IL',         lat:41.8623,  lng:-87.6167  },
+  { abbr:'CIN', name:'Cincinnati Bengals',      city:'Cincinnati, OH',      lat:39.0955,  lng:-84.5160  },
+  { abbr:'CLE', name:'Cleveland Browns',        city:'Cleveland, OH',       lat:41.5061,  lng:-81.6995  },
+  { abbr:'DAL', name:'Dallas Cowboys',          city:'Arlington, TX',       lat:32.7473,  lng:-97.0945  },
+  { abbr:'DEN', name:'Denver Broncos',          city:'Denver, CO',          lat:39.7439,  lng:-105.0201 },
+  { abbr:'DET', name:'Detroit Lions',           city:'Detroit, MI',         lat:42.3400,  lng:-83.0456  },
+  { abbr:'GB',  name:'Green Bay Packers',       city:'Green Bay, WI',       lat:44.5013,  lng:-88.0622  },
+  { abbr:'HOU', name:'Houston Texans',          city:'Houston, TX',         lat:29.6847,  lng:-95.4107  },
+  { abbr:'IND', name:'Indianapolis Colts',      city:'Indianapolis, IN',    lat:39.7601,  lng:-86.1639  },
+  { abbr:'JAX', name:'Jacksonville Jaguars',    city:'Jacksonville, FL',    lat:30.3239,  lng:-81.6373  },
+  { abbr:'KC',  name:'Kansas City Chiefs',      city:'Kansas City, MO',     lat:39.0489,  lng:-94.4839  },
+  { abbr:'LV',  name:'Las Vegas Raiders',       city:'Las Vegas, NV',       lat:36.0909,  lng:-115.1833 },
+  { abbr:'LAC', name:'Los Angeles Chargers',    city:'Inglewood, CA',       lat:33.9735,  lng:-118.3692 },
+  { abbr:'LAR', name:'Los Angeles Rams',        city:'Inglewood, CA',       lat:33.9335,  lng:-118.3092 },
+  { abbr:'MIA', name:'Miami Dolphins',          city:'Miami Gardens, FL',   lat:25.9580,  lng:-80.2389  },
+  { abbr:'MIN', name:'Minnesota Vikings',       city:'Minneapolis, MN',     lat:44.9736,  lng:-93.2575  },
+  { abbr:'NE',  name:'New England Patriots',    city:'Foxborough, MA',      lat:42.0909,  lng:-71.2643  },
+  { abbr:'NO',  name:'New Orleans Saints',      city:'New Orleans, LA',     lat:29.9511,  lng:-90.0812  },
+  { abbr:'NYG', name:'New York Giants',         city:'East Rutherford, NJ', lat:40.8335,  lng:-74.0542  },
+  { abbr:'NYJ', name:'New York Jets',           city:'East Rutherford, NJ', lat:40.7935,  lng:-74.1242  },
+  { abbr:'PHI', name:'Philadelphia Eagles',     city:'Philadelphia, PA',    lat:39.9008,  lng:-75.1675  },
+  { abbr:'PIT', name:'Pittsburgh Steelers',     city:'Pittsburgh, PA',      lat:40.4468,  lng:-80.0158  },
+  { abbr:'SF',  name:'San Francisco 49ers',     city:'Santa Clara, CA',     lat:37.4033,  lng:-121.9699 },
+  { abbr:'SEA', name:'Seattle Seahawks',        city:'Seattle, WA',         lat:47.5952,  lng:-122.3316 },
+  { abbr:'TB',  name:'Tampa Bay Buccaneers',    city:'Tampa, FL',           lat:27.9759,  lng:-82.5033  },
+  { abbr:'TEN', name:'Tennessee Titans',        city:'Nashville, TN',       lat:36.1665,  lng:-86.7713  },
+  { abbr:'WAS', name:'Washington Commanders',   city:'Landover, MD',        lat:38.9078,  lng:-76.8645  },
+];
+
+// ─── FALLBACK DATA (estimated 2025, source: overthecap.com) ──────────────────
+const FALLBACK = {
+  'Arizona Cardinals':    { capSpace:  28200000, capUsed: 219100000, deadCap:  14300000 },
+  'Atlanta Falcons':      { capSpace:  22400000, capUsed: 225500000, deadCap:  18200000 },
+  'Baltimore Ravens':     { capSpace:   9800000, capUsed: 237100000, deadCap:  16500000 },
+  'Buffalo Bills':        { capSpace:  44600000, capUsed: 202300000, deadCap:  11200000 },
+  'Carolina Panthers':    { capSpace:  58300000, capUsed: 188600000, deadCap:  19800000 },
+  'Chicago Bears':        { capSpace: 119000000, capUsed: 128900000, deadCap:   8600000 },
+  'Cincinnati Bengals':   { capSpace:  33100000, capUsed: 214800000, deadCap:  13400000 },
+  'Cleveland Browns':     { capSpace:  27500000, capUsed: 219400000, deadCap:  24700000 },
+  'Dallas Cowboys':       { capSpace:  14200000, capUsed: 233700000, deadCap:  22600000 },
+  'Denver Broncos':       { capSpace:  41300000, capUsed: 206600000, deadCap:  13100000 },
+  'Detroit Lions':        { capSpace:  24900000, capUsed: 222000000, deadCap:  14800000 },
+  'Green Bay Packers':    { capSpace:  37200000, capUsed: 210700000, deadCap:   9400000 },
+  'Houston Texans':       { capSpace:  47800000, capUsed: 199100000, deadCap:  11600000 },
+  'Indianapolis Colts':   { capSpace:  71400000, capUsed: 176500000, deadCap:  10200000 },
+  'Jacksonville Jaguars': { capSpace:  62100000, capUsed: 185800000, deadCap:  16300000 },
+  'Kansas City Chiefs':   { capSpace:  16400000, capUsed: 231500000, deadCap:  20700000 },
+  'Las Vegas Raiders':    { capSpace:  38600000, capUsed: 208300000, deadCap:  17200000 },
+  'Los Angeles Chargers': { capSpace:  43200000, capUsed: 204700000, deadCap:  12800000 },
+  'Los Angeles Rams':     { capSpace:  18900000, capUsed: 228000000, deadCap:  31200000 },
+  'Miami Dolphins':       { capSpace:  19700000, capUsed: 228200000, deadCap:  21400000 },
+  'Minnesota Vikings':    { capSpace:  36800000, capUsed: 211100000, deadCap:  14600000 },
+  'New England Patriots': { capSpace:  87500000, capUsed: 160400000, deadCap:   9800000 },
+  'New Orleans Saints':   { capSpace:  -4200000, capUsed: 251600000, deadCap:  38400000 },
+  'New York Giants':      { capSpace:  72600000, capUsed: 175300000, deadCap:  13100000 },
+  'New York Jets':        { capSpace:  84300000, capUsed: 163600000, deadCap:  16200000 },
+  'Philadelphia Eagles':  { capSpace:   6700000, capUsed: 241200000, deadCap:  28600000 },
+  'Pittsburgh Steelers':  { capSpace:  31400000, capUsed: 216500000, deadCap:  17900000 },
+  'San Francisco 49ers':  { capSpace:  11300000, capUsed: 236600000, deadCap:  27200000 },
+  'Seattle Seahawks':     { capSpace:  48200000, capUsed: 199700000, deadCap:  11800000 },
+  'Tampa Bay Buccaneers': { capSpace:  21600000, capUsed: 226300000, deadCap:  15100000 },
+  'Tennessee Titans':     { capSpace:  92400000, capUsed: 155500000, deadCap:  21300000 },
+  'Washington Commanders':{ capSpace:  42700000, capUsed: 205200000, deadCap:  18100000 },
+};
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function fmtM(n) {
+  if (n == null) return '—';
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + (Math.abs(n) / 1e6).toFixed(1) + 'M';
+}
+function fmtFull(n) {
+  if (n == null) return '—';
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + Math.abs(n).toLocaleString();
+}
+
+// ─── PARSE OTC HTML (client-side) ─────────────────────────────────────────────
+function parseCapHtml(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const rows = [...doc.querySelectorAll('tr')];
+  const teams = [];
+
+  // Detect column positions from header
+  let capSpaceCol = -1, activeCapCol = -1, deadCapCol = -1;
+  const headerRow = rows.find(r => r.querySelectorAll('th').length > 2);
+  if (headerRow) {
+    [...headerRow.querySelectorAll('th')].forEach((th, i) => {
+      const t = th.textContent.trim().toLowerCase();
+      if (capSpaceCol < 0 && (t.includes('cap space') || t.includes('space'))) capSpaceCol = i;
+      if (activeCapCol < 0 && (t.includes('active') || t.includes('used'))) activeCapCol = i;
+      if (deadCapCol < 0 && t.includes('dead')) deadCapCol = i;
+    });
+  }
+  if (capSpaceCol < 0) capSpaceCol = 2;
+  if (activeCapCol < 0) activeCapCol = 3;
+  if (deadCapCol < 0) deadCapCol = 4;
+
+  const parseMoney = td => {
+    if (!td) return 0;
+    const raw = td.textContent.replace(/[$,\s]/g, '');
+    const neg = /\(/.test(td.textContent) || /^-/.test(raw);
+    const val = parseInt(raw.replace(/[^0-9]/g, ''), 10) || 0;
+    return neg ? -val : val;
+  };
+
+  for (const row of rows) {
+    const cells = [...row.querySelectorAll('td')];
+    if (cells.length < 3) continue;
+    const linkCell = cells.find(c => c.querySelector('a[href]'));
+    if (!linkCell) continue;
+    const name = linkCell.querySelector('a').textContent.trim();
+    if (!name || name.length < 5 || /^\d/.test(name)) continue;
+    teams.push({
+      name,
+      capSpace:  parseMoney(cells[capSpaceCol]),
+      capUsed:   parseMoney(cells[activeCapCol]),
+      deadCap:   parseMoney(cells[deadCapCol]),
+    });
+  }
+  return teams;
+}
+
+// ─── MATCH OTC TEAM NAMES TO TEAM OBJECTS ────────────────────────────────────
+function mergeCapData(capRows) {
+  const byName = {};
+  TEAMS.forEach(t => { byName[t.name.toLowerCase()] = t; });
+
+  const matched = new Set();
+  for (const row of capRows) {
+    const key = row.name.toLowerCase();
+    // Exact match first
+    if (byName[key]) {
+      Object.assign(byName[key], { capSpace: row.capSpace, capUsed: row.capUsed, deadCap: row.deadCap });
+      matched.add(key);
+      continue;
+    }
+    // Fuzzy: find TEAMS entry whose name contains or is contained by the row name
+    for (const [k, t] of Object.entries(byName)) {
+      if (matched.has(k)) continue;
+      const words = k.split(' ');
+      if (words.some(w => key.includes(w) && w.length > 4)) {
+        Object.assign(t, { capSpace: row.capSpace, capUsed: row.capUsed, deadCap: row.deadCap });
+        matched.add(k);
+        break;
+      }
+    }
+  }
+}
+
+// ─── APPLY FALLBACK ───────────────────────────────────────────────────────────
+function applyFallback() {
+  TEAMS.forEach(t => {
+    if (t.capSpace == null) {
+      const fb = FALLBACK[t.name];
+      if (fb) Object.assign(t, fb);
+    }
+  });
+}
+
+// ─── COLOR SCALE ─────────────────────────────────────────────────────────────
+function capColor(val) {
+  if (val == null) return '#6a8fa8';
+  // -50M → 0 → 120M+
+  const stops = [
+    { v: -50e6, r:230, g:57,  b:70  },
+    { v:  0,    r:255, g:209, b:102 },
+    { v: 120e6, r:57,  g:255, b:20  },
+  ];
+  const clamp = Math.max(stops[0].v, Math.min(stops[stops.length-1].v, val));
+  for (let i = 0; i < stops.length - 1; i++) {
+    if (clamp <= stops[i+1].v) {
+      const t = (clamp - stops[i].v) / (stops[i+1].v - stops[i].v);
+      const r = Math.round(stops[i].r + t*(stops[i+1].r - stops[i].r));
+      const g = Math.round(stops[i].g + t*(stops[i+1].g - stops[i].g));
+      const b = Math.round(stops[i].b + t*(stops[i+1].b - stops[i].b));
+      return `rgb(${r},${g},${b})`;
+    }
+  }
+  return `rgb(${stops[stops.length-1].r},${stops[stops.length-1].g},${stops[stops.length-1].b})`;
+}
+
+// ─── D3 MAP ───────────────────────────────────────────────────────────────────
+let svg, g, projection, path, markers;
+
+function initMap() {
+  const container = document.getElementById('mapArea');
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+
+  svg = d3.select('#mapSvg').attr('viewBox', `0 0 ${W} ${H}`);
+  g = svg.append('g');
+
+  projection = d3.geoAlbersUsa()
+    .translate([W / 2, H / 2])
+    .scale(W * 1.25);
+
+  path = d3.geoPath().projection(projection);
+
+  // Zoom + pan
+  const zoom = d3.zoom()
+    .scaleExtent([1, 8])
+    .on('zoom', e => g.attr('transform', e.transform));
+  svg.call(zoom);
+
+  d3.json('https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json').then(us => {
+    // States fill
+    g.append('g').selectAll('path.state')
+      .data(topojson.feature(us, us.objects.states).features)
+      .join('path')
+      .attr('class', 'state')
+      .attr('d', path);
+
+    // State borders
+    g.append('path')
+      .datum(topojson.mesh(us, us.objects.states, (a, b) => a !== b))
+      .attr('class', 'state-border')
+      .attr('d', path);
+
+    // Team marker group (rendered after cap data loads)
+    g.append('g').attr('class', 'markers-group');
+    document.getElementById('loadOverlay').classList.add('hidden');
+  });
+}
+
+function renderMarkers() {
+  const markerGroup = g.select('.markers-group');
+  markerGroup.selectAll('*').remove();
+
+  TEAMS.forEach(team => {
+    const pos = projection([team.lng, team.lat]);
+    if (!pos) return;
+
+    const color = capColor(team.capSpace);
+    const grp = markerGroup.append('g')
+      .attr('class', 'marker-grp')
+      .attr('transform', `translate(${pos[0]},${pos[1]})`)
+      .style('cursor', 'pointer');
+
+    // Glow ring
+    grp.append('circle')
+      .attr('r', 13)
+      .attr('fill', color)
+      .attr('opacity', .12);
+
+    // Main circle
+    grp.append('circle')
+      .attr('class', 'team-marker')
+      .attr('r', 8)
+      .attr('fill', color)
+      .attr('stroke', 'rgba(255,255,255,.35)')
+      .attr('stroke-width', 1.2);
+
+    // Abbreviation label
+    grp.append('text')
+      .attr('class', 'team-label')
+      .attr('dy', '.35em')
+      .text(team.abbr);
+
+    // Interactions
+    grp
+      .on('mouseover', function(event) { showTooltip(event, team); })
+      .on('mousemove', function(event) { moveTooltip(event); })
+      .on('mouseout', hideTooltip)
+      .on('click', function() { highlightTeam(team.name); });
+  });
+}
+
+// ─── TOOLTIP ─────────────────────────────────────────────────────────────────
+const tooltip = document.getElementById('tooltip');
+
+function showTooltip(event, team) {
+  document.getElementById('ttTeam').textContent = team.name;
+  document.getElementById('ttCity').textContent = team.city;
+
+  const spaceEl = document.getElementById('ttSpace');
+  spaceEl.textContent = fmtFull(team.capSpace);
+  spaceEl.className = 'tt-value ' + (team.capSpace >= 0 ? 'positive' : 'negative');
+
+  document.getElementById('ttUsed').textContent = fmtFull(team.capUsed);
+  document.getElementById('ttDead').textContent = fmtFull(team.deadCap);
+
+  tooltip.classList.add('visible');
+  moveTooltip(event);
+}
+
+function moveTooltip(event) {
+  const mapRect = document.getElementById('mapArea').getBoundingClientRect();
+  let x = event.clientX - mapRect.left + 16;
+  let y = event.clientY - mapRect.top - 10;
+  if (x + 240 > mapRect.width)  x = event.clientX - mapRect.left - 240;
+  if (y + 160 > mapRect.height) y = event.clientY - mapRect.top - 160;
+  tooltip.style.left = x + 'px';
+  tooltip.style.top  = y + 'px';
+}
+
+function hideTooltip() { tooltip.classList.remove('visible'); }
+
+// ─── SIDEBAR ─────────────────────────────────────────────────────────────────
+function renderSidebar() {
+  const list = document.getElementById('teamList');
+  const sorted = [...TEAMS].sort((a, b) => (b.capSpace || 0) - (a.capSpace || 0));
+  const maxSpace = Math.max(...sorted.map(t => t.capSpace || 0));
+
+  list.innerHTML = '';
+  sorted.forEach((team, i) => {
+    const cs = team.capSpace || 0;
+    const barPct = maxSpace > 0 ? Math.max(0, cs / maxSpace * 100) : 0;
+    const color = capColor(cs);
+    const item = document.createElement('div');
+    item.className = 'team-item';
+    item.dataset.name = team.name.toLowerCase();
+    item.innerHTML = `
+      <span class="team-rank">${i + 1}</span>
+      <span class="team-dot" style="background:${color}"></span>
+      <div class="team-info">
+        <div class="team-name">${team.name}</div>
+        <div class="team-bar-wrap"><div class="team-bar" style="width:${barPct}%;background:${color}"></div></div>
+      </div>
+      <span class="team-cap ${cs >= 0 ? 'positive' : 'negative'}">${fmtM(cs)}</span>
+    `;
+    item.addEventListener('click', () => highlightTeam(team.name));
+    list.appendChild(item);
+  });
+}
+
+function highlightTeam(name) {
+  // Sidebar highlight
+  document.querySelectorAll('.team-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.name === name.toLowerCase());
+    if (el.dataset.name === name.toLowerCase()) el.scrollIntoView({ block: 'nearest' });
+  });
+
+  // Pulse the map marker
+  g.selectAll('.marker-grp').each(function(d, i) {
+    const grp = d3.select(this);
+    // Find by team abbr text
+    const lbl = grp.select('text').text();
+    const team = TEAMS.find(t => t.abbr === lbl);
+    if (team && team.name === name) {
+      grp.select('.team-marker')
+        .attr('r', 12)
+        .transition().duration(400)
+        .attr('r', 8);
+    }
+  });
+}
+
+// ─── SEARCH ──────────────────────────────────────────────────────────────────
+document.getElementById('searchInput').addEventListener('input', function() {
+  const q = this.value.toLowerCase().trim();
+  document.querySelectorAll('.team-item').forEach(el => {
+    el.classList.toggle('hidden', q.length > 0 && !el.dataset.name.includes(q));
+  });
+});
+
+// ─── FETCH LIVE DATA ─────────────────────────────────────────────────────────
+async function fetchCapData() {
+  const badge = document.getElementById('sourceBadge');
+  const badgeText = document.getElementById('badgeText');
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _service: 'overthecap' }),
+    });
+
+    if (!resp.ok) throw new Error(`Worker ${resp.status}`);
+    const data = await resp.json();
+
+    if (data.error || !data.html) throw new Error(data.error || 'No data');
+
+    const parsed = parseCapHtml(data.html);
+    if (parsed.length >= 20) {
+      mergeCapData(parsed);
+      applyFallback(); // fill any unmatched teams
+      badge.className = 'source-badge live';
+      badgeText.textContent = 'Live · overthecap.com';
+    } else {
+      throw new Error('Parse yielded insufficient data');
+    }
+  } catch (err) {
+    console.warn('Live fetch failed, using estimated data:', err.message);
+    applyFallback();
+    badge.className = 'source-badge cached';
+    badgeText.textContent = 'Estimated · overthecap.com';
+  }
+
+  renderMarkers();
+  renderSidebar();
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+initMap();
+fetchCapData();
+
+// Resize handler
+window.addEventListener('resize', () => {
+  const container = document.getElementById('mapArea');
+  const W = container.clientWidth;
+  const H = container.clientHeight;
+  svg.attr('viewBox', `0 0 ${W} ${H}`);
+  projection.translate([W / 2, H / 2]).scale(W * 1.25);
+  g.selectAll('path.state').attr('d', path);
+  g.select('path.state-border').attr('d', path);
+  renderMarkers();
+});
+</script>
+
+</body>
+</html>
