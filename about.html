@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Who We Are | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700;900&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+:root { --bg: #050a0f; --bg2: #080f18; --panel: #0b1622; --accent: #00e5ff; --accent2: #ff6b35; --accent3: #39ff14; --text: #e8f4f8; --muted: #6a8fa8; --border: rgba(0,229,255,0.15); --mono: 'Share Tech Mono', monospace; --head: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--body); overflow-x: hidden; }
+body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px), linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px); background-size:60px 60px; pointer-events:none; z-index:0; }
+body::after { content:''; position:fixed; inset:0; background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.07) 2px,rgba(0,0,0,.07) 4px); pointer-events:none; z-index:1; }
+
+/* NAV */
+nav { position:fixed; top:0; left:0; right:0; z-index:100; display:flex; justify-content:space-between; align-items:center; padding:1.2rem 3rem; background:rgba(5,10,15,.88); backdrop-filter:blur(12px); border-bottom:1px solid var(--border); }
+.nav-logo { font-family:var(--head); font-size:1.4rem; font-weight:900; letter-spacing:.08em; color:var(--text); text-decoration:none; }
+.nav-logo span { color:var(--accent); }
+.nav-back { font-family:var(--mono); font-size:.75rem; color:var(--muted); text-decoration:none; letter-spacing:.12em; text-transform:uppercase; transition:color .2s; }
+.nav-back:hover { color:var(--accent); }
+.nav-label { font-family:var(--mono); font-size:.75rem; color:var(--accent); letter-spacing:.12em; text-transform:uppercase; }
+
+/* PAGE HEADER */
+.page-header { padding:10rem 3rem 5rem; position:relative; z-index:2; text-align:center; overflow:hidden; }
+.header-glow { position:absolute; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle,rgba(0,229,255,.06) 0%,transparent 70%); top:-100px; left:50%; transform:translateX(-50%); pointer-events:none; animation:pulseGlow 6s ease-in-out infinite; }
+@keyframes pulseGlow { 0%,100%{opacity:.6;transform:translateX(-50%) scale(1)} 50%{opacity:1;transform:translateX(-50%) scale(1.1)} }
+.section-tag { font-family:var(--mono); font-size:.7rem; color:var(--accent); letter-spacing:.2em; text-transform:uppercase; margin-bottom:.8rem; display:flex; align-items:center; justify-content:center; gap:.7rem; }
+.section-tag::before { content:'//'; color:var(--accent2); }
+.page-title { font-family:var(--head); font-size:clamp(3rem,7vw,6rem); font-weight:900; text-transform:uppercase; line-height:.95; letter-spacing:-.01em; }
+.page-title em { font-style:normal; color:var(--accent); }
+.page-sub { font-size:1.1rem; font-weight:300; color:var(--muted); max-width:600px; line-height:1.75; margin:1.5rem auto 0; }
+
+/* CONSULTANTS SECTION */
+.consultants { padding:5rem 3rem 8rem; position:relative; z-index:2; max-width:1200px; margin:0 auto; }
+.consultant-card { display:grid; grid-template-columns:340px 1fr; gap:5rem; align-items:start; padding:4rem 0; border-top:1px solid var(--border); }
+.consultant-card:last-child { border-bottom:1px solid var(--border); }
+
+/* PHOTO BLOCK */
+.consultant-photo-wrap { position:relative; }
+.consultant-photo { width:100%; aspect-ratio:1/1; object-fit:cover; object-position:center top; display:block; filter:grayscale(20%) contrast(1.05); transition:filter .4s; border:1px solid var(--border); }
+.consultant-card:hover .consultant-photo { filter:grayscale(0%) contrast(1.1); }
+.photo-frame { position:relative; }
+.photo-frame::before { content:''; position:absolute; top:-6px; left:-6px; right:6px; bottom:6px; border:1px solid var(--accent); opacity:.3; pointer-events:none; z-index:1; transition:opacity .4s; }
+.consultant-card:hover .photo-frame::before { opacity:.7; }
+.photo-accent-line { width:60px; height:2px; background:var(--accent); margin-top:1.5rem; }
+
+/* BIO BLOCK */
+.consultant-bio { padding-top:.5rem; }
+.consultant-specialty { font-family:var(--mono); font-size:.68rem; color:var(--accent2); letter-spacing:.2em; text-transform:uppercase; margin-bottom:.8rem; display:flex; align-items:center; gap:.6rem; }
+.consultant-specialty::before { content:'◆'; font-size:.45rem; color:var(--accent2); }
+.consultant-name { font-family:var(--head); font-size:clamp(2.2rem,4vw,3.4rem); font-weight:900; text-transform:uppercase; line-height:.95; letter-spacing:-.01em; margin-bottom:.4rem; }
+.consultant-name span { color:var(--accent); display:block; }
+.consultant-title { font-family:var(--mono); font-size:.72rem; color:var(--muted); letter-spacing:.15em; text-transform:uppercase; margin-bottom:2rem; padding-bottom:2rem; border-bottom:1px solid var(--border); }
+.consultant-summary { font-size:1rem; color:var(--muted); line-height:1.85; }
+.consultant-summary strong { color:var(--text); font-weight:600; }
+
+/* EXPERTISE TAGS */
+.expertise-list { display:flex; flex-wrap:wrap; gap:.6rem; margin-top:2rem; }
+.expertise-tag { font-family:var(--mono); font-size:.65rem; letter-spacing:.12em; text-transform:uppercase; padding:.4rem .9rem; border:1px solid var(--border); color:var(--muted); transition:border-color .2s,color .2s; }
+.expertise-tag:hover { border-color:var(--accent); color:var(--accent); }
+
+/* CTA STRIP */
+.cta-strip { background:var(--bg2); border-top:1px solid var(--border); border-bottom:1px solid var(--border); padding:5rem 3rem; text-align:center; position:relative; z-index:2; }
+.cta-strip-inner { max-width:700px; margin:0 auto; }
+.cta-title { font-family:var(--head); font-size:clamp(2rem,4vw,3.2rem); font-weight:900; text-transform:uppercase; line-height:1; margin-bottom:1rem; }
+.cta-title em { font-style:normal; color:var(--accent); }
+.cta-sub { font-size:.95rem; color:var(--muted); line-height:1.7; margin-bottom:2rem; }
+.btn-primary { font-family:var(--mono); font-size:.8rem; letter-spacing:.12em; padding:1rem 2.2rem; background:var(--accent); color:var(--bg); text-decoration:none; font-weight:700; text-transform:uppercase; transition:box-shadow .2s; position:relative; overflow:hidden; display:inline-block; }
+.btn-primary::after { content:''; position:absolute; inset:0; background:rgba(255,255,255,.15); transform:translateX(-100%); transition:transform .3s; }
+.btn-primary:hover::after { transform:translateX(0); }
+.btn-primary:hover { box-shadow:0 0 30px rgba(0,229,255,.4); }
+
+/* FOOTER */
+footer { padding:1.5rem 3rem; border-top:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; position:relative; z-index:2; }
+.footer-copy { font-family:var(--mono); font-size:.65rem; color:var(--muted); letter-spacing:.1em; }
+.footer-copy span { color:var(--accent); }
+
+/* ANIMATIONS */
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+.reveal { opacity:0; transform:translateY(20px); transition:opacity .6s ease,transform .6s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav { padding:1rem 1.5rem; }
+  .page-header { padding:8rem 1.5rem 3rem; }
+  .consultants { padding:3rem 1.5rem 5rem; }
+  .consultant-card { grid-template-columns:1fr; gap:2.5rem; }
+  .consultant-photo-wrap { max-width:280px; }
+  .cta-strip { padding:4rem 1.5rem; }
+  footer { flex-direction:column; gap:.5rem; text-align:center; }
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span>BS</a>
+  <a href="/" class="nav-back">← Back to Home</a>
+  <span class="nav-label">Who We Are</span>
+</nav>
+
+<header class="page-header">
+  <div class="header-glow"></div>
+  <div class="section-tag">The Team</div>
+  <h1 class="page-title">Who We<br><em>Are.</em></h1>
+  <p class="page-sub">Senior consultants with deep domain expertise — not generalists, not offshore teams. We bring real-world experience to every engagement.</p>
+</header>
+
+<section class="consultants">
+
+  <!-- Dierk Demers -->
+  <div class="consultant-card reveal">
+    <div class="consultant-photo-wrap">
+      <div class="photo-frame">
+        <img
+          src="images/dierk-demers.jpg"
+          alt="Dierk Demers — Supply Chain &amp; Technology Consultant"
+          class="consultant-photo"
+        />
+      </div>
+      <div class="photo-accent-line"></div>
+    </div>
+    <div class="consultant-bio">
+      <div class="consultant-specialty">Supply Chain &amp; Technology</div>
+      <h2 class="consultant-name">Dierk<span>Demers</span></h2>
+      <div class="consultant-title">Principal Consultant · Supply Chain &amp; Technology</div>
+      <p class="consultant-summary">
+        Dierk has worked in the SaaS technology space for over a decade, having helped multiple early-stage startups scale to acquisition. His experience spans industries including <strong>ecommerce, online advertising, and supply chain risk management</strong> — giving him a rare cross-sector perspective on how technology decisions ripple through an organization.
+      </p>
+      <p class="consultant-summary" style="margin-top:1rem">
+        A fierce customer advocate, Dierk specializes in <strong>bridging the gap between customer experience and technical architecture</strong>. He embeds with businesses to ensure that technical goals are always grounded in real customer needs — translating complex systems challenges into clear, actionable strategies.
+      </p>
+      <div class="expertise-list">
+        <span class="expertise-tag">SaaS &amp; Startups</span>
+        <span class="expertise-tag">Supply Chain Risk</span>
+        <span class="expertise-tag">Technical Architecture</span>
+        <span class="expertise-tag">Ecommerce</span>
+        <span class="expertise-tag">Scale &amp; Acquisition</span>
+        <span class="expertise-tag">Customer Experience</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Randall Slifer -->
+  <div class="consultant-card reveal">
+    <div class="consultant-photo-wrap">
+      <div class="photo-frame">
+        <img
+          src="images/randall-slifer.jpg"
+          alt="Randall Slifer — Hospitality &amp; Sports Management Consultant"
+          class="consultant-photo"
+        />
+      </div>
+      <div class="photo-accent-line"></div>
+    </div>
+    <div class="consultant-bio">
+      <div class="consultant-specialty">Hospitality &amp; Sports Management</div>
+      <h2 class="consultant-name">Randall<span>Slifer</span></h2>
+      <div class="consultant-title">Principal Consultant · Hospitality &amp; Sports Management</div>
+      <p class="consultant-summary">
+        Randall has spent nearly two decades building his expertise as a hospitality professional and restauranteur. From serving as a <strong>regional manager for international brands like Buffalo Wild Wings</strong> to operating his own restaurant as an owner-operator, he brings hands-on knowledge of what it takes to run a high-volume, customer-facing business at every level.
+      </p>
+      <p class="consultant-summary" style="margin-top:1rem">
+        Leveraging his deep industry network, Randall transitioned into the <strong>sports analysis and management space</strong>, where he has become an in-demand analyst and podcast host. He brings the same operational rigor from the restaurant world to sports consulting — connecting front-office strategy with on-the-ground execution.
+      </p>
+      <div class="expertise-list">
+        <span class="expertise-tag">Hospitality Operations</span>
+        <span class="expertise-tag">Restaurant Management</span>
+        <span class="expertise-tag">Sports Analysis</span>
+        <span class="expertise-tag">Brand Scaling</span>
+        <span class="expertise-tag">Owner-Operator</span>
+        <span class="expertise-tag">Media &amp; Podcasting</span>
+      </div>
+    </div>
+  </div>
+
+</section>
+
+<div class="cta-strip">
+  <div class="cta-strip-inner">
+    <div class="section-tag" style="justify-content:center">Work With Us</div>
+    <h2 class="cta-title">Ready to Solve<br><em>Your Problem?</em></h2>
+    <p class="cta-sub">Whether you're navigating supply chain complexity, scaling a hospitality operation, or breaking into the sports industry — we've been there. Let's talk.</p>
+    <a href="/#contact" class="btn-primary">Get In Touch</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-copy">© 2024 <span>3D Business Solutions</span> · All rights reserved.</div>
+  <div class="footer-copy"><span>3D</span>.BS · Built for SMBs</div>
+</footer>
+
+<script>
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); observer.unobserve(e.target); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
