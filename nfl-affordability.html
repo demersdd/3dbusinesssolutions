@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NFL Contract Affordability Calculator | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+/* ── DESIGN SYSTEM (keep in sync with nfl-cap.html) ─────────────────────── */
+:root {
+  --bg: #050a0f; --bg2: #080f18; --panel: #0b1622;
+  --accent: #00e5ff; --accent2: #ff6b35; --accent3: #39ff14;
+  --text: #e8f4f8; --muted: #6a8fa8; --border: rgba(0,229,255,0.15);
+  --mono: 'Share Tech Mono', monospace; --head: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+  --cap-low: #e63946; --cap-mid: #ffd166; --cap-high: #39ff14;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+
+/* ── NAV ───────────────────────────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-back{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .2s;}
+.nav-back:hover{color:var(--accent);}
+.nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
+.nav-links{display:flex;gap:1.5rem;align-items:center;}
+
+/* ── PAGE LAYOUT ───────────────────────────────────────────────────────── */
+.calc-page{max-width:900px;margin:0 auto;padding:5.5rem 2rem 5rem;position:relative;z-index:1;}
+.page-header{margin-bottom:2.5rem;}
+.page-tag{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.2em;text-transform:uppercase;margin-bottom:.6rem;display:flex;align-items:center;gap:.7rem;}
+.page-tag::before{content:'//';color:var(--accent2);}
+.page-title{font-family:var(--head);font-size:clamp(2rem,5vw,3.2rem);font-weight:900;text-transform:uppercase;line-height:1;}
+.page-title em{font-style:normal;color:var(--accent);}
+.page-sub{font-family:var(--body);font-size:.9rem;color:var(--muted);margin-top:.6rem;line-height:1.7;max-width:580px;}
+
+/* ── SECTIONS ──────────────────────────────────────────────────────────── */
+.calc-section{margin-bottom:2rem;background:var(--bg2);border:1px solid var(--border);padding:1.8rem 2rem;}
+.calc-section.hidden{display:none;}
+.section-label{font-family:var(--mono);font-size:.6rem;color:var(--accent);letter-spacing:.18em;text-transform:uppercase;margin-bottom:1.2rem;padding-bottom:.6rem;border-bottom:1px solid var(--border);}
+.section-title{font-family:var(--head);font-size:1.4rem;font-weight:900;text-transform:uppercase;letter-spacing:.04em;margin-bottom:1.2rem;}
+
+/* ── SOURCE BADGE ──────────────────────────────────────────────────────── */
+.source-badge{display:inline-flex;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;padding:.3rem .7rem;border:1px solid var(--border);}
+.source-badge.live{border-color:var(--accent3);color:var(--accent3);}
+.source-badge.cached{border-color:var(--accent2);color:var(--accent2);}
+.source-badge.loading{border-color:var(--muted);color:var(--muted);animation:pulse 1.4s ease-in-out infinite;}
+.source-badge.error{border-color:var(--cap-low);color:var(--cap-low);}
+.badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;}
+@keyframes pulse{0%,100%{opacity:.5}50%{opacity:1}}
+
+/* ── TEAM SELECTOR ─────────────────────────────────────────────────────── */
+.team-select-row{display:flex;gap:1rem;align-items:flex-start;flex-wrap:wrap;margin-bottom:1.4rem;}
+.field-group{display:flex;flex-direction:column;gap:.4rem;}
+.field-label{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;}
+select.form-input,input.form-input{background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.78rem;padding:.55rem .9rem;letter-spacing:.04em;outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none;}
+select.form-input{min-width:260px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236a8fa8'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right .8rem center;padding-right:2rem;}
+select.form-input:focus,input.form-input:focus{border-color:var(--accent);}
+select.form-input option{background:var(--panel);}
+
+/* ── CAP YEAR CARDS ────────────────────────────────────────────────────── */
+.cap-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.2rem;}
+.cap-card{background:var(--panel);border:1px solid var(--border);padding:1.2rem;text-align:center;}
+.cap-card-year{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-bottom:.4rem;}
+.cap-card-value{font-family:var(--head);font-size:1.8rem;font-weight:900;line-height:1;}
+.cap-card-value.positive{color:var(--accent3);}
+.cap-card-value.negative{color:var(--cap-low);}
+.cap-card-value.neutral{color:var(--muted);}
+.cap-card-note{font-family:var(--mono);font-size:.55rem;color:var(--muted);margin-top:.4rem;letter-spacing:.06em;}
+.cap-card-est{border-color:rgba(255,107,53,.2);}
+
+/* ── ESTIMATION NOTICE ─────────────────────────────────────────────────── */
+.est-notice{font-family:var(--mono);font-size:.6rem;color:var(--accent2);border:1px solid rgba(255,107,53,.25);padding:.6rem .9rem;margin-top:1rem;letter-spacing:.06em;line-height:1.6;}
+
+/* ── CONTRACT FORM ─────────────────────────────────────────────────────── */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:1rem;margin-bottom:1.6rem;}
+input.form-input[type=number]{width:100%;}
+input.form-input[type=text]{width:100%;}
+.form-hint{font-family:var(--mono);font-size:.58rem;color:var(--muted);margin-top:.3rem;letter-spacing:.04em;}
+
+/* ── SALARY TABLE ──────────────────────────────────────────────────────── */
+.salary-table-wrap{overflow-x:auto;margin-bottom:1.2rem;}
+.salary-table{width:100%;border-collapse:collapse;}
+.salary-table th{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:.5rem .7rem;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap;}
+.salary-table td{padding:.45rem .5rem;border-bottom:1px solid rgba(0,229,255,.05);}
+.salary-table td:first-child{font-family:var(--mono);font-size:.72rem;color:var(--muted);padding-left:.7rem;}
+.salary-table td.cal-year{font-family:var(--mono);font-size:.72rem;color:var(--accent);font-weight:700;}
+input.salary-input{background:var(--panel);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:.75rem;padding:.38rem .6rem;width:140px;outline:none;transition:border-color .2s;}
+input.salary-input:focus{border-color:var(--accent);}
+.guaranteed-check{accent-color:var(--accent);width:15px;height:15px;cursor:pointer;}
+.form-error{font-family:var(--mono);font-size:.62rem;color:var(--cap-low);margin-bottom:1rem;padding:.5rem .8rem;border:1px solid rgba(230,57,70,.3);}
+.form-error.hidden{display:none;}
+
+/* ── BUTTONS ───────────────────────────────────────────────────────────── */
+.btn-row{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}
+.btn-primary{font-family:var(--mono);font-size:.75rem;letter-spacing:.12em;padding:.75rem 1.8rem;background:var(--accent);color:var(--bg);text-decoration:none;font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,opacity .2s;position:relative;overflow:hidden;}
+.btn-primary:hover{box-shadow:0 0 24px rgba(0,229,255,.35);}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;}
+.btn-secondary{font-family:var(--mono);font-size:.7rem;letter-spacing:.1em;padding:.65rem 1.2rem;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;text-transform:uppercase;transition:border-color .2s,color .2s;}
+.btn-secondary:hover{border-color:var(--accent);color:var(--accent);}
+
+/* ── RESULTS TABLE ─────────────────────────────────────────────────────── */
+.results-wrap{overflow-x:auto;}
+.data-table{width:100%;border-collapse:collapse;font-family:var(--mono);}
+.data-table th{font-size:.58rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:.6rem .8rem;border-bottom:1px solid var(--border);text-align:right;white-space:nowrap;}
+.data-table th:first-child{text-align:left;}
+.data-table td{padding:.65rem .8rem;border-bottom:1px solid rgba(0,229,255,.05);font-size:.75rem;text-align:right;}
+.data-table td:first-child{text-align:left;color:var(--muted);}
+.data-table tr:last-child td{border-bottom:none;}
+.data-table td.money-pos{color:var(--accent3);}
+.data-table td.money-neg{color:var(--cap-low);}
+.data-table td.money-neutral{color:var(--text);}
+.data-table td.money-accent{color:var(--accent);}
+
+/* ── AFFORDABILITY BADGES ──────────────────────────────────────────────── */
+.badge{font-family:var(--mono);font-size:.58rem;letter-spacing:.1em;padding:.25rem .55rem;border:1px solid;}
+.badge-green{color:var(--cap-high);border-color:rgba(57,255,20,.3);}
+.badge-yellow{color:var(--cap-mid);border-color:rgba(255,209,102,.3);}
+.badge-red{color:var(--cap-low);border-color:rgba(230,57,70,.3);}
+
+/* ── OVER CAP BANNER ───────────────────────────────────────────────────── */
+.over-cap-notice{font-family:var(--mono);font-size:.6rem;color:var(--cap-low);border:1px solid rgba(230,57,70,.3);padding:.6rem .9rem;margin-bottom:1.2rem;letter-spacing:.06em;line-height:1.6;}
+.over-cap-notice.hidden{display:none;}
+
+/* ── PRORATION INFO ────────────────────────────────────────────────────── */
+.proration-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.2rem;}
+.proration-chip{font-family:var(--mono);font-size:.6rem;padding:.3rem .65rem;background:var(--panel);border:1px solid var(--border);color:var(--muted);letter-spacing:.06em;}
+.proration-chip span{color:var(--accent);}
+
+/* ── FOOTER ────────────────────────────────────────────────────────────── */
+footer{text-align:center;padding:2rem;font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em;border-top:1px solid var(--border);position:relative;z-index:1;}
+footer a{color:var(--accent2);text-decoration:none;}
+
+@media(max-width:700px){
+  .cap-cards{grid-template-columns:1fr;}
+  .form-grid{grid-template-columns:1fr 1fr;}
+  .nav-title{display:none;}
+  .calc-page{padding:5rem 1rem 4rem;}
+}
+@media(max-width:480px){
+  .form-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span>BS</a>
+  <div class="nav-links">
+    <a href="/nfl-cap.html" class="nav-back">← Cap Space Map</a>
+    <a href="/" class="nav-back">Home</a>
+  </div>
+  <span class="nav-title">NFL Contract Calculator</span>
+</nav>
+
+<div class="calc-page">
+
+  <div class="page-header">
+    <div class="page-tag">NFL Tools</div>
+    <h1 class="page-title">Contract <em>Affordability</em> Calculator</h1>
+    <p class="page-sub">Model any NFL contract — signing bonus, per-year base salaries, guaranteed money — and see the cap impact on any team across multiple seasons. Includes dead money cut scenarios.</p>
+  </div>
+
+  <!-- ── SECTION 1: TEAM SELECTOR ─────────────────────────────────────── -->
+  <section class="calc-section" id="secTeam">
+    <div class="section-label">Step 1 — Select Team</div>
+    <div class="team-select-row">
+      <div class="field-group">
+        <label class="field-label" for="teamSelect">NFL Team</label>
+        <select class="form-input" id="teamSelect">
+          <option value="">— Loading teams…</option>
+        </select>
+      </div>
+      <div style="padding-top:1.6rem;">
+        <div class="source-badge loading" id="sourceBadge">
+          <span class="badge-dot"></span>
+          <span id="badgeText">Fetching live data…</span>
+        </div>
+      </div>
+    </div>
+
+    <div id="capCardsWrap" style="display:none;">
+      <div class="cap-cards" id="capCards">
+        <div class="cap-card">
+          <div class="cap-card-year">2025 · Live</div>
+          <div class="cap-card-value neutral" id="card0">—</div>
+          <div class="cap-card-note">Cap Space</div>
+        </div>
+        <div class="cap-card cap-card-est">
+          <div class="cap-card-year">2026 · Est.</div>
+          <div class="cap-card-value neutral" id="card1">—</div>
+          <div class="cap-card-note">Projected Cap Space</div>
+        </div>
+        <div class="cap-card cap-card-est">
+          <div class="cap-card-year">2027 · Est.</div>
+          <div class="cap-card-value neutral" id="card2">—</div>
+          <div class="cap-card-note">Projected Cap Space</div>
+        </div>
+      </div>
+      <div class="est-notice">&#9888; Years 2026–2027 are estimates based on $12.5M/yr cap growth. They do not account for expiring or new contracts on this team's existing roster.</div>
+    </div>
+  </section>
+
+  <!-- ── SECTION 2: CONTRACT BUILDER ──────────────────────────────────── -->
+  <section class="calc-section" id="secContract">
+    <div class="section-label">Step 2 — Build Contract</div>
+
+    <div class="form-grid">
+      <div class="field-group">
+        <label class="field-label" for="playerName">Player Name <span style="color:var(--muted)">(optional)</span></label>
+        <input type="text" class="form-input" id="playerName" placeholder="e.g. Jerry Quinoa" autocomplete="off"/>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="totalValue">Total Contract Value ($)</label>
+        <input type="number" class="form-input" id="totalValue" placeholder="e.g. 80000000" min="0" step="100000"/>
+        <div class="form-hint">Full value of the contract</div>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="contractYears">Contract Length (Years)</label>
+        <select class="form-input" id="contractYears">
+          <option value="1">1 year</option>
+          <option value="2">2 years</option>
+          <option value="3">3 years</option>
+          <option value="4" selected>4 years</option>
+          <option value="5">5 years</option>
+          <option value="6">6 years</option>
+          <option value="7">7 years</option>
+          <option value="8">8 years</option>
+        </select>
+      </div>
+      <div class="field-group">
+        <label class="field-label" for="signingBonus">Signing Bonus ($)</label>
+        <input type="number" class="form-input" id="signingBonus" placeholder="e.g. 20000000" min="0" step="100000" value="0"/>
+        <div class="form-hint">Prorated over min(years, 5)</div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:1.4rem;">Per-Year Base Salaries</div>
+    <div class="salary-table-wrap">
+      <table class="salary-table" id="salaryTable">
+        <thead>
+          <tr>
+            <th>Yr</th>
+            <th>Season</th>
+            <th>Base Salary</th>
+            <th>Guaranteed?</th>
+          </tr>
+        </thead>
+        <tbody id="salaryBody"></tbody>
+      </table>
+    </div>
+
+    <div class="form-error hidden" id="formError"></div>
+
+    <div class="btn-row">
+      <button class="btn-primary" id="calcBtn" disabled>Calculate Cap Impact</button>
+      <button class="btn-secondary" id="resetBtn">Reset to Even Split</button>
+    </div>
+  </section>
+
+  <!-- ── SECTION 3: CAP IMPACT ─────────────────────────────────────────── -->
+  <section class="calc-section hidden" id="secResults">
+    <div class="section-label">Cap Impact Breakdown</div>
+
+    <div class="proration-bar" id="prorationBar"></div>
+    <div class="over-cap-notice hidden" id="overCapNotice"></div>
+
+    <div class="results-wrap">
+      <table class="data-table" id="resultsTable">
+        <thead>
+          <tr>
+            <th style="text-align:left">Season</th>
+            <th>Base Salary</th>
+            <th>Proration</th>
+            <th>Cap Hit</th>
+            <th>Team Cap After</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="resultsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── SECTION 4: DEAD MONEY ─────────────────────────────────────────── -->
+  <section class="calc-section hidden" id="secDead">
+    <div class="section-label">Dead Money Scenarios</div>
+    <p style="font-family:var(--mono);font-size:.65rem;color:var(--muted);margin-bottom:1.2rem;line-height:1.7;letter-spacing:.04em;">
+      Cap impact if the team releases this player. Uses the pre-June 1 cut model where all remaining prorated signing bonus charges accelerate into the current year.
+      <span style="color:var(--accent2)">Post-June 1 designations split dead money across two seasons — consult a cap specialist for complex scenarios.</span>
+    </p>
+    <div class="results-wrap">
+      <table class="data-table" id="deadTable">
+        <thead>
+          <tr>
+            <th style="text-align:left">Cut After Year</th>
+            <th>Dead Money</th>
+            <th>Cap Savings vs. Keeping</th>
+            <th>Net Outcome</th>
+          </tr>
+        </thead>
+        <tbody id="deadBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Cap data: <a href="https://overthecap.com/salary-cap-space" target="_blank" rel="noopener">overthecap.com</a> &nbsp;·&nbsp; Calculator for planning purposes only &nbsp;·&nbsp; <a href="/nfl-cap.html">Cap Space Map</a>
+</footer>
+
+<script>
+// ── SOURCE OF TRUTH: keep in sync with nfl-cap.html ───────────────────────
+const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+
+const TEAMS = [
+  { abbr:'ARI', name:'Arizona Cardinals',      city:'Glendale, AZ'        },
+  { abbr:'ATL', name:'Atlanta Falcons',         city:'Atlanta, GA'         },
+  { abbr:'BAL', name:'Baltimore Ravens',        city:'Baltimore, MD'       },
+  { abbr:'BUF', name:'Buffalo Bills',           city:'Orchard Park, NY'   },
+  { abbr:'CAR', name:'Carolina Panthers',       city:'Charlotte, NC'       },
+  { abbr:'CHI', name:'Chicago Bears',           city:'Chicago, IL'         },
+  { abbr:'CIN', name:'Cincinnati Bengals',      city:'Cincinnati, OH'      },
+  { abbr:'CLE', name:'Cleveland Browns',        city:'Cleveland, OH'       },
+  { abbr:'DAL', name:'Dallas Cowboys',          city:'Arlington, TX'       },
+  { abbr:'DEN', name:'Denver Broncos',          city:'Denver, CO'          },
+  { abbr:'DET', name:'Detroit Lions',           city:'Detroit, MI'         },
+  { abbr:'GB',  name:'Green Bay Packers',       city:'Green Bay, WI'       },
+  { abbr:'HOU', name:'Houston Texans',          city:'Houston, TX'         },
+  { abbr:'IND', name:'Indianapolis Colts',      city:'Indianapolis, IN'    },
+  { abbr:'JAX', name:'Jacksonville Jaguars',    city:'Jacksonville, FL'    },
+  { abbr:'KC',  name:'Kansas City Chiefs',      city:'Kansas City, MO'     },
+  { abbr:'LV',  name:'Las Vegas Raiders',       city:'Las Vegas, NV'       },
+  { abbr:'LAC', name:'Los Angeles Chargers',    city:'Inglewood, CA'       },
+  { abbr:'LAR', name:'Los Angeles Rams',        city:'Inglewood, CA'       },
+  { abbr:'MIA', name:'Miami Dolphins',          city:'Miami Gardens, FL'   },
+  { abbr:'MIN', name:'Minnesota Vikings',       city:'Minneapolis, MN'     },
+  { abbr:'NE',  name:'New England Patriots',    city:'Foxborough, MA'      },
+  { abbr:'NO',  name:'New Orleans Saints',      city:'New Orleans, LA'     },
+  { abbr:'NYG', name:'New York Giants',         city:'East Rutherford, NJ' },
+  { abbr:'NYJ', name:'New York Jets',           city:'East Rutherford, NJ' },
+  { abbr:'PHI', name:'Philadelphia Eagles',     city:'Philadelphia, PA'    },
+  { abbr:'PIT', name:'Pittsburgh Steelers',     city:'Pittsburgh, PA'      },
+  { abbr:'SF',  name:'San Francisco 49ers',     city:'Santa Clara, CA'     },
+  { abbr:'SEA', name:'Seattle Seahawks',        city:'Seattle, WA'         },
+  { abbr:'TB',  name:'Tampa Bay Buccaneers',    city:'Tampa, FL'           },
+  { abbr:'TEN', name:'Tennessee Titans',        city:'Nashville, TN'       },
+  { abbr:'WAS', name:'Washington Commanders',   city:'Landover, MD'        },
+];
+
+const FALLBACK = {
+  'Arizona Cardinals':    { capSpace:  28200000, capUsed: 219100000, deadCap:  14300000 },
+  'Atlanta Falcons':      { capSpace:  22400000, capUsed: 225500000, deadCap:  18200000 },
+  'Baltimore Ravens':     { capSpace:   9800000, capUsed: 237100000, deadCap:  16500000 },
+  'Buffalo Bills':        { capSpace:  44600000, capUsed: 202300000, deadCap:  11200000 },
+  'Carolina Panthers':    { capSpace:  58300000, capUsed: 188600000, deadCap:  19800000 },
+  'Chicago Bears':        { capSpace: 119000000, capUsed: 128900000, deadCap:   8600000 },
+  'Cincinnati Bengals':   { capSpace:  33100000, capUsed: 214800000, deadCap:  13400000 },
+  'Cleveland Browns':     { capSpace:  27500000, capUsed: 219400000, deadCap:  24700000 },
+  'Dallas Cowboys':       { capSpace:  14200000, capUsed: 233700000, deadCap:  22600000 },
+  'Denver Broncos':       { capSpace:  41300000, capUsed: 206600000, deadCap:  13100000 },
+  'Detroit Lions':        { capSpace:  24900000, capUsed: 222000000, deadCap:  14800000 },
+  'Green Bay Packers':    { capSpace:  37200000, capUsed: 210700000, deadCap:   9400000 },
+  'Houston Texans':       { capSpace:  47800000, capUsed: 199100000, deadCap:  11600000 },
+  'Indianapolis Colts':   { capSpace:  71400000, capUsed: 176500000, deadCap:  10200000 },
+  'Jacksonville Jaguars': { capSpace:  62100000, capUsed: 185800000, deadCap:  16300000 },
+  'Kansas City Chiefs':   { capSpace:  16400000, capUsed: 231500000, deadCap:  20700000 },
+  'Las Vegas Raiders':    { capSpace:  38600000, capUsed: 208300000, deadCap:  17200000 },
+  'Los Angeles Chargers': { capSpace:  43200000, capUsed: 204700000, deadCap:  12800000 },
+  'Los Angeles Rams':     { capSpace:  18900000, capUsed: 228000000, deadCap:  31200000 },
+  'Miami Dolphins':       { capSpace:  19700000, capUsed: 228200000, deadCap:  21400000 },
+  'Minnesota Vikings':    { capSpace:  36800000, capUsed: 211100000, deadCap:  14600000 },
+  'New England Patriots': { capSpace:  87500000, capUsed: 160400000, deadCap:   9800000 },
+  'New Orleans Saints':   { capSpace:  -4200000, capUsed: 251600000, deadCap:  38400000 },
+  'New York Giants':      { capSpace:  72600000, capUsed: 175300000, deadCap:  13100000 },
+  'New York Jets':        { capSpace:  84300000, capUsed: 163600000, deadCap:  16200000 },
+  'Philadelphia Eagles':  { capSpace:   6700000, capUsed: 241200000, deadCap:  28600000 },
+  'Pittsburgh Steelers':  { capSpace:  31400000, capUsed: 216500000, deadCap:  17900000 },
+  'San Francisco 49ers':  { capSpace:  11300000, capUsed: 236600000, deadCap:  27200000 },
+  'Seattle Seahawks':     { capSpace:  48200000, capUsed: 199700000, deadCap:  11800000 },
+  'Tampa Bay Buccaneers': { capSpace:  21600000, capUsed: 226300000, deadCap:  15100000 },
+  'Tennessee Titans':     { capSpace:  92400000, capUsed: 155500000, deadCap:  21300000 },
+  'Washington Commanders':{ capSpace:  42700000, capUsed: 205200000, deadCap:  18100000 },
+};
+
+function fmtM(n) {
+  if (n == null) return '—';
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + (Math.abs(n) / 1e6).toFixed(1) + 'M';
+}
+function fmtFull(n) {
+  if (n == null) return '—';
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + Math.abs(n).toLocaleString();
+}
+
+function parseCapHtml(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const rows = [...doc.querySelectorAll('tr')];
+  const teams = [];
+  let capSpaceCol = -1, activeCapCol = -1, deadCapCol = -1;
+  const headerRow = rows.find(r => r.querySelectorAll('th').length > 2);
+  if (headerRow) {
+    [...headerRow.querySelectorAll('th')].forEach((th, i) => {
+      const t = th.textContent.trim().toLowerCase();
+      if (capSpaceCol < 0 && (t.includes('cap space') || t.includes('space'))) capSpaceCol = i;
+      if (activeCapCol < 0 && (t.includes('active') || t.includes('used'))) activeCapCol = i;
+      if (deadCapCol < 0 && t.includes('dead')) deadCapCol = i;
+    });
+  }
+  if (capSpaceCol < 0) capSpaceCol = 2;
+  if (activeCapCol < 0) activeCapCol = 3;
+  if (deadCapCol < 0) deadCapCol = 4;
+  const parseMoney = td => {
+    if (!td) return 0;
+    const raw = td.textContent.replace(/[$,\s]/g, '');
+    const neg = /\(/.test(td.textContent) || /^-/.test(raw);
+    const val = parseInt(raw.replace(/[^0-9]/g, ''), 10) || 0;
+    return neg ? -val : val;
+  };
+  for (const row of rows) {
+    const cells = [...row.querySelectorAll('td')];
+    if (cells.length < 3) continue;
+    const linkCell = cells.find(c => c.querySelector('a[href]'));
+    if (!linkCell) continue;
+    const name = linkCell.querySelector('a').textContent.trim();
+    if (!name || name.length < 5 || /^\d/.test(name)) continue;
+    teams.push({ name, capSpace: parseMoney(cells[capSpaceCol]), capUsed: parseMoney(cells[activeCapCol]), deadCap: parseMoney(cells[deadCapCol]) });
+  }
+  return teams;
+}
+
+function mergeCapData(capRows) {
+  const byName = {};
+  TEAMS.forEach(t => { byName[t.name.toLowerCase()] = t; });
+  const matched = new Set();
+  for (const row of capRows) {
+    const key = row.name.toLowerCase();
+    if (byName[key]) {
+      Object.assign(byName[key], { capSpace: row.capSpace, capUsed: row.capUsed, deadCap: row.deadCap });
+      matched.add(key);
+      continue;
+    }
+    for (const [k, t] of Object.entries(byName)) {
+      if (matched.has(k)) continue;
+      const words = k.split(' ');
+      if (words.some(w => key.includes(w) && w.length > 4)) {
+        Object.assign(t, { capSpace: row.capSpace, capUsed: row.capUsed, deadCap: row.deadCap });
+        matched.add(k);
+        break;
+      }
+    }
+  }
+}
+
+function applyFallback() {
+  TEAMS.forEach(t => {
+    if (t.capSpace == null) {
+      const fb = FALLBACK[t.name];
+      if (fb) Object.assign(t, fb);
+    }
+  });
+}
+// ── END SHARED DATA ───────────────────────────────────────────────────────────
+
+const CAP_GROWTH = 12_500_000;   // estimated annual cap increase
+const CURRENT_YEAR = 2025;
+
+// ── STATE ─────────────────────────────────────────────────────────────────────
+let salaryValues = [];   // per-year base salary amounts
+let guaranteedFlags = []; // per-year guaranteed booleans
+
+// ── CAP DATA FETCH ────────────────────────────────────────────────────────────
+async function fetchCapData() {
+  const badge = document.getElementById('sourceBadge');
+  const badgeText = document.getElementById('badgeText');
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _service: 'overthecap' }),
+    });
+    if (!resp.ok) throw new Error(`Worker ${resp.status}`);
+    const data = await resp.json();
+    if (data.error || !data.html) throw new Error(data.error || 'No data');
+    const parsed = parseCapHtml(data.html);
+    if (parsed.length >= 20) {
+      mergeCapData(parsed);
+      applyFallback();
+      badge.className = 'source-badge live';
+      badgeText.textContent = 'Live · overthecap.com';
+    } else {
+      throw new Error('Insufficient data');
+    }
+  } catch (err) {
+    console.warn('Live fetch failed, using estimated data:', err.message);
+    applyFallback();
+    badge.className = 'source-badge cached';
+    badgeText.textContent = 'Estimated · overthecap.com';
+  }
+  populateTeamDropdown();
+}
+
+// ── TEAM DROPDOWN ─────────────────────────────────────────────────────────────
+function populateTeamDropdown() {
+  const sel = document.getElementById('teamSelect');
+  const sorted = [...TEAMS].sort((a, b) => a.name.localeCompare(b.name));
+  sel.innerHTML = '<option value="">— Select a team —</option>';
+  sorted.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.name;
+    const cs = t.capSpace != null ? ` — ${fmtM(t.capSpace)}` : '';
+    opt.textContent = t.name + cs;
+    sel.appendChild(opt);
+  });
+  document.getElementById('calcBtn').disabled = false;
+}
+
+// ── TEAM CAP CARDS ────────────────────────────────────────────────────────────
+function showTeamCapCards(teamName) {
+  const wrap = document.getElementById('capCardsWrap');
+  if (!teamName) { wrap.style.display = 'none'; return; }
+
+  const team = TEAMS.find(t => t.name === teamName);
+  if (!team) return;
+
+  wrap.style.display = 'block';
+  const cs = team.capSpace || 0;
+
+  for (let i = 0; i < 3; i++) {
+    const el = document.getElementById(`card${i}`);
+    const val = cs + i * CAP_GROWTH;
+    el.textContent = fmtM(val);
+    el.className = 'cap-card-value ' + (val >= 0 ? 'positive' : 'negative');
+  }
+}
+
+document.getElementById('teamSelect').addEventListener('change', function() {
+  showTeamCapCards(this.value);
+  clearResults();
+});
+
+// ── SALARY TABLE ──────────────────────────────────────────────────────────────
+function rebuildSalaryTable(years, resetValues) {
+  const body = document.getElementById('salaryBody');
+
+  if (resetValues) {
+    salaryValues = new Array(years).fill(0);
+    guaranteedFlags = new Array(years).fill(false);
+    autoSplitSalaries(years);
+  } else {
+    // Extend or trim arrays to new year count
+    while (salaryValues.length < years) salaryValues.push(0);
+    salaryValues.length = years;
+    while (guaranteedFlags.length < years) guaranteedFlags.push(false);
+    guaranteedFlags.length = years;
+    if (resetValues) autoSplitSalaries(years);
+  }
+
+  body.innerHTML = '';
+  for (let i = 0; i < years; i++) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td class="cal-year">${CURRENT_YEAR + i}</td>
+      <td><input type="number" class="salary-input" data-idx="${i}" value="${salaryValues[i]}" min="0" step="100000" placeholder="0"/></td>
+      <td style="text-align:center;"><input type="checkbox" class="guaranteed-check" data-idx="${i}" ${guaranteedFlags[i] ? 'checked' : ''}/></td>
+    `;
+    body.appendChild(tr);
+  }
+
+  // Wire events
+  body.querySelectorAll('.salary-input').forEach(inp => {
+    inp.addEventListener('input', function() {
+      salaryValues[+this.dataset.idx] = parseFloat(this.value) || 0;
+      clearError();
+    });
+  });
+  body.querySelectorAll('.guaranteed-check').forEach(cb => {
+    cb.addEventListener('change', function() {
+      guaranteedFlags[+this.dataset.idx] = this.checked;
+    });
+  });
+}
+
+function autoSplitSalaries(years) {
+  const total = parseFloat(document.getElementById('totalValue').value) || 0;
+  const bonus = parseFloat(document.getElementById('signingBonus').value) || 0;
+  const remaining = Math.max(0, total - bonus);
+  const perYear = years > 0 ? Math.round(remaining / years) : 0;
+  salaryValues = new Array(years).fill(perYear);
+}
+
+function syncSalaryInputs() {
+  document.querySelectorAll('.salary-input').forEach(inp => {
+    inp.value = salaryValues[+inp.dataset.idx] || 0;
+  });
+}
+
+// Rebuild table on year change
+document.getElementById('contractYears').addEventListener('change', function() {
+  const years = +this.value;
+  autoSplitSalaries(years);
+  rebuildSalaryTable(years, false);
+  syncSalaryInputs();
+  clearResults();
+});
+
+// Auto-split on total/bonus change
+['totalValue', 'signingBonus'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function() {
+    const years = +document.getElementById('contractYears').value;
+    autoSplitSalaries(years);
+    syncSalaryInputs();
+    clearError();
+    clearResults();
+  });
+});
+
+document.getElementById('resetBtn').addEventListener('click', function() {
+  const years = +document.getElementById('contractYears').value;
+  autoSplitSalaries(years);
+  syncSalaryInputs();
+  clearError();
+  clearResults();
+});
+
+// ── FORM VALIDATION ───────────────────────────────────────────────────────────
+function clearError() {
+  const el = document.getElementById('formError');
+  el.classList.add('hidden');
+  el.textContent = '';
+}
+
+function showError(msg) {
+  const el = document.getElementById('formError');
+  el.textContent = msg;
+  el.classList.remove('hidden');
+}
+
+// ── CAP MATH ──────────────────────────────────────────────────────────────────
+function computeProration(signingBonus, years) {
+  const prorationYears = Math.min(years, 5);
+  return prorationYears > 0 ? signingBonus / prorationYears : 0;
+}
+
+function computeCapImpact(spec, teamCapY1) {
+  const { years, signingBonus, baseSalaries } = spec;
+  const prorationYears = Math.min(years, 5);
+  const annualProration = signingBonus / (prorationYears || 1);
+  const rows = [];
+
+  for (let y = 0; y < years; y++) {
+    const contractYr = y + 1;
+    const calendarYr = CURRENT_YEAR + y;
+    const base = baseSalaries[y] || 0;
+    const proration = y < prorationYears ? annualProration : 0;
+    const capHit = base + proration;
+    const teamCapEst = teamCapY1 + y * CAP_GROWTH;
+    const teamCapAfter = teamCapEst - capHit;
+    rows.push({ contractYr, calendarYr, base, proration, capHit, teamCapEst, teamCapAfter });
+  }
+  return rows;
+}
+
+function computeDeadMoney(spec, cutAfterYear) {
+  const { years, signingBonus, baseSalaries, guaranteed } = spec;
+  const prorationYears = Math.min(years, 5);
+  const annualProration = signingBonus / (prorationYears || 1);
+
+  // Remaining prorations that accelerate
+  const proRemainingYears = Math.max(0, prorationYears - cutAfterYear);
+  const acceleratedProration = proRemainingYears * annualProration;
+
+  // Unpaid guaranteed base salaries
+  let guaranteedUnpaid = 0;
+  for (let y = cutAfterYear; y < years; y++) {
+    if (guaranteed[y]) guaranteedUnpaid += (baseSalaries[y] || 0);
+  }
+
+  const deadMoney = acceleratedProration + guaranteedUnpaid;
+
+  // Cap savings = all future cap hits we avoid minus what we owe in dead money
+  let futureCap = 0;
+  for (let y = cutAfterYear; y < years; y++) {
+    const proration = y < prorationYears ? annualProration : 0;
+    futureCap += (baseSalaries[y] || 0) + proration;
+  }
+  const capSavings = futureCap - deadMoney;
+
+  return { deadMoney, capSavings };
+}
+
+// ── RENDER FUNCTIONS ──────────────────────────────────────────────────────────
+function affordabilityBadge(capAfter) {
+  if (capAfter >= 15_000_000) return '<span class="badge badge-green">AFFORDABLE</span>';
+  if (capAfter >= 0)          return '<span class="badge badge-yellow">TIGHT</span>';
+  return '<span class="badge badge-red">OVER CAP</span>';
+}
+
+function moneyClass(n) {
+  if (n > 0) return 'money-pos';
+  if (n < 0) return 'money-neg';
+  return 'money-neutral';
+}
+
+function renderCapTable(rows, spec) {
+  const { signingBonus, years, playerName } = spec;
+  const prorationYears = Math.min(years, 5);
+  const annualProration = signingBonus / (prorationYears || 1);
+
+  // Proration info chips
+  const bar = document.getElementById('prorationBar');
+  bar.innerHTML = '';
+  if (signingBonus > 0) {
+    const chip1 = document.createElement('div');
+    chip1.className = 'proration-chip';
+    chip1.innerHTML = `Signing Bonus: <span>${fmtM(signingBonus)}</span>`;
+    const chip2 = document.createElement('div');
+    chip2.className = 'proration-chip';
+    chip2.innerHTML = `Prorated over <span>${prorationYears} yr${prorationYears > 1 ? 's' : ''}</span>`;
+    const chip3 = document.createElement('div');
+    chip3.className = 'proration-chip';
+    chip3.innerHTML = `Annual proration: <span>${fmtM(annualProration)}</span>`;
+    bar.append(chip1, chip2, chip3);
+  }
+
+  // Over-cap notice for year 1
+  const notice = document.getElementById('overCapNotice');
+  if (rows[0] && rows[0].teamCapEst < 0) {
+    notice.textContent = '⚠ This team is currently over the cap. Results show additional cap impact on top of existing deficit.';
+    notice.classList.remove('hidden');
+  } else {
+    notice.classList.add('hidden');
+  }
+
+  const body = document.getElementById('resultsBody');
+  body.innerHTML = '';
+  rows.forEach(r => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${r.calendarYr}${r.contractYr <= prorationYears && signingBonus > 0 ? ' <span style="font-size:.55rem;color:var(--muted)">[proration]</span>' : ''}</td>
+      <td class="${moneyClass(r.base)}">${fmtM(r.base)}</td>
+      <td class="money-accent">${r.proration > 0 ? fmtM(r.proration) : '—'}</td>
+      <td class="money-neutral" style="font-weight:700">${fmtM(r.capHit)}</td>
+      <td class="${moneyClass(r.teamCapAfter)}">${fmtM(r.teamCapAfter)}</td>
+      <td style="text-align:right">${affordabilityBadge(r.teamCapAfter)}</td>
+    `;
+    body.appendChild(tr);
+  });
+
+  document.getElementById('secResults').classList.remove('hidden');
+}
+
+function renderDeadTable(spec) {
+  const { years } = spec;
+  if (years <= 1) {
+    // No cut scenarios for 1-year contract
+    document.getElementById('secDead').classList.add('hidden');
+    return;
+  }
+
+  const body = document.getElementById('deadBody');
+  body.innerHTML = '';
+
+  for (let cutAfter = 1; cutAfter < years; cutAfter++) {
+    const { deadMoney, capSavings } = computeDeadMoney(spec, cutAfter);
+    const tr = document.createElement('tr');
+    const savingsClass = capSavings >= 0 ? 'money-pos' : 'money-neg';
+    const outcome = capSavings >= 0
+      ? `<span class="badge badge-green">SAVES ${fmtM(capSavings)}</span>`
+      : `<span class="badge badge-red">COSTS ${fmtM(Math.abs(capSavings))}</span>`;
+    tr.innerHTML = `
+      <td>After Year ${cutAfter} (${CURRENT_YEAR + cutAfter - 1} season)</td>
+      <td class="money-neg">${fmtM(deadMoney)}</td>
+      <td class="${savingsClass}">${fmtM(capSavings)}</td>
+      <td style="text-align:right">${outcome}</td>
+    `;
+    body.appendChild(tr);
+  }
+
+  document.getElementById('secDead').classList.remove('hidden');
+}
+
+function clearResults() {
+  document.getElementById('secResults').classList.add('hidden');
+  document.getElementById('secDead').classList.add('hidden');
+}
+
+// ── CALCULATE BUTTON ──────────────────────────────────────────────────────────
+document.getElementById('calcBtn').addEventListener('click', function() {
+  clearError();
+
+  const teamName = document.getElementById('teamSelect').value;
+  if (!teamName) { showError('Please select a team first.'); return; }
+
+  const total = parseFloat(document.getElementById('totalValue').value) || 0;
+  if (total <= 0) { showError('Please enter a total contract value.'); return; }
+
+  const years = +document.getElementById('contractYears').value;
+  const bonus = parseFloat(document.getElementById('signingBonus').value) || 0;
+
+  if (bonus > total) { showError('Signing bonus cannot exceed total contract value.'); return; }
+
+  const salarySum = salaryValues.reduce((s, v) => s + v, 0);
+  const contractTotal = salarySum + bonus;
+  if (contractTotal > total * 1.01) {
+    showError(`Base salaries + signing bonus ($${Math.round(contractTotal).toLocaleString()}) exceed total contract value ($${Math.round(total).toLocaleString()}). Please adjust.`);
+    return;
+  }
+
+  const team = TEAMS.find(t => t.name === teamName);
+  const teamCapY1 = team && team.capSpace != null ? team.capSpace : 0;
+
+  const spec = {
+    playerName: document.getElementById('playerName').value.trim() || 'Player',
+    years,
+    signingBonus: bonus,
+    baseSalaries: [...salaryValues],
+    guaranteed: [...guaranteedFlags],
+  };
+
+  const capRows = computeCapImpact(spec, teamCapY1);
+  renderCapTable(capRows, spec);
+  renderDeadTable(spec);
+
+  document.getElementById('secResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+rebuildSalaryTable(4, true);
+fetchCapData();
+</script>
+
+</body>
+</html>
