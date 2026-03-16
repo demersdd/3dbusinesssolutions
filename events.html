@@ -647,7 +647,7 @@ footer {
 
 <script>
 // ── CONFIG ──
-const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+const TICKETMASTER_KEY = 'M7Gq0HfCKFtkM8ncLULGkpyT6cSrnRe5';
 
 // ── STATE ──
 let allEvents = [];
@@ -700,16 +700,17 @@ async function searchEvents() {
   searchAI(city, startDate, endDate);
 
   try {
-    const body = { _service: 'ticketmaster', city, size: 50 };
-    if (startDate) body.startDateTime = toTicketmasterDate(startDate);
-    if (endDate) body.endDateTime = toTicketmasterDate(endDate).replace('T00:00:00Z', 'T23:59:59Z');
-    if (category !== 'all') body.classificationName = category;
-
-    const res = await fetch(WORKER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(body),
+    const params = new URLSearchParams({
+      apikey: TICKETMASTER_KEY,
+      city,
+      size: 50,
+      sort: 'date,asc',
     });
+    if (startDate) params.set('startDateTime', toTicketmasterDate(startDate));
+    if (endDate) params.set('endDateTime', toTicketmasterDate(endDate).replace('T00:00:00Z', 'T23:59:59Z'));
+    if (category !== 'all') params.set('classificationName', category);
+
+    const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`);
     const data = await res.json();
 
     if (data.fault || data.errors) {
@@ -734,7 +735,7 @@ async function searchEvents() {
   }
 }
 
-// ── AI SEARCH ──
+// ── AI SEARCH (More to Explore) ──
 async function searchAI(city, startDate, endDate) {
   const dateContext = startDate
     ? ` around ${new Date(startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${endDate ? ' through ' + new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : ''}`
@@ -754,7 +755,7 @@ thingsToDo: 5-8 timeless local attractions and experiences that don't require a 
 Return only the JSON object, no other text.`;
 
   try {
-    const resp = await fetch(WORKER_URL, {
+    const resp = await fetch('https://3dbusinesssolutions.demersdd.workers.dev', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
