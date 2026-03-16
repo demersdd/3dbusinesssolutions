@@ -42,7 +42,6 @@ export default {
           });
         }
         const fullHtml = await otcRes.text();
-        // Return only the first <table>…</table> to keep payload small
         const tableMatch = fullHtml.match(/<table[\s\S]*?<\/table>/i);
         const html = tableMatch ? tableMatch[0] : '';
         return new Response(JSON.stringify({ html, ok: true }), {
@@ -82,7 +81,6 @@ export default {
         let lastResponse;
         for (let attempt = 0; attempt < 4; attempt++) {
           if (attempt > 0) {
-            // Respect Retry-After header if present, otherwise exponential backoff
             const retryAfter = lastResponse?.headers?.get('Retry-After');
             const waitMs = retryAfter ? parseInt(retryAfter) * 1000 : (500 * Math.pow(2, attempt - 1));
             await new Promise(r => setTimeout(r, waitMs));
