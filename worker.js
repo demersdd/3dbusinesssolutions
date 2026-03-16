@@ -51,6 +51,29 @@ export default {
         });
       }
 
+      // Route to Ticketmaster Discovery API
+      if (body._service === 'ticketmaster') {
+        const { city, startDateTime, endDateTime, classificationName, size } = body;
+        const params = new URLSearchParams({
+          apikey: env.TICKETMASTER_API_KEY,
+          size: size || 20,
+          sort: 'date,asc',
+        });
+        if (city) params.set('city', city);
+        if (startDateTime) params.set('startDateTime', startDateTime);
+        if (endDateTime) params.set('endDateTime', endDateTime.replace('T00:00:00Z', 'T23:59:59Z'));
+        if (classificationName && classificationName !== 'all') {
+          params.set('classificationName', classificationName);
+        }
+        const tmUrl = `https://app.ticketmaster.com/discovery/v2/events.json?${params}`;
+        const tmRes = await fetch(tmUrl);
+        const tmData = await tmRes.json();
+        return new Response(JSON.stringify(tmData), {
+          status: tmRes.status,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
       // Route to OpenSanctions (with retry + exponential backoff for 429s)
       if (body._service === 'opensanctions') {
         const { _service, _path, ...payload } = body;

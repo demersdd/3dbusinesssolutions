@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Local Event Searcher | Find Events Near You</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f4f7fb;
+  --bg2: #ffffff;
+  --surface: #eef2f8;
+  --primary: #0057b8;
+  --primary-light: #dbeafe;
+  --accent: #0ea5e9;
+  --cta-purple: #7c3aed;
+  --cta-purple-light: #ede9fe;
+  --text: #1e2a3a;
+  --body: #4a5568;
+  --muted: #8898aa;
+  --border: #e2e8f0;
+  --card-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  --card-shadow-hover: 0 8px 32px rgba(0,0,0,0.12);
+  --head: 'Barlow Condensed', sans-serif;
+  --body-font: 'Inter', sans-serif;
+  --radius: 14px;
+  --radius-sm: 8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font-family: var(--body-font); overflow-x: hidden; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 1rem 3rem;
+  background: rgba(255,255,255,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+}
+.nav-logo { display: flex; align-items: center; gap: .75rem; text-decoration: none; }
+.nav-logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; font-weight: 700; font-family: var(--head); }
+.nav-logo-text { font-family: var(--head); font-size: 1.25rem; font-weight: 900; color: var(--text); letter-spacing: .02em; }
+.nav-logo-text span { color: var(--primary); }
+.nav-links { display: flex; gap: 2rem; align-items: center; }
+.nav-links a { font-size: .875rem; font-weight: 500; color: var(--body); text-decoration: none; transition: color .2s; }
+.nav-links a:hover { color: var(--primary); }
+.nav-cta {
+  font-size: .875rem; font-weight: 600; padding: .6rem 1.4rem;
+  background: var(--primary); color: white; border-radius: var(--radius-sm);
+  text-decoration: none; transition: background .2s, transform .1s;
+}
+.nav-cta:hover { background: #004a9e; transform: translateY(-1px); }
+
+/* ── HERO ── */
+.hero {
+  background: linear-gradient(145deg, #e8f4fd 0%, #f0f7ff 40%, #f8faff 100%);
+  padding: 5rem 3rem 4rem;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(14,165,233,.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-tag {
+  display: inline-flex; align-items: center; gap: .5rem;
+  background: var(--primary-light); color: var(--primary);
+  font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
+  padding: .35rem .9rem; border-radius: 100px; margin-bottom: 1.5rem;
+}
+.hero-tag::before { content: '✈'; font-size: .9rem; }
+.hero h1 {
+  font-family: var(--head); font-size: clamp(2.6rem, 5vw, 4.2rem);
+  font-weight: 900; line-height: 1.05; color: var(--text); margin-bottom: 1rem;
+  text-transform: uppercase; letter-spacing: -.01em;
+}
+.hero h1 em { font-style: normal; color: var(--primary); }
+.hero-sub {
+  font-size: 1.1rem; color: var(--body); max-width: 560px;
+  margin: 0 auto 2.5rem; line-height: 1.7; font-weight: 400;
+}
+
+/* ── SEARCH CARD ── */
+.search-card {
+  background: white; border-radius: var(--radius);
+  box-shadow: 0 4px 32px rgba(0,87,184,.12), 0 1px 4px rgba(0,0,0,.06);
+  padding: 2rem 2.5rem;
+  max-width: 860px; margin: 0 auto;
+  position: relative; z-index: 2;
+}
+.search-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1fr 1fr 1.4fr;
+  gap: 1rem; align-items: end;
+}
+.search-field { display: flex; flex-direction: column; gap: .45rem; }
+.search-label {
+  font-size: .72rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--muted);
+}
+.search-input {
+  width: 100%; padding: .75rem 1rem;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--body-font); font-size: .95rem; color: var(--text);
+  background: var(--bg); transition: border-color .2s, box-shadow .2s;
+  outline: none;
+}
+.search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
+.search-input::placeholder { color: var(--muted); }
+.search-btn {
+  width: 100%; padding: .8rem 1.5rem;
+  background: var(--primary); color: white;
+  border: none; border-radius: var(--radius-sm);
+  font-family: var(--body-font); font-size: .95rem; font-weight: 600;
+  cursor: pointer; transition: background .2s, transform .1s;
+  display: flex; align-items: center; justify-content: center; gap: .5rem;
+}
+.search-btn:hover { background: #004a9e; transform: translateY(-1px); }
+.search-btn:active { transform: translateY(0); }
+.search-btn:disabled { background: #93b4d4; cursor: not-allowed; transform: none; }
+.search-hint {
+  margin-top: 1.2rem; font-size: .78rem; color: var(--muted);
+  text-align: center; display: flex; align-items: center; justify-content: center; gap: 1.5rem;
+  flex-wrap: wrap;
+}
+.search-hint span::before { content: '● '; color: var(--accent); font-size: .5rem; vertical-align: middle; margin-right: .3rem; }
+
+/* ── RESULTS SECTION ── */
+.results-section {
+  max-width: 1200px; margin: 3rem auto; padding: 0 2rem;
+  display: none;
+}
+.results-section.visible { display: block; }
+.results-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+}
+.results-count {
+  font-size: 1rem; font-weight: 600; color: var(--text);
+}
+.results-count span { color: var(--primary); }
+.filter-chips { display: flex; gap: .5rem; flex-wrap: wrap; }
+.chip {
+  font-size: .78rem; font-weight: 500; padding: .4rem .95rem;
+  border: 1.5px solid var(--border); border-radius: 100px;
+  color: var(--body); background: white; cursor: pointer;
+  transition: all .2s;
+}
+.chip:hover, .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+/* ── EVENT CARDS GRID ── */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+/* ── SKELETON CARDS ── */
+.skeleton-card {
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--card-shadow); overflow: hidden;
+}
+.skeleton-img { height: 180px; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+.skeleton-body { padding: 1.25rem; }
+.skeleton-line { height: 14px; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin-bottom: .75rem; }
+.skeleton-line.short { width: 60%; }
+.skeleton-line.medium { width: 80%; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+
+/* ── EVENT CARD ── */
+.event-card {
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--card-shadow); overflow: hidden;
+  transition: transform .25s, box-shadow .25s;
+  display: flex; flex-direction: column;
+}
+.event-card:hover { transform: translateY(-4px); box-shadow: var(--card-shadow-hover); }
+.event-img-wrap { position: relative; height: 180px; overflow: hidden; background: var(--surface); }
+.event-img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: transform .4s;
+}
+.event-card:hover .event-img { transform: scale(1.04); }
+.event-img-placeholder {
+  width: 100%; height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; color: var(--muted); background: var(--surface);
+}
+.event-category-badge {
+  position: absolute; top: .75rem; left: .75rem;
+  font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  padding: .3rem .7rem; border-radius: 100px;
+}
+.badge-music { background: #dbeafe; color: #1d4ed8; }
+.badge-sports { background: #ffedd5; color: #c2410c; }
+.badge-arts { background: #ede9fe; color: #6d28d9; }
+.badge-family { background: #d1fae5; color: #065f46; }
+.badge-comedy { background: #fef9c3; color: #854d0e; }
+.badge-misc { background: #f1f5f9; color: #475569; }
+.event-body { padding: 1.25rem 1.4rem; flex: 1; display: flex; flex-direction: column; }
+.event-name {
+  font-size: 1.02rem; font-weight: 700; color: var(--text);
+  margin-bottom: .6rem; line-height: 1.35;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+}
+.event-meta { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
+.event-meta-row {
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .83rem; color: var(--body);
+}
+.event-meta-icon { font-size: .85rem; width: 1.1rem; text-align: center; color: var(--muted); }
+.event-price {
+  display: inline-block; font-size: .78rem; font-weight: 600;
+  color: var(--primary); background: var(--primary-light);
+  padding: .2rem .6rem; border-radius: 4px; margin-bottom: 1rem;
+}
+.event-link {
+  margin-top: auto;
+  display: inline-flex; align-items: center; gap: .4rem;
+  font-size: .85rem; font-weight: 600; color: var(--primary);
+  text-decoration: none; padding: .6rem 1.1rem;
+  border: 1.5px solid var(--primary); border-radius: var(--radius-sm);
+  transition: background .2s, color .2s; align-self: flex-start;
+}
+.event-link:hover { background: var(--primary); color: white; }
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 4rem 2rem;
+  display: none;
+}
+.empty-state.visible { display: block; }
+.empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
+.empty-state p { color: var(--body); font-size: .95rem; max-width: 380px; margin: 0 auto; }
+
+/* ── CTA SECTION ── */
+.cta-section {
+  max-width: 1200px; margin: 4rem auto 3rem; padding: 0 2rem;
+}
+.cta-card {
+  background: linear-gradient(135deg, #0057b8 0%, #0ea5e9 100%);
+  border-radius: var(--radius);
+  padding: 3rem 3.5rem;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 2.5rem; align-items: center;
+  position: relative; overflow: hidden;
+}
+.cta-card::before {
+  content: '✈';
+  position: absolute; right: -1rem; top: -2rem;
+  font-size: 12rem; color: rgba(255,255,255,.06);
+  pointer-events: none;
+}
+.cta-divider {
+  width: 1px; background: rgba(255,255,255,.25);
+  align-self: stretch;
+  display: none;
+}
+.cta-block { position: relative; z-index: 1; }
+.cta-block + .cta-block {
+  padding-left: 2.5rem;
+  border-left: 1px solid rgba(255,255,255,.25);
+}
+.cta-icon { font-size: 2rem; margin-bottom: .75rem; }
+.cta-heading { font-family: var(--head); font-size: 1.5rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: .02em; margin-bottom: .5rem; }
+.cta-sub { font-size: .9rem; color: rgba(255,255,255,.8); line-height: 1.6; margin-bottom: 1.25rem; }
+.cta-form { display: flex; flex-direction: column; gap: .65rem; }
+.cta-input {
+  width: 100%; padding: .7rem 1rem;
+  border: 1.5px solid rgba(255,255,255,.35); border-radius: var(--radius-sm);
+  background: rgba(255,255,255,.15);
+  color: white; font-family: var(--body-font); font-size: .9rem;
+  outline: none; transition: border-color .2s, background .2s;
+}
+.cta-input::placeholder { color: rgba(255,255,255,.6); }
+.cta-input:focus { border-color: rgba(255,255,255,.75); background: rgba(255,255,255,.22); }
+.cta-submit {
+  padding: .75rem 1.4rem; border-radius: var(--radius-sm);
+  font-family: var(--body-font); font-size: .9rem; font-weight: 700;
+  border: none; cursor: pointer; transition: transform .15s, box-shadow .15s;
+  align-self: flex-start;
+}
+.cta-submit-traveler { background: white; color: var(--primary); }
+.cta-submit-traveler:hover { box-shadow: 0 4px 20px rgba(0,0,0,.2); transform: translateY(-1px); }
+.cta-submit-agent { background: #fbbf24; color: #1e1e1e; }
+.cta-submit-agent:hover { box-shadow: 0 4px 20px rgba(0,0,0,.2); transform: translateY(-1px); }
+.cta-toast {
+  font-size: .82rem; font-weight: 600; color: rgba(255,255,255,.9);
+  display: none; margin-top: .25rem;
+}
+.cta-toast.visible { display: block; }
+
+/* ── WHY TRAVEL EXPERT ── */
+.why-section {
+  max-width: 1200px; margin: 0 auto 5rem; padding: 0 2rem;
+}
+.why-section-header { text-align: center; margin-bottom: 2.5rem; }
+.section-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--primary); margin-bottom: .75rem;
+}
+.section-eyebrow::before, .section-eyebrow::after { content: '—'; opacity: .4; }
+.why-section-header h2 { font-family: var(--head); font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 900; color: var(--text); text-transform: uppercase; }
+.why-section-header h2 em { font-style: normal; color: var(--primary); }
+.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.why-card {
+  background: white; border-radius: var(--radius);
+  padding: 2rem; border: 1.5px solid var(--border);
+  transition: border-color .25s, transform .25s, box-shadow .25s;
+}
+.why-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
+.why-bullet {
+  width: 12px; height: 12px; border-radius: 50%;
+  background: var(--primary); margin-bottom: 1rem;
+}
+.why-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
+.why-desc { font-size: .88rem; color: var(--body); line-height: 1.65; }
+
+/* ── FOOTER ── */
+footer {
+  background: white; border-top: 1px solid var(--border);
+  padding: 1.5rem 3rem;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-left { font-size: .8rem; color: var(--muted); }
+.footer-left a { color: var(--primary); text-decoration: none; font-weight: 500; }
+.footer-right { font-size: .8rem; color: var(--muted); }
+
+/* ── LOAD MORE ── */
+.load-more-wrap { text-align: center; margin-top: 2.5rem; }
+.load-more-btn {
+  display: inline-flex; align-items: center; gap: .5rem;
+  padding: .8rem 2rem; border: 2px solid var(--primary);
+  color: var(--primary); font-family: var(--body-font);
+  font-size: .9rem; font-weight: 600; background: white;
+  border-radius: var(--radius-sm); cursor: pointer;
+  transition: background .2s, color .2s;
+}
+.load-more-btn:hover { background: var(--primary); color: white; }
+.load-more-btn.hidden { display: none; }
+
+/* ── ERROR BANNER ── */
+.error-banner {
+  background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-sm);
+  padding: 1rem 1.5rem; margin-bottom: 1.5rem;
+  color: #b91c1c; font-size: .9rem; font-weight: 500;
+  display: none;
+}
+.error-banner.visible { display: block; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 1rem 1.5rem; }
+  .nav-links { display: none; }
+  .hero { padding: 3.5rem 1.5rem 3rem; }
+  .search-card { padding: 1.5rem; }
+  .search-grid { grid-template-columns: 1fr 1fr; }
+  .search-grid .search-field:first-child { grid-column: 1 / -1; }
+  .search-grid .search-btn-wrap { grid-column: 1 / -1; }
+  .cta-card { grid-template-columns: 1fr; padding: 2rem 1.75rem; }
+  .cta-block + .cta-block { padding-left: 0; border-left: none; border-top: 1px solid rgba(255,255,255,.25); padding-top: 2rem; }
+  .why-grid { grid-template-columns: 1fr; }
+  .results-header { flex-direction: column; align-items: flex-start; }
+  footer { flex-direction: column; gap: .5rem; text-align: center; }
+  .cta-section, .why-section, .results-section { padding: 0 1rem; }
+}
+@media (max-width: 620px) {
+  .search-grid { grid-template-columns: 1fr; }
+  .search-grid .search-field:first-child { grid-column: auto; }
+  .events-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ── -->
+<nav>
+  <a href="/" class="nav-logo">
+    <div class="nav-logo-icon">3D</div>
+    <div class="nav-logo-text">Event<span>Finder</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#search-card">Find Events</a>
+    <a href="#why-section">For Travelers</a>
+    <a href="#cta-section">Travel Agents</a>
+    <a href="/">3D Business Solutions</a>
+  </div>
+  <a href="#cta-section" class="nav-cta">Plan a Trip →</a>
+</nav>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-tag">Powered by Ticketmaster</div>
+  <h1>Discover Events <em>Near You</em></h1>
+  <p class="hero-sub">
+    Find concerts, festivals, sporting events, and more — wherever your next trip takes you.
+    Search any city, pick your dates, and start exploring.
+  </p>
+
+  <!-- Search Card -->
+  <div class="search-card" id="search-card">
+    <div class="search-grid">
+      <div class="search-field">
+        <label class="search-label" for="location-input">📍 City or Destination</label>
+        <input
+          id="location-input"
+          class="search-input"
+          type="text"
+          placeholder="e.g. Boston, New York, Chicago..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="search-field">
+        <label class="search-label" for="start-date">📅 Start Date</label>
+        <input id="start-date" class="search-input" type="date" />
+      </div>
+      <div class="search-field">
+        <label class="search-label" for="end-date">📅 End Date</label>
+        <input id="end-date" class="search-input" type="date" />
+      </div>
+      <div class="search-field search-btn-wrap">
+        <label class="search-label" for="category-select">🎭 Category</label>
+        <select id="category-select" class="search-input">
+          <option value="all">All Events</option>
+          <option value="music">🎵 Music</option>
+          <option value="sports">🏆 Sports</option>
+          <option value="arts">🎭 Arts &amp; Theater</option>
+          <option value="family">👨‍👩‍👧 Family</option>
+          <option value="comedy">😂 Comedy</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:1.25rem;">
+      <button class="search-btn" id="search-btn" onclick="searchEvents()">
+        <span id="btn-icon">🔍</span>
+        <span id="btn-text">Search Events</span>
+      </button>
+    </div>
+    <div class="search-hint">
+      <span>Concerts &amp; Festivals</span>
+      <span>Sports Games</span>
+      <span>Theater &amp; Arts</span>
+      <span>Family Events</span>
+      <span>Comedy Shows</span>
+    </div>
+  </div>
+</section>
+
+<!-- ── RESULTS ── -->
+<section class="results-section" id="results-section">
+  <div class="error-banner" id="error-banner"></div>
+  <div class="results-header">
+    <div class="results-count" id="results-count"></div>
+    <div class="filter-chips" id="filter-chips">
+      <button class="chip active" onclick="filterChip(this, 'all')">All</button>
+      <button class="chip" onclick="filterChip(this, 'week')">This Week</button>
+      <button class="chip" onclick="filterChip(this, 'weekend')">This Weekend</button>
+      <button class="chip" onclick="filterChip(this, 'month')">This Month</button>
+    </div>
+  </div>
+  <div class="events-grid" id="events-grid"></div>
+  <div class="empty-state" id="empty-state">
+    <div class="empty-icon">🗺️</div>
+    <h3>No events found</h3>
+    <p>Try searching a different city, adjusting your dates, or selecting a different category.</p>
+  </div>
+  <div class="load-more-wrap">
+    <button class="load-more-btn hidden" id="load-more-btn" onclick="loadMore()">
+      Load More Events ↓
+    </button>
+  </div>
+</section>
+
+<!-- ── CTA SECTION ── -->
+<section id="cta-section">
+  <div class="cta-section">
+    <div class="cta-card">
+      <!-- Traveler CTA -->
+      <div class="cta-block">
+        <div class="cta-icon">✈️</div>
+        <div class="cta-heading">Planning a Trip Around This Event?</div>
+        <p class="cta-sub">Let us connect you with an expert travel planner who can handle hotels, flights, and the full itinerary — so all you have to do is show up.</p>
+        <div class="cta-form">
+          <input class="cta-input" id="traveler-email" type="email" placeholder="Your email address" />
+          <button class="cta-submit cta-submit-traveler" onclick="submitTraveler()">Connect Me With a Planner →</button>
+          <div class="cta-toast" id="traveler-toast">✓ We'll reach out within 24 hours!</div>
+        </div>
+      </div>
+
+      <!-- Agent CTA -->
+      <div class="cta-block">
+        <div class="cta-icon">💼</div>
+        <div class="cta-heading">Are You a Travel Agent?</div>
+        <p class="cta-sub">Partner with us. We're building tools and a network for travel professionals who want to offer premium itinerary services to their clients.</p>
+        <div class="cta-form">
+          <input class="cta-input" id="agent-email" type="email" placeholder="Your work email" />
+          <input class="cta-input" id="agent-name" type="text" placeholder="Your agency name" />
+          <button class="cta-submit cta-submit-agent" onclick="submitAgent()">Let's Partner Up →</button>
+          <div class="cta-toast" id="agent-toast">✓ Thanks! We'll be in touch about partnership opportunities.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── WHY TRAVEL EXPERT ── -->
+<section id="why-section">
+  <div class="why-section">
+    <div class="why-section-header">
+      <div class="section-eyebrow">Why Book With an Expert</div>
+      <h2>More Than Just <em>a Ticket</em></h2>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-bullet"></div>
+        <div class="why-title">Drag. Drop. Done.</div>
+        <p class="why-desc">A travel expert builds your entire trip — not just the event ticket. Hotels, dining, and transport all sorted in one place so you can focus on enjoying it.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-bullet"></div>
+        <div class="why-title">Private Library of Options</div>
+        <p class="why-desc">Travel agents have access to rates and packages that aren't publicly listed. You save money and get better options than booking everything yourself.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-bullet"></div>
+        <div class="why-title">Powered by Experience</div>
+        <p class="why-desc">Group travel, multi-city itineraries, last-minute changes — experts handle the complexity so your trip runs smoothly even when things don't go to plan.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── FOOTER ── -->
+<footer>
+  <div class="footer-left">© 2025 <a href="/">3D Business Solutions</a> — Greater Boston · Remote Nationwide</div>
+  <div class="footer-right">Event data powered by Ticketmaster Discovery API</div>
+</footer>
+
+<script>
+// ── CONFIG ──
+const WORKER_URL = 'https://worker.3dbusinesssolutions.com';
+
+// ── STATE ──
+let allEvents = [];
+let filteredEvents = [];
+let displayedCount = 0;
+const PAGE_SIZE = 12;
+let currentFilter = 'all';
+
+// ── INIT DATES ──
+(function initDates() {
+  const today = new Date();
+  const plus30 = new Date(today);
+  plus30.setDate(today.getDate() + 30);
+  document.getElementById('start-date').value = formatDateInput(today);
+  document.getElementById('end-date').value = formatDateInput(plus30);
+  // Allow Enter key to trigger search
+  document.getElementById('location-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') searchEvents();
+  });
+})();
+
+function formatDateInput(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function toTicketmasterDate(dateStr) {
+  return dateStr ? dateStr + 'T00:00:00Z' : null;
+}
+
+// ── SEARCH ──
+async function searchEvents() {
+  const city = document.getElementById('location-input').value.trim();
+  if (!city) {
+    document.getElementById('location-input').focus();
+    document.getElementById('location-input').style.borderColor = '#f87171';
+    setTimeout(() => document.getElementById('location-input').style.borderColor = '', 1500);
+    return;
+  }
+
+  const startDate = document.getElementById('start-date').value;
+  const endDate = document.getElementById('end-date').value;
+  const category = document.getElementById('category-select').value;
+
+  setBtnLoading(true);
+  clearError();
+  showSkeletons();
+
+  try {
+    const body = {
+      _service: 'ticketmaster',
+      city,
+      size: 50,
+    };
+    if (startDate) body.startDateTime = toTicketmasterDate(startDate);
+    if (endDate) body.endDateTime = toTicketmasterDate(endDate) + ''.replace('T00:00:00Z', 'T23:59:59Z');
+    if (category !== 'all') body.classificationName = category;
+
+    const res = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+
+    const data = await res.json();
+
+    if (data.fault || data.errors) {
+      throw new Error(data.fault?.faultstring || data.errors?.[0]?.detail || 'API error');
+    }
+
+    const events = data._embedded?.events || [];
+    allEvents = events;
+    currentFilter = 'all';
+    setChipActive('all');
+    applyFilter('all');
+
+  } catch (err) {
+    console.error(err);
+    showError('Could not load events. Please check the city name and try again. (API key may need to be configured.)');
+    hideSkeletons();
+    document.getElementById('results-section').classList.add('visible');
+    document.getElementById('empty-state').classList.add('visible');
+    document.getElementById('events-grid').innerHTML = '';
+  } finally {
+    setBtnLoading(false);
+  }
+}
+
+// ── FILTER ──
+function filterChip(el, filter) {
+  currentFilter = filter;
+  setChipActive(filter);
+  applyFilter(filter);
+}
+
+function setChipActive(filter) {
+  document.querySelectorAll('#filter-chips .chip').forEach(c => {
+    c.classList.toggle('active', c.getAttribute('onclick').includes(`'${filter}'`));
+  });
+}
+
+function applyFilter(filter) {
+  const now = new Date();
+  const endOfWeek = new Date(now);
+  endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
+  endOfWeek.setHours(23, 59, 59);
+
+  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+
+  // Weekend = next Sat & Sun
+  const daysToSat = (6 - now.getDay() + 7) % 7 || 7;
+  const satStart = new Date(now); satStart.setDate(now.getDate() + daysToSat); satStart.setHours(0,0,0,0);
+  const sunEnd = new Date(satStart); sunEnd.setDate(satStart.getDate() + 1); sunEnd.setHours(23,59,59);
+
+  filteredEvents = allEvents.filter(ev => {
+    if (filter === 'all') return true;
+    const evDate = new Date(ev.dates?.start?.dateTime || ev.dates?.start?.localDate);
+    if (filter === 'week') return evDate >= now && evDate <= endOfWeek;
+    if (filter === 'weekend') return evDate >= satStart && evDate <= sunEnd;
+    if (filter === 'month') return evDate >= now && evDate <= endOfMonth;
+    return true;
+  });
+
+  displayedCount = 0;
+  document.getElementById('events-grid').innerHTML = '';
+  document.getElementById('empty-state').classList.remove('visible');
+  document.getElementById('results-section').classList.add('visible');
+
+  renderNextPage();
+  updateResultsCount();
+}
+
+// ── RENDER ──
+function renderNextPage() {
+  const slice = filteredEvents.slice(displayedCount, displayedCount + PAGE_SIZE);
+  const grid = document.getElementById('events-grid');
+
+  if (slice.length === 0 && displayedCount === 0) {
+    document.getElementById('empty-state').classList.add('visible');
+    document.getElementById('load-more-btn').classList.add('hidden');
+    return;
+  }
+
+  slice.forEach(ev => {
+    grid.insertAdjacentHTML('beforeend', buildEventCard(ev));
+  });
+
+  displayedCount += slice.length;
+  const hasMore = displayedCount < filteredEvents.length;
+  document.getElementById('load-more-btn').classList.toggle('hidden', !hasMore);
+}
+
+function loadMore() {
+  renderNextPage();
+  updateResultsCount();
+}
+
+function updateResultsCount() {
+  const countEl = document.getElementById('results-count');
+  const city = document.getElementById('location-input').value.trim();
+  if (filteredEvents.length === 0) {
+    countEl.textContent = '';
+  } else {
+    countEl.innerHTML = `<span>${filteredEvents.length}</span> event${filteredEvents.length !== 1 ? 's' : ''} found near <span>${city}</span>`;
+  }
+}
+
+function buildEventCard(ev) {
+  const name = ev.name || 'Unnamed Event';
+  const url = ev.url || '#';
+
+  // Date
+  const dateStr = ev.dates?.start?.dateTime || ev.dates?.start?.localDate;
+  const dateObj = dateStr ? new Date(dateStr) : null;
+  const displayDate = dateObj
+    ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
+    : 'Date TBA';
+  const displayTime = (dateObj && ev.dates?.start?.dateTime)
+    ? dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
+    : '';
+
+  // Venue
+  const venue = ev._embedded?.venues?.[0];
+  const venueName = venue?.name || '';
+  const venueCity = venue?.city?.name || '';
+  const venueState = venue?.state?.stateCode || '';
+  const venueLocation = [venueName, [venueCity, venueState].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
+
+  // Image
+  const imgs = ev.images || [];
+  const img16x9 = imgs.find(i => i.ratio === '16_9' && i.width >= 500);
+  const imgFallback = imgs.find(i => i.width >= 400);
+  const imgSrc = img16x9?.url || imgFallback?.url || '';
+
+  // Category
+  const segment = ev.classifications?.[0]?.segment?.name || '';
+  const genre = ev.classifications?.[0]?.genre?.name || '';
+  const catBadge = getCategoryBadge(segment, genre);
+
+  // Price
+  const priceRanges = ev.priceRanges?.[0];
+  const priceStr = priceRanges
+    ? (priceRanges.min === priceRanges.max
+      ? `$${Math.round(priceRanges.min)}`
+      : `$${Math.round(priceRanges.min)} – $${Math.round(priceRanges.max)}`)
+    : '';
+
+  return `
+<article class="event-card">
+  <div class="event-img-wrap">
+    ${imgSrc
+      ? `<img class="event-img" src="${escHtml(imgSrc)}" alt="${escHtml(name)}" loading="lazy" />`
+      : `<div class="event-img-placeholder">${getCategoryEmoji(segment)}</div>`
+    }
+    <span class="event-category-badge ${catBadge.cls}">${catBadge.label}</span>
+  </div>
+  <div class="event-body">
+    <div class="event-name">${escHtml(name)}</div>
+    <div class="event-meta">
+      <div class="event-meta-row">
+        <span class="event-meta-icon">📅</span>
+        <span>${escHtml(displayDate)}${displayTime ? ' · ' + escHtml(displayTime) : ''}</span>
+      </div>
+      ${venueLocation ? `
+      <div class="event-meta-row">
+        <span class="event-meta-icon">📍</span>
+        <span>${escHtml(venueLocation)}</span>
+      </div>` : ''}
+    </div>
+    ${priceStr ? `<span class="event-price">${escHtml(priceStr)}</span>` : ''}
+    <a class="event-link" href="${escHtml(url)}" target="_blank" rel="noopener">
+      View Details →
+    </a>
+  </div>
+</article>`;
+}
+
+function getCategoryBadge(segment, genre) {
+  const s = (segment || '').toLowerCase();
+  const g = (genre || '').toLowerCase();
+  if (s.includes('music')) return { cls: 'badge-music', label: genre || 'Music' };
+  if (s.includes('sport')) return { cls: 'badge-sports', label: genre || 'Sports' };
+  if (s.includes('arts') || s.includes('theatre')) return { cls: 'badge-arts', label: genre || 'Arts' };
+  if (s.includes('family')) return { cls: 'badge-family', label: 'Family' };
+  if (g.includes('comedy')) return { cls: 'badge-comedy', label: 'Comedy' };
+  return { cls: 'badge-misc', label: segment || 'Event' };
+}
+
+function getCategoryEmoji(segment) {
+  const s = (segment || '').toLowerCase();
+  if (s.includes('music')) return '🎵';
+  if (s.includes('sport')) return '🏆';
+  if (s.includes('arts') || s.includes('theatre')) return '🎭';
+  if (s.includes('family')) return '👨‍👩‍👧';
+  return '🎫';
+}
+
+function escHtml(str) {
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── SKELETON ──
+function showSkeletons() {
+  const grid = document.getElementById('events-grid');
+  grid.innerHTML = Array(6).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skeleton-img"></div>
+      <div class="skeleton-body">
+        <div class="skeleton-line medium"></div>
+        <div class="skeleton-line short"></div>
+        <div class="skeleton-line medium"></div>
+        <div class="skeleton-line short"></div>
+      </div>
+    </div>`).join('');
+  document.getElementById('results-section').classList.add('visible');
+  document.getElementById('empty-state').classList.remove('visible');
+  document.getElementById('load-more-btn').classList.add('hidden');
+}
+
+function hideSkeletons() {
+  document.getElementById('events-grid').innerHTML = '';
+}
+
+// ── BUTTON STATE ──
+function setBtnLoading(loading) {
+  const btn = document.getElementById('search-btn');
+  const icon = document.getElementById('btn-icon');
+  const txt = document.getElementById('btn-text');
+  btn.disabled = loading;
+  icon.textContent = loading ? '⏳' : '🔍';
+  txt.textContent = loading ? 'Searching...' : 'Search Events';
+}
+
+// ── ERROR ──
+function showError(msg) {
+  const el = document.getElementById('error-banner');
+  el.textContent = '⚠️ ' + msg;
+  el.classList.add('visible');
+}
+function clearError() {
+  document.getElementById('error-banner').classList.remove('visible');
+}
+
+// ── CTA FORMS ──
+function submitTraveler() {
+  const email = document.getElementById('traveler-email').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('traveler-email').focus();
+    return;
+  }
+  const city = document.getElementById('location-input').value.trim() || 'an upcoming destination';
+  const subject = encodeURIComponent('Trip Planner Request — ' + city);
+  const body = encodeURIComponent(`Hi,\n\nI found an event in ${city} using the Event Searcher tool and I'd love to connect with a travel planner to help build a trip around it.\n\nMy email: ${email}\n\nThanks!`);
+  window.open(`mailto:demersdd@gmail.com?subject=${subject}&body=${body}`, '_blank');
+  document.getElementById('traveler-toast').classList.add('visible');
+  document.getElementById('traveler-email').value = '';
+}
+
+function submitAgent() {
+  const email = document.getElementById('agent-email').value.trim();
+  const agency = document.getElementById('agent-name').value.trim();
+  if (!email || !email.includes('@')) {
+    document.getElementById('agent-email').focus();
+    return;
+  }
+  const subject = encodeURIComponent('Travel Agent Partnership Inquiry');
+  const body = encodeURIComponent(`Hi,\n\nI'm a travel agent interested in partnering with you through the Event Searcher tool.\n\nEmail: ${email}\nAgency: ${agency || 'Not provided'}\n\nLooking forward to connecting!`);
+  window.open(`mailto:demersdd@gmail.com?subject=${subject}&body=${body}`, '_blank');
+  document.getElementById('agent-toast').classList.add('visible');
+  document.getElementById('agent-email').value = '';
+  document.getElementById('agent-name').value = '';
+}
+</script>
+
+</body>
+</html>
