@@ -1,689 +1,699 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Local Event Searcher | Find Events Near You</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<title>Local Event Finder | Discover Events Near You</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 :root {
-  --bg: #f4f7fb;
-  --bg2: #ffffff;
-  --surface: #eef2f8;
   --primary: #0057b8;
+  --primary-dark: #004299;
   --primary-light: #dbeafe;
-  --accent: #0ea5e9;
-  --cta-purple: #7c3aed;
-  --cta-purple-light: #ede9fe;
-  --text: #1e2a3a;
-  --body: #4a5568;
-  --muted: #8898aa;
+  --accent: #7c3aed;
+  --accent-light: #ede9fe;
+  --teal: #0ea5e9;
+  --teal-light: #e0f2fe;
+  --bg: #f8fafc;
+  --white: #ffffff;
+  --surface: #f1f5f9;
+  --text: #0f172a;
+  --body: #334155;
+  --muted: #94a3b8;
   --border: #e2e8f0;
-  --card-shadow: 0 2px 16px rgba(0,0,0,0.07);
-  --card-shadow-hover: 0 8px 32px rgba(0,0,0,0.12);
-  --head: 'Barlow Condensed', sans-serif;
-  --body-font: 'Inter', sans-serif;
-  --radius: 14px;
-  --radius-sm: 8px;
+  --success: #10b981;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 16px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 24px rgba(0,0,0,0.10);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.13);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
-body { background: var(--bg); color: var(--text); font-family: var(--body-font); overflow-x: hidden; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
 
 /* ── NAV ── */
 nav {
-  position: sticky; top: 0; z-index: 100;
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 1rem 3rem;
-  background: rgba(255,255,255,0.95);
-  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 200;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 2rem; height: 64px;
+  background: var(--white);
   border-bottom: 1px solid var(--border);
-  box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
 }
-.nav-logo { display: flex; align-items: center; gap: .75rem; text-decoration: none; }
-.nav-logo-icon { width: 36px; height: 36px; background: var(--primary); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.1rem; font-weight: 700; font-family: var(--head); }
-.nav-logo-text { font-family: var(--head); font-size: 1.25rem; font-weight: 900; color: var(--text); letter-spacing: .02em; }
+.nav-logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+.nav-logo-mark {
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--primary);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; font-weight: 700; font-size: 13px; letter-spacing: -.5px;
+}
+.nav-logo-text { font-size: 15px; font-weight: 600; color: var(--text); }
 .nav-logo-text span { color: var(--primary); }
-.nav-links { display: flex; gap: 2rem; align-items: center; }
-.nav-links a { font-size: .875rem; font-weight: 500; color: var(--body); text-decoration: none; transition: color .2s; }
+.nav-links { display: flex; gap: 2rem; }
+.nav-links a { font-size: 14px; color: var(--body); text-decoration: none; transition: color .2s; }
 .nav-links a:hover { color: var(--primary); }
 .nav-cta {
-  font-size: .875rem; font-weight: 600; padding: .6rem 1.4rem;
-  background: var(--primary); color: white; border-radius: var(--radius-sm);
-  text-decoration: none; transition: background .2s, transform .1s;
+  padding: 8px 18px; background: var(--primary); color: #fff;
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 500;
+  text-decoration: none; transition: background .2s;
 }
-.nav-cta:hover { background: #004a9e; transform: translateY(-1px); }
+.nav-cta:hover { background: var(--primary-dark); }
 
 /* ── HERO ── */
 .hero {
-  background: linear-gradient(145deg, #e8f4fd 0%, #f0f7ff 40%, #f8faff 100%);
-  padding: 5rem 3rem 4rem;
+  background: linear-gradient(135deg, #0057b8 0%, #0284c7 50%, #7c3aed 100%);
+  padding: 4rem 2rem 3rem;
   text-align: center;
+  color: #fff;
   position: relative;
   overflow: hidden;
 }
 .hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(14,165,233,.08) 0%, transparent 70%);
-  pointer-events: none;
+  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
 }
-.hero-tag {
-  display: inline-flex; align-items: center; gap: .5rem;
-  background: var(--primary-light); color: var(--primary);
-  font-size: .78rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase;
-  padding: .35rem .9rem; border-radius: 100px; margin-bottom: 1.5rem;
+.hero-inner { position: relative; z-index: 1; max-width: 640px; margin: 0 auto; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+  border-radius: 100px; padding: 5px 14px;
+  font-size: 12px; font-weight: 500; letter-spacing: .04em;
+  margin-bottom: 1.25rem; backdrop-filter: blur(4px);
 }
-.hero-tag::before { content: '✈'; font-size: .9rem; }
-.hero h1 {
-  font-family: var(--head); font-size: clamp(2.6rem, 5vw, 4.2rem);
-  font-weight: 900; line-height: 1.05; color: var(--text); margin-bottom: 1rem;
-  text-transform: uppercase; letter-spacing: -.01em;
-}
-.hero h1 em { font-style: normal; color: var(--primary); }
-.hero-sub {
-  font-size: 1.1rem; color: var(--body); max-width: 560px;
-  margin: 0 auto 2.5rem; line-height: 1.7; font-weight: 400;
-}
+.hero h1 { font-size: clamp(1.9rem, 5vw, 3rem); font-weight: 700; line-height: 1.2; margin-bottom: .75rem; }
+.hero p { font-size: 1.05rem; opacity: .88; line-height: 1.65; margin-bottom: 2rem; }
 
 /* ── SEARCH CARD ── */
 .search-card {
-  background: white; border-radius: var(--radius);
-  box-shadow: 0 4px 32px rgba(0,87,184,.12), 0 1px 4px rgba(0,0,0,.06);
-  padding: 2rem 2.5rem;
-  max-width: 860px; margin: 0 auto;
-  position: relative; z-index: 2;
+  background: var(--white);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-lg);
+  max-width: 860px;
+  margin: 0 auto -2.5rem;
+  position: relative; z-index: 10;
 }
-.search-grid {
+.search-row {
   display: grid;
-  grid-template-columns: 1.8fr 1fr 1fr 1.4fr;
-  gap: 1rem; align-items: end;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: .75rem;
+  align-items: end;
 }
-.search-field { display: flex; flex-direction: column; gap: .45rem; }
-.search-label {
-  font-size: .72rem; font-weight: 600; text-transform: uppercase;
-  letter-spacing: .08em; color: var(--muted);
-}
-.search-input {
-  width: 100%; padding: .75rem 1rem;
-  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
-  font-family: var(--body-font); font-size: .95rem; color: var(--text);
-  background: var(--bg); transition: border-color .2s, box-shadow .2s;
+.field { display: flex; flex-direction: column; gap: 5px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--body); letter-spacing: .03em; text-transform: uppercase; }
+.field input, .field select {
+  height: 44px; padding: 0 12px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 14px; font-family: inherit;
+  color: var(--text); background: var(--white);
+  transition: border-color .2s;
   outline: none;
 }
-.search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-light); }
-.search-input::placeholder { color: var(--muted); }
-.search-btn {
-  width: 100%; padding: .8rem 1.5rem;
-  background: var(--primary); color: white;
+.field input:focus, .field select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,87,184,0.1); }
+.date-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: .75rem;
+  margin-top: .75rem;
+}
+.btn-search {
+  height: 44px; padding: 0 24px;
+  background: var(--primary); color: #fff;
   border: none; border-radius: var(--radius-sm);
-  font-family: var(--body-font); font-size: .95rem; font-weight: 600;
-  cursor: pointer; transition: background .2s, transform .1s;
-  display: flex; align-items: center; justify-content: center; gap: .5rem;
+  font-size: 15px; font-weight: 600; font-family: inherit;
+  cursor: pointer; white-space: nowrap;
+  display: flex; align-items: center; gap: 8px;
+  transition: background .2s, transform .1s;
 }
-.search-btn:hover { background: #004a9e; transform: translateY(-1px); }
-.search-btn:active { transform: translateY(0); }
-.search-btn:disabled { background: #93b4d4; cursor: not-allowed; transform: none; }
-.search-hint {
-  margin-top: 1.2rem; font-size: .78rem; color: var(--muted);
-  text-align: center; display: flex; align-items: center; justify-content: center; gap: 1.5rem;
-  flex-wrap: wrap;
-}
-.search-hint span::before { content: '● '; color: var(--accent); font-size: .5rem; vertical-align: middle; margin-right: .3rem; }
+.btn-search:hover { background: var(--primary-dark); }
+.btn-search:active { transform: scale(.98); }
+.btn-search svg { width: 18px; height: 18px; }
 
-/* ── RESULTS SECTION ── */
-.results-section {
-  max-width: 1200px; margin: 3rem auto; padding: 0 2rem;
-  display: none;
+/* ── MAIN CONTENT ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 4.5rem 1.5rem 4rem; }
+
+/* ── STATE VIEWS ── */
+.state-view { text-align: center; padding: 4rem 1rem; }
+.state-icon { font-size: 3rem; margin-bottom: 1rem; line-height: 1; }
+.state-title { font-size: 1.4rem; font-weight: 600; margin-bottom: .5rem; }
+.state-sub { font-size: .95rem; color: var(--muted); max-width: 400px; margin: 0 auto; }
+
+/* ── LOADING ── */
+.loading-dots { display: flex; gap: 6px; justify-content: center; margin: 1.5rem auto 0; }
+.loading-dots span {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--primary); opacity: .3;
+  animation: dot-pulse 1.2s ease-in-out infinite;
 }
-.results-section.visible { display: block; }
+.loading-dots span:nth-child(2) { animation-delay: .2s; }
+.loading-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dot-pulse { 0%,80%,100%{opacity:.3;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+
+/* ── RESULTS HEADER ── */
 .results-header {
   display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;
+  margin-bottom: 1.5rem; flex-wrap: wrap; gap: .75rem;
 }
-.results-count {
-  font-size: 1rem; font-weight: 600; color: var(--text);
+.results-title { font-size: 1.2rem; font-weight: 700; color: var(--text); }
+.results-count { font-size: .85rem; color: var(--muted); }
+.source-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 10px; border-radius: 100px;
 }
-.results-count span { color: var(--primary); }
-.filter-chips { display: flex; gap: .5rem; flex-wrap: wrap; }
-.chip {
-  font-size: .78rem; font-weight: 500; padding: .4rem .95rem;
-  border: 1.5px solid var(--border); border-radius: 100px;
-  color: var(--body); background: white; cursor: pointer;
-  transition: all .2s;
-}
-.chip:hover, .chip.active { background: var(--primary); color: white; border-color: var(--primary); }
+.source-badge.tm { background: #fff4ed; color: #c2410c; }
+.source-badge.ai { background: var(--accent-light); color: var(--accent); }
 
-/* ── EVENT CARDS GRID ── */
+/* ── SECTION DIVIDER ── */
+.section-divider {
+  display: flex; align-items: center; gap: 1rem;
+  margin: 2.5rem 0 1.5rem;
+}
+.section-divider-line { flex: 1; height: 1px; background: var(--border); }
+.section-divider-label {
+  font-size: 13px; font-weight: 600; color: var(--body);
+  white-space: nowrap; display: flex; align-items: center; gap: 6px;
+}
+
+/* ── EVENT GRID ── */
 .events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.25rem;
 }
-
-/* ── SKELETON CARDS ── */
-.skeleton-card {
-  background: white; border-radius: var(--radius);
-  box-shadow: var(--card-shadow); overflow: hidden;
-}
-.skeleton-img { height: 180px; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
-.skeleton-body { padding: 1.25rem; }
-.skeleton-line { height: 14px; background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; margin-bottom: .75rem; }
-.skeleton-line.short { width: 60%; }
-.skeleton-line.medium { width: 80%; }
-@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
 
 /* ── EVENT CARD ── */
 .event-card {
-  background: white; border-radius: var(--radius);
-  box-shadow: var(--card-shadow); overflow: hidden;
-  transition: transform .25s, box-shadow .25s;
+  background: var(--white);
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: transform .2s, box-shadow .2s;
   display: flex; flex-direction: column;
 }
-.event-card:hover { transform: translateY(-4px); box-shadow: var(--card-shadow-hover); }
-.event-img-wrap { position: relative; height: 180px; overflow: hidden; background: var(--surface); }
+.event-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); }
 .event-img {
-  width: 100%; height: 100%; object-fit: cover;
-  transition: transform .4s;
-}
-.event-card:hover .event-img { transform: scale(1.04); }
-.event-img-placeholder {
-  width: 100%; height: 100%;
+  width: 100%; height: 180px; object-fit: cover;
+  background: linear-gradient(135deg, #dbeafe, #ede9fe);
   display: flex; align-items: center; justify-content: center;
-  font-size: 3rem; color: var(--muted); background: var(--surface);
+  font-size: 3rem; color: var(--primary);
 }
-.event-category-badge {
-  position: absolute; top: .75rem; left: .75rem;
-  font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-  padding: .3rem .7rem; border-radius: 100px;
+.event-img img { width: 100%; height: 100%; object-fit: cover; }
+.event-body { padding: 1.1rem; flex: 1; display: flex; flex-direction: column; gap: .5rem; }
+.event-cat {
+  font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--primary);
 }
-.badge-music { background: #dbeafe; color: #1d4ed8; }
-.badge-sports { background: #ffedd5; color: #c2410c; }
-.badge-arts { background: #ede9fe; color: #6d28d9; }
-.badge-family { background: #d1fae5; color: #065f46; }
-.badge-comedy { background: #fef9c3; color: #854d0e; }
-.badge-misc { background: #f1f5f9; color: #475569; }
-.event-body { padding: 1.25rem 1.4rem; flex: 1; display: flex; flex-direction: column; }
-.event-name {
-  font-size: 1.02rem; font-weight: 700; color: var(--text);
-  margin-bottom: .6rem; line-height: 1.35;
-  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+.event-name { font-size: 1rem; font-weight: 600; line-height: 1.35; color: var(--text); }
+.event-meta { display: flex; flex-direction: column; gap: 4px; margin-top: auto; }
+.event-meta-row { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--body); }
+.event-meta-row svg { width: 14px; height: 14px; color: var(--muted); flex-shrink: 0; }
+.event-footer {
+  padding: .85rem 1.1rem;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: .5rem;
 }
-.event-meta { display: flex; flex-direction: column; gap: .35rem; margin-bottom: 1rem; }
-.event-meta-row {
-  display: flex; align-items: center; gap: .5rem;
-  font-size: .83rem; color: var(--body);
+.event-price { font-size: .85rem; font-weight: 600; color: var(--body); }
+.btn-ticket {
+  padding: 7px 16px;
+  background: var(--primary); color: #fff;
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  text-decoration: none; transition: background .2s;
+  white-space: nowrap;
 }
-.event-meta-icon { font-size: .85rem; width: 1.1rem; text-align: center; color: var(--muted); }
-.event-price {
-  display: inline-block; font-size: .78rem; font-weight: 600;
-  color: var(--primary); background: var(--primary-light);
-  padding: .2rem .6rem; border-radius: 4px; margin-bottom: 1rem;
+.btn-ticket:hover { background: var(--primary-dark); }
+.btn-ticket.secondary {
+  background: var(--primary-light); color: var(--primary);
 }
-.event-link {
-  margin-top: auto;
-  display: inline-flex; align-items: center; gap: .4rem;
-  font-size: .85rem; font-weight: 600; color: var(--primary);
-  text-decoration: none; padding: .6rem 1.1rem;
-  border: 1.5px solid var(--primary); border-radius: var(--radius-sm);
-  transition: background .2s, color .2s; align-self: flex-start;
-}
-.event-link:hover { background: var(--primary); color: white; }
+.btn-ticket.secondary:hover { background: #bfdbfe; }
 
-/* ── EMPTY STATE ── */
-.empty-state {
-  text-align: center; padding: 4rem 2rem;
-  display: none;
-}
-.empty-state.visible { display: block; }
-.empty-icon { font-size: 3.5rem; margin-bottom: 1rem; }
-.empty-state h3 { font-size: 1.4rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
-.empty-state p { color: var(--body); font-size: .95rem; max-width: 380px; margin: 0 auto; }
-
-/* ── CTA SECTION ── */
-.cta-section {
-  max-width: 1200px; margin: 4rem auto 3rem; padding: 0 2rem;
-}
-.cta-card {
-  background: linear-gradient(135deg, #0057b8 0%, #0ea5e9 100%);
+/* ── AI EXPLORE CARD ── */
+.ai-card {
+  background: var(--white);
   border-radius: var(--radius);
-  padding: 3rem 3.5rem;
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: 2.5rem; align-items: center;
-  position: relative; overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
 }
-.cta-card::before {
-  content: '✈';
-  position: absolute; right: -1rem; top: -2rem;
-  font-size: 12rem; color: rgba(255,255,255,.06);
-  pointer-events: none;
+.ai-card-header {
+  padding: 1rem 1.25rem;
+  background: linear-gradient(90deg, var(--accent-light), #f0f9ff);
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; gap: 8px;
 }
-.cta-divider {
-  width: 1px; background: rgba(255,255,255,.25);
-  align-self: stretch;
-  display: none;
-}
-.cta-block { position: relative; z-index: 1; }
-.cta-block + .cta-block {
-  padding-left: 2.5rem;
-  border-left: 1px solid rgba(255,255,255,.25);
-}
-.cta-icon { font-size: 2rem; margin-bottom: .75rem; }
-.cta-heading { font-family: var(--head); font-size: 1.5rem; font-weight: 900; color: white; text-transform: uppercase; letter-spacing: .02em; margin-bottom: .5rem; }
-.cta-sub { font-size: .9rem; color: rgba(255,255,255,.8); line-height: 1.6; margin-bottom: 1.25rem; }
-.cta-form { display: flex; flex-direction: column; gap: .65rem; }
-.cta-input {
-  width: 100%; padding: .7rem 1rem;
-  border: 1.5px solid rgba(255,255,255,.35); border-radius: var(--radius-sm);
-  background: rgba(255,255,255,.15);
-  color: white; font-family: var(--body-font); font-size: .9rem;
-  outline: none; transition: border-color .2s, background .2s;
-}
-.cta-input::placeholder { color: rgba(255,255,255,.6); }
-.cta-input:focus { border-color: rgba(255,255,255,.75); background: rgba(255,255,255,.22); }
-.cta-submit {
-  padding: .75rem 1.4rem; border-radius: var(--radius-sm);
-  font-family: var(--body-font); font-size: .9rem; font-weight: 700;
-  border: none; cursor: pointer; transition: transform .15s, box-shadow .15s;
-  align-self: flex-start;
-}
-.cta-submit-traveler { background: white; color: var(--primary); }
-.cta-submit-traveler:hover { box-shadow: 0 4px 20px rgba(0,0,0,.2); transform: translateY(-1px); }
-.cta-submit-agent { background: #fbbf24; color: #1e1e1e; }
-.cta-submit-agent:hover { box-shadow: 0 4px 20px rgba(0,0,0,.2); transform: translateY(-1px); }
-.cta-toast {
-  font-size: .82rem; font-weight: 600; color: rgba(255,255,255,.9);
-  display: none; margin-top: .25rem;
-}
-.cta-toast.visible { display: block; }
+.ai-card-header-icon { font-size: 1.1rem; }
+.ai-card-header-text { font-size: .9rem; font-weight: 600; color: var(--accent); }
+.ai-card-body { padding: 1.25rem; font-size: .9rem; line-height: 1.75; color: var(--body); }
+.ai-card-body h3 { font-size: .95rem; font-weight: 700; color: var(--text); margin: 1rem 0 .4rem; }
+.ai-card-body h3:first-child { margin-top: 0; }
+.ai-card-body ul { padding-left: 1.25rem; }
+.ai-card-body ul li { margin-bottom: .35rem; }
+.ai-card-body strong { color: var(--text); }
+.ai-card-body p { margin-bottom: .5rem; }
 
-/* ── WHY TRAVEL EXPERT ── */
-.why-section {
-  max-width: 1200px; margin: 0 auto 5rem; padding: 0 2rem;
+/* ── CTA BANNER ── */
+.cta-banner {
+  background: linear-gradient(135deg, var(--primary), #7c3aed);
+  border-radius: var(--radius);
+  padding: 2.5rem 2rem;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-top: 3rem;
 }
-.why-section-header { text-align: center; margin-bottom: 2.5rem; }
-.section-eyebrow {
-  display: inline-flex; align-items: center; gap: .5rem;
-  font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
-  color: var(--primary); margin-bottom: .75rem;
+.cta-banner-text h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: .4rem; }
+.cta-banner-text p { font-size: .95rem; opacity: .88; max-width: 480px; line-height: 1.6; }
+.cta-banner-actions { display: flex; gap: .75rem; flex-wrap: wrap; }
+.btn-cta-white {
+  padding: 11px 22px; background: #fff; color: var(--primary);
+  border-radius: var(--radius-sm); font-size: 14px; font-weight: 600;
+  border: none; cursor: pointer; font-family: inherit;
+  transition: opacity .2s; white-space: nowrap;
 }
-.section-eyebrow::before, .section-eyebrow::after { content: '—'; opacity: .4; }
-.why-section-header h2 { font-family: var(--head); font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 900; color: var(--text); text-transform: uppercase; }
-.why-section-header h2 em { font-style: normal; color: var(--primary); }
-.why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-.why-card {
-  background: white; border-radius: var(--radius);
-  padding: 2rem; border: 1.5px solid var(--border);
-  transition: border-color .25s, transform .25s, box-shadow .25s;
+.btn-cta-white:hover { opacity: .9; }
+.btn-cta-outline {
+  padding: 11px 22px; background: transparent; color: #fff;
+  border: 1.5px solid rgba(255,255,255,.5); border-radius: var(--radius-sm);
+  font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+  transition: border-color .2s; white-space: nowrap;
 }
-.why-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
-.why-bullet {
-  width: 12px; height: 12px; border-radius: 50%;
-  background: var(--primary); margin-bottom: 1rem;
+.btn-cta-outline:hover { border-color: #fff; }
+
+/* ── MODAL ── */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(15,23,42,.5);
+  backdrop-filter: blur(4px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 1rem;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
 }
-.why-title { font-size: 1.05rem; font-weight: 700; color: var(--text); margin-bottom: .5rem; }
-.why-desc { font-size: .88rem; color: var(--body); line-height: 1.65; }
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: var(--white); border-radius: var(--radius);
+  padding: 2rem; max-width: 480px; width: 100%;
+  box-shadow: var(--shadow-lg);
+  transform: translateY(20px); transition: transform .25s;
+  position: relative;
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--surface); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; color: var(--body); transition: background .2s;
+}
+.modal-close:hover { background: var(--border); }
+.modal-icon { font-size: 2.5rem; margin-bottom: 1rem; line-height: 1; }
+.modal-title { font-size: 1.3rem; font-weight: 700; margin-bottom: .4rem; }
+.modal-sub { font-size: .9rem; color: var(--body); margin-bottom: 1.5rem; line-height: 1.6; }
+.modal-tabs { display: flex; gap: .5rem; margin-bottom: 1.25rem; }
+.modal-tab {
+  flex: 1; padding: 9px; border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border); background: var(--white);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  font-family: inherit; color: var(--body); transition: all .2s;
+}
+.modal-tab.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); font-weight: 600; }
+.modal-form { display: flex; flex-direction: column; gap: .75rem; }
+.modal-form input, .modal-form select, .modal-form textarea {
+  padding: 11px 13px; border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); font-size: 14px;
+  font-family: inherit; color: var(--text); background: var(--white);
+  outline: none; transition: border-color .2s;
+  width: 100%;
+}
+.modal-form input:focus, .modal-form select:focus, .modal-form textarea:focus {
+  border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,87,184,.1);
+}
+.modal-form textarea { height: 90px; resize: vertical; }
+.btn-submit {
+  padding: 12px; background: var(--primary); color: #fff;
+  border: none; border-radius: var(--radius-sm);
+  font-size: 15px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: background .2s;
+  margin-top: .25rem;
+}
+.btn-submit:hover { background: var(--primary-dark); }
+.modal-success { text-align: center; padding: 1rem 0; }
+.modal-success-icon { font-size: 3rem; margin-bottom: .75rem; }
+.modal-success-title { font-size: 1.2rem; font-weight: 700; margin-bottom: .4rem; }
+.modal-success-sub { font-size: .9rem; color: var(--body); }
+.modal-privacy { font-size: 11px; color: var(--muted); text-align: center; margin-top: .5rem; }
+
+/* ── SKELETON ── */
+.skeleton {
+  background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+  border-radius: 6px;
+}
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.skeleton-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.skeleton-img { height: 180px; }
+.skeleton-body { padding: 1.1rem; display: flex; flex-direction: column; gap: .6rem; }
+.skeleton-line { height: 14px; }
+.skeleton-line.w60 { width: 60%; }
+.skeleton-line.w80 { width: 80%; }
+.skeleton-line.w40 { width: 40%; }
 
 /* ── FOOTER ── */
 footer {
-  background: white; border-top: 1px solid var(--border);
-  padding: 1.5rem 3rem;
+  margin-top: 5rem;
+  border-top: 1px solid var(--border);
+  padding: 1.5rem 2rem;
   display: flex; justify-content: space-between; align-items: center;
+  font-size: 13px; color: var(--muted);
 }
-.footer-left { font-size: .8rem; color: var(--muted); }
-.footer-left a { color: var(--primary); text-decoration: none; font-weight: 500; }
-.footer-right { font-size: .8rem; color: var(--muted); }
-
-/* ── LOAD MORE ── */
-.load-more-wrap { text-align: center; margin-top: 2.5rem; }
-.load-more-btn {
-  display: inline-flex; align-items: center; gap: .5rem;
-  padding: .8rem 2rem; border: 2px solid var(--primary);
-  color: var(--primary); font-family: var(--body-font);
-  font-size: .9rem; font-weight: 600; background: white;
-  border-radius: var(--radius-sm); cursor: pointer;
-  transition: background .2s, color .2s;
-}
-.load-more-btn:hover { background: var(--primary); color: white; }
-.load-more-btn.hidden { display: none; }
-
-/* ── MORE TO EXPLORE ── */
-.explore-section {
-  max-width: 1200px; margin: 0 auto 2rem; padding: 0 2rem;
-  display: none;
-}
-.explore-section.visible { display: block; }
-.explore-divider {
-  display: flex; align-items: center; gap: 1.5rem;
-  margin-bottom: 2.5rem;
-}
-.explore-divider-line { flex: 1; height: 1px; background: var(--border); }
-.explore-divider-label {
-  font-family: var(--head); font-size: 1.1rem; font-weight: 900;
-  text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
-  white-space: nowrap;
-}
-.explore-block { margin-bottom: 3rem; }
-.explore-block-header {
-  display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem;
-}
-.explore-block-icon { font-size: 1.4rem; }
-.explore-block-title {
-  font-family: var(--head); font-size: 1.5rem; font-weight: 900;
-  text-transform: uppercase; letter-spacing: .02em; color: var(--text);
-}
-.explore-block-title em { font-style: normal; }
-.explore-block-sub { font-size: .82rem; color: var(--muted); margin-left: auto; }
-
-/* Free event cards */
-.badge-free { background: #dcfce7; color: #15803d; }
-.badge-timeless { background: #f3e8ff; color: #7e22ce; }
-.explore-card {
-  background: white; border-radius: var(--radius);
-  box-shadow: var(--card-shadow); overflow: hidden;
-  transition: transform .25s, box-shadow .25s;
-  display: flex; flex-direction: column;
-  padding: 1.4rem;
-  border-left: 4px solid transparent;
-}
-.explore-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
-.explore-card.free-card { border-left-color: #22c55e; }
-.explore-card.todo-card { border-left-color: #a855f7; }
-.explore-card-top {
-  display: flex; align-items: flex-start; justify-content: space-between;
-  gap: .75rem; margin-bottom: .75rem;
-}
-.explore-card-name {
-  font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.3;
-}
-.explore-card-desc {
-  font-size: .88rem; color: var(--body); line-height: 1.6; margin-bottom: .75rem;
-}
-.explore-card-meta {
-  display: flex; flex-direction: column; gap: .3rem; margin-bottom: .75rem;
-}
-.explore-card-meta-row {
-  display: flex; align-items: center; gap: .5rem;
-  font-size: .82rem; color: var(--body);
-}
-.explore-card-meta-icon { color: var(--muted); width: 1rem; text-align: center; }
-.explore-card-tip {
-  font-size: .8rem; color: var(--primary); font-style: italic;
-  padding: .5rem .75rem; background: var(--primary-light);
-  border-radius: var(--radius-sm); line-height: 1.5;
-}
-
-/* AI skeleton */
-.ai-skeleton-card {
-  background: white; border-radius: var(--radius); box-shadow: var(--card-shadow);
-  padding: 1.4rem; border-left: 4px solid var(--border);
-}
-
-/* ── ERROR BANNER ── */
-.error-banner {
-  background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-sm);
-  padding: 1rem 1.5rem; margin-bottom: 1.5rem;
-  color: #b91c1c; font-size: .9rem; font-weight: 500;
-  display: none;
-}
-.error-banner.visible { display: block; }
+footer a { color: var(--primary); text-decoration: none; }
 
 /* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  nav { padding: 1rem 1.5rem; }
+@media (max-width: 768px) {
+  .search-row { grid-template-columns: 1fr; }
+  .date-row { grid-template-columns: 1fr 1fr; }
   .nav-links { display: none; }
-  .hero { padding: 3.5rem 1.5rem 3rem; }
-  .search-card { padding: 1.5rem; }
-  .search-grid { grid-template-columns: 1fr 1fr; }
-  .search-grid .search-field:first-child { grid-column: 1 / -1; }
-  .search-grid .search-btn-wrap { grid-column: 1 / -1; }
-  .cta-card { grid-template-columns: 1fr; padding: 2rem 1.75rem; }
-  .cta-block + .cta-block { padding-left: 0; border-left: none; border-top: 1px solid rgba(255,255,255,.25); padding-top: 2rem; }
-  .why-grid { grid-template-columns: 1fr; }
-  .results-header { flex-direction: column; align-items: flex-start; }
+  nav { padding: 0 1rem; }
+  .hero { padding: 2.5rem 1rem 2rem; }
+  .main { padding: 3.5rem 1rem 3rem; }
+  .cta-banner { flex-direction: column; text-align: center; }
   footer { flex-direction: column; gap: .5rem; text-align: center; }
-  .cta-section, .why-section, .results-section, .explore-section { padding: 0 1rem; }
-}
-@media (max-width: 620px) {
-  .search-grid { grid-template-columns: 1fr; }
-  .search-grid .search-field:first-child { grid-column: auto; }
-  .events-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
 <body>
 
-<!-- ── NAVIGATION ── -->
+<!-- NAV -->
 <nav>
   <a href="/" class="nav-logo">
-    <div class="nav-logo-icon">3D</div>
-    <div class="nav-logo-text">Event<span>Finder</span></div>
+    <div class="nav-logo-mark">3D</div>
+    <div class="nav-logo-text">Business <span>Solutions</span></div>
   </a>
   <div class="nav-links">
-    <a href="#search-card">Find Events</a>
-    <a href="#why-section">For Travelers</a>
-    <a href="#cta-section">Travel Agents</a>
-    <a href="/">3D Business Solutions</a>
+    <a href="/">Home</a>
+    <a href="/#services">Services</a>
+    <a href="/#tools">Tools</a>
+    <a href="/about.html">About</a>
   </div>
-  <a href="#cta-section" class="nav-cta">Plan a Trip →</a>
+  <a href="mailto:demersdd@gmail.com" class="nav-cta">Contact Us</a>
 </nav>
 
-<!-- ── HERO ── -->
-<section class="hero">
-  <div class="hero-tag">Powered by Ticketmaster</div>
-  <h1>Discover Events <em>Near You</em></h1>
-  <p class="hero-sub">
-    Find concerts, festivals, sporting events, and more — wherever your next trip takes you.
-    Search any city, pick your dates, and start exploring.
-  </p>
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-badge">✈️ Travel Planning Tool</div>
+    <h1>Discover Local Events<br>Anywhere in the World</h1>
+    <p>Search concerts, sports, festivals, and local experiences near any destination. Plan your next trip around events you love.</p>
+  </div>
+</div>
 
-  <!-- Search Card -->
-  <div class="search-card" id="search-card">
-    <div class="search-grid">
-      <div class="search-field">
-        <label class="search-label" for="location-input">📍 City or Destination</label>
-        <input
-          id="location-input"
-          class="search-input"
-          type="text"
-          placeholder="e.g. Boston, New York, Chicago..."
-          autocomplete="off"
-        />
+<!-- SEARCH CARD -->
+<div style="padding: 0 1.5rem; position: relative; z-index: 10;">
+  <div class="search-card" style="max-width: 860px; margin: 0 auto -2.5rem;">
+    <div class="search-row">
+      <div class="field">
+        <label>Destination City</label>
+        <input type="text" id="city-input" placeholder="e.g. New York, Paris, Chicago" autocomplete="off"/>
       </div>
-      <div class="search-field">
-        <label class="search-label" for="start-date">📅 Start Date</label>
-        <input id="start-date" class="search-input" type="date" />
+      <div class="field">
+        <label>Start Date</label>
+        <input type="date" id="start-date"/>
       </div>
-      <div class="search-field">
-        <label class="search-label" for="end-date">📅 End Date</label>
-        <input id="end-date" class="search-input" type="date" />
+      <div class="field">
+        <label>End Date</label>
+        <input type="date" id="end-date"/>
       </div>
-      <div class="search-field search-btn-wrap">
-        <label class="search-label" for="category-select">🎭 Category</label>
-        <select id="category-select" class="search-input">
-          <option value="all">All Events</option>
-          <option value="music">🎵 Music</option>
-          <option value="sports">🏆 Sports</option>
-          <option value="arts">🎭 Arts &amp; Theater</option>
-          <option value="family">👨‍👩‍👧 Family</option>
-          <option value="comedy">😂 Comedy</option>
-        </select>
-      </div>
-    </div>
-    <div style="margin-top:1.25rem;">
-      <button class="search-btn" id="search-btn" onclick="searchEvents()">
-        <span id="btn-icon">🔍</span>
-        <span id="btn-text">Search Events</span>
+      <button class="btn-search" id="search-btn" onclick="doSearch()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Search
       </button>
     </div>
-    <div class="search-hint">
-      <span>Concerts &amp; Festivals</span>
-      <span>Sports Games</span>
-      <span>Theater &amp; Arts</span>
-      <span>Family Events</span>
-      <span>Comedy Shows</span>
+    <div class="date-row">
+      <div class="field">
+        <label>Category</label>
+        <select id="category-select">
+          <option value="all">All Categories</option>
+          <option value="Music">Music &amp; Concerts</option>
+          <option value="Sports">Sports</option>
+          <option value="Arts &amp; Theatre">Arts &amp; Theatre</option>
+          <option value="Family">Family</option>
+          <option value="Comedy">Comedy</option>
+          <option value="Film">Film &amp; Media</option>
+          <option value="Food &amp; Drink">Food &amp; Drink</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column: span 2;">
+        <label style="opacity:0">spacer</label>
+        <p style="font-size:12px;color:var(--muted);padding-top:12px;">
+          Results include ticketed events from <strong>Ticketmaster</strong> plus AI-curated points of interest and local experiences.
+        </p>
+      </div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ── RESULTS ── -->
-<section class="results-section" id="results-section">
-  <div class="error-banner" id="error-banner"></div>
-  <div class="results-header">
-    <div class="results-count" id="results-count"></div>
-    <div class="filter-chips" id="filter-chips">
-      <button class="chip active" onclick="filterChip(this, 'all')">All</button>
-      <button class="chip" onclick="filterChip(this, 'week')">This Week</button>
-      <button class="chip" onclick="filterChip(this, 'weekend')">This Weekend</button>
-      <button class="chip" onclick="filterChip(this, 'month')">This Month</button>
+<!-- MAIN -->
+<div class="main">
+  <!-- Initial state -->
+  <div id="state-initial" class="state-view">
+    <div class="state-icon">🗺️</div>
+    <div class="state-title">Where are you headed?</div>
+    <div class="state-sub">Enter a city above to discover upcoming events, concerts, sports games, and local experiences near your destination.</div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="state-loading" class="state-view" style="display:none;">
+    <div class="state-icon">🔍</div>
+    <div class="state-title">Finding events&hellip;</div>
+    <div class="state-sub">Searching Ticketmaster and curating local experiences for your destination.</div>
+    <div class="loading-dots"><span></span><span></span><span></span></div>
+    <div id="skeleton-grid" class="events-grid" style="margin-top:2rem;text-align:left;">
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line w80"></div><div class="skeleton skeleton-line w60"></div></div></div>
     </div>
   </div>
-  <div class="events-grid" id="events-grid"></div>
-  <div class="empty-state" id="empty-state">
-    <div class="empty-icon">🗺️</div>
-    <h3>No events found</h3>
-    <p>Try searching a different city, adjusting your dates, or selecting a different category.</p>
-  </div>
-  <div class="load-more-wrap">
-    <button class="load-more-btn hidden" id="load-more-btn" onclick="loadMore()">
-      Load More Events ↓
-    </button>
-  </div>
-</section>
 
-<!-- ── MORE TO EXPLORE ── -->
-<section class="explore-section" id="explore-section">
-  <div class="explore-divider">
-    <div class="explore-divider-line"></div>
-    <div class="explore-divider-label">More to Explore</div>
-    <div class="explore-divider-line"></div>
+  <!-- Error state -->
+  <div id="state-error" class="state-view" style="display:none;">
+    <div class="state-icon">⚠️</div>
+    <div class="state-title" id="error-title">Something went wrong</div>
+    <div class="state-sub" id="error-msg">Please try again or check your search terms.</div>
   </div>
 
-  <!-- Free & Local Events -->
-  <div class="explore-block" id="free-events-block">
-    <div class="explore-block-header">
-      <span class="explore-block-icon">🎪</span>
-      <div class="explore-block-title">Free &amp; <em style="color:var(--primary)">Local Events</em></div>
-      <div class="explore-block-sub">Community events, free admission &amp; more</div>
-    </div>
-    <div class="events-grid" id="free-events-grid"></div>
+  <!-- No results state -->
+  <div id="state-empty" class="state-view" style="display:none;">
+    <div class="state-icon">📭</div>
+    <div class="state-title">No ticketed events found</div>
+    <div class="state-sub">No Ticketmaster events matched your search. Check the AI Experiences section below for curated local things to do.</div>
   </div>
 
-  <!-- Things To Do -->
-  <div class="explore-block" id="things-todo-block">
-    <div class="explore-block-header">
-      <span class="explore-block-icon">🗺️</span>
-      <div class="explore-block-title">Things <em style="color:#a855f7">To Do</em></div>
-      <div class="explore-block-sub">Attractions &amp; experiences — no ticket required</div>
-    </div>
-    <div class="events-grid" id="things-grid"></div>
-  </div>
-</section>
+  <!-- Results -->
+  <div id="state-results" style="display:none;">
 
-<!-- ── CTA SECTION ── -->
-<section id="cta-section">
-  <div class="cta-section">
-    <div class="cta-card">
-      <!-- Traveler CTA -->
-      <div class="cta-block">
-        <div class="cta-icon">✈️</div>
-        <div class="cta-heading">Planning a Trip Around This Event?</div>
-        <p class="cta-sub">Let us connect you with an expert travel planner who can handle hotels, flights, and the full itinerary — so all you have to do is show up.</p>
-        <div class="cta-form">
-          <input class="cta-input" id="traveler-email" type="email" placeholder="Your email address" />
-          <button class="cta-submit cta-submit-traveler" onclick="submitTraveler()">Connect Me With a Planner →</button>
-          <div class="cta-toast" id="traveler-toast">✓ We'll reach out within 24 hours!</div>
+    <!-- Ticketmaster Results -->
+    <div id="tm-section">
+      <div class="results-header">
+        <div>
+          <div class="results-title">Ticketed Events</div>
+          <div class="results-count"><span id="tm-count">0</span> events found</div>
         </div>
+        <span class="source-badge tm">🎟 Ticketmaster</span>
       </div>
+      <div id="tm-grid" class="events-grid"></div>
+    </div>
 
-      <!-- Agent CTA -->
-      <div class="cta-block">
-        <div class="cta-icon">💼</div>
-        <div class="cta-heading">Are You a Travel Agent?</div>
-        <p class="cta-sub">Partner with us. We're building tools and a network for travel professionals who want to offer premium itinerary services to their clients.</p>
-        <div class="cta-form">
-          <input class="cta-input" id="agent-email" type="email" placeholder="Your work email" />
-          <input class="cta-input" id="agent-name" type="text" placeholder="Your agency name" />
-          <button class="cta-submit cta-submit-agent" onclick="submitAgent()">Let's Partner Up →</button>
-          <div class="cta-toast" id="agent-toast">✓ Thanks! We'll be in touch about partnership opportunities.</div>
+    <!-- AI Section -->
+    <div id="ai-section">
+      <div class="section-divider">
+        <div class="section-divider-line"></div>
+        <div class="section-divider-label">
+          <span class="source-badge ai">✨ AI Curated</span>
+          Local Experiences &amp; Points of Interest
         </div>
+        <div class="section-divider-line"></div>
+      </div>
+      <div id="ai-loading" class="state-view" style="padding:1.5rem 0;display:none;">
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+        <div style="font-size:.85rem;color:var(--muted);margin-top:.75rem;">Claude AI is curating local experiences&hellip;</div>
+      </div>
+      <div id="ai-card" class="ai-card" style="display:none;"></div>
+    </div>
+
+    <!-- CTA Banner -->
+    <div class="cta-banner">
+      <div class="cta-banner-text">
+        <h2>Planning a trip around these events?</h2>
+        <p>Connect with one of our travel experts to build a full itinerary, find accommodation, and handle every detail — so you can focus on the experience.</p>
+      </div>
+      <div class="cta-banner-actions">
+        <button class="btn-cta-white" onclick="openModal('traveler')">Connect with a Planner</button>
+        <button class="btn-cta-outline" onclick="openModal('agent')">I'm a Travel Agent</button>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ── WHY TRAVEL EXPERT ── -->
-<section id="why-section">
-  <div class="why-section">
-    <div class="why-section-header">
-      <div class="section-eyebrow">Why Book With an Expert</div>
-      <h2>More Than Just <em>a Ticket</em></h2>
+<!-- MODAL -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div id="modal-content-wrapper">
+      <div class="modal-icon" id="modal-icon">✈️</div>
+      <div class="modal-title" id="modal-title">Connect with a Travel Planner</div>
+      <div class="modal-sub" id="modal-sub">Tell us where you're headed and we'll connect you with an expert who can build your perfect trip.</div>
+      <div class="modal-tabs">
+        <button class="modal-tab active" id="tab-traveler" onclick="switchTab('traveler')">I'm a Traveler</button>
+        <button class="modal-tab" id="tab-agent" onclick="switchTab('agent')">I'm a Travel Agent</button>
+      </div>
+      <form class="modal-form" id="modal-form" onsubmit="submitForm(event)">
+        <input type="text" id="form-name" placeholder="Your full name" required/>
+        <input type="email" id="form-email" placeholder="Email address" required/>
+        <div id="traveler-fields">
+          <input type="text" id="form-destination" placeholder="Destination or event you're interested in" style="margin-bottom:.75rem;width:100%;"/>
+          <input type="text" id="form-dates" placeholder="Approximate travel dates" style="width:100%;"/>
+        </div>
+        <div id="agent-fields" style="display:none;">
+          <input type="text" id="form-agency" placeholder="Agency or business name" style="margin-bottom:.75rem;width:100%;"/>
+          <select id="form-interest" style="width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit;color:var(--text);background:var(--white);outline:none;transition:border-color .2s;">
+            <option value="">What are you interested in?</option>
+            <option value="partnership">Partnership / Referral Program</option>
+            <option value="booking">Booking with Us</option>
+            <option value="whitelabel">White-Label Event Tool</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+        <textarea id="form-message" placeholder="Anything else you'd like us to know? (optional)"></textarea>
+        <button type="submit" class="btn-submit">Send Message →</button>
+        <div class="modal-privacy">🔒 We never share your information. No spam, ever.</div>
+      </form>
     </div>
-    <div class="why-grid">
-      <div class="why-card">
-        <div class="why-bullet"></div>
-        <div class="why-title">Drag. Drop. Done.</div>
-        <p class="why-desc">A travel expert builds your entire trip — not just the event ticket. Hotels, dining, and transport all sorted in one place so you can focus on enjoying it.</p>
-      </div>
-      <div class="why-card">
-        <div class="why-bullet"></div>
-        <div class="why-title">Private Library of Options</div>
-        <p class="why-desc">Travel agents have access to rates and packages that aren't publicly listed. You save money and get better options than booking everything yourself.</p>
-      </div>
-      <div class="why-card">
-        <div class="why-bullet"></div>
-        <div class="why-title">Powered by Experience</div>
-        <p class="why-desc">Group travel, multi-city itineraries, last-minute changes — experts handle the complexity so your trip runs smoothly even when things don't go to plan.</p>
-      </div>
+    <div id="modal-success" class="modal-success" style="display:none;">
+      <div class="modal-success-icon">🎉</div>
+      <div class="modal-success-title">You're on the list!</div>
+      <div class="modal-success-sub">Thanks! We'll be in touch within 1 business day to help plan your trip.</div>
     </div>
   </div>
-</section>
+</div>
 
-<!-- ── FOOTER ── -->
+<!-- FOOTER -->
 <footer>
-  <div class="footer-left">© 2025 <a href="/">3D Business Solutions</a> — Greater Boston · Remote Nationwide</div>
-  <div class="footer-right">Event data powered by Ticketmaster Discovery API</div>
+  <div>© 2025 3D Business Solutions &nbsp;·&nbsp; <a href="/">Back to Home</a></div>
+  <div>Event data: Ticketmaster Discovery API + Claude AI</div>
 </footer>
 
 <script>
-// ── CONFIG ──
-const TICKETMASTER_KEY = 'M7Gq0HfCKFtkM8ncLULGkpyT6cSrnRe5';
+const WORKER_URL = 'https://worker.demersdd.workers.dev';
 
-// ── STATE ──
-let allEvents = [];
-let filteredEvents = [];
-let displayedCount = 0;
-const PAGE_SIZE = 12;
-let currentFilter = 'all';
-
-// ── INIT DATES ──
-(function initDates() {
+// ── Date defaults ──
+(function() {
   const today = new Date();
-  const plus30 = new Date(today);
-  plus30.setDate(today.getDate() + 30);
-  document.getElementById('start-date').value = formatDateInput(today);
-  document.getElementById('end-date').value = formatDateInput(plus30);
-  // Allow Enter key to trigger search
-  document.getElementById('location-input').addEventListener('keydown', e => {
-    if (e.key === 'Enter') searchEvents();
-  });
+  const end = new Date(); end.setDate(today.getDate() + 30);
+  document.getElementById('start-date').value = today.toISOString().slice(0,10);
+  document.getElementById('end-date').value = end.toISOString().slice(0,10);
 })();
 
-function formatDateInput(d) {
-  return d.toISOString().split('T')[0];
+// ── State helpers ──
+function showState(name) {
+  ['initial','loading','error','empty','results'].forEach(s => {
+    const el = document.getElementById('state-' + s);
+    if (el) el.style.display = s === name ? (s === 'results' ? 'block' : 'flex') : 'none';
+  });
+  if (name === 'loading') {
+    document.getElementById('state-loading').style.display = 'block';
+  }
 }
 
-function toTicketmasterDate(dateStr) {
-  return dateStr ? dateStr + 'T00:00:00Z' : null;
+// ── Icon map ──
+const CATEGORY_ICON = {
+  'Music': '🎵', 'Concerts': '🎤', 'Sports': '⚽', 'Arts': '🎭', 'Theatre': '🎭',
+  'Family': '👨‍👩‍👧', 'Comedy': '😂', 'Film': '🎬', 'Food': '🍽️', 'Festival': '🎪',
+  'default': '📍'
+};
+function iconFor(classification) {
+  if (!classification) return CATEGORY_ICON.default;
+  const key = Object.keys(CATEGORY_ICON).find(k => classification.toLowerCase().includes(k.toLowerCase()));
+  return key ? CATEGORY_ICON[key] : CATEGORY_ICON.default;
 }
 
-// ── SEARCH ──
-async function searchEvents() {
-  const city = document.getElementById('location-input').value.trim();
+// ── Format helpers ──
+function fmtDate(dateStr) {
+  if (!dateStr) return null;
+  try {
+    return new Date(dateStr + 'T12:00:00').toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', year:'numeric' });
+  } catch { return dateStr; }
+}
+function fmtTime(timeStr) {
+  if (!timeStr) return null;
+  try {
+    const [h,m] = timeStr.split(':');
+    const d = new Date(); d.setHours(+h, +m);
+    return d.toLocaleTimeString('en-US', { hour:'numeric', minute:'2-digit' });
+  } catch { return timeStr; }
+}
+function fmtPrice(event) {
+  const ranges = event.priceRanges;
+  if (!ranges || !ranges.length) return 'See site';
+  const r = ranges[0];
+  if (r.min === r.max) return `$${r.min.toFixed(0)}`;
+  return `From $${r.min.toFixed(0)}`;
+}
+
+// ── Build TM card ──
+function buildTmCard(ev) {
+  const imgUrl = ev.images && ev.images.length
+    ? ev.images.sort((a,b)=>(b.width||0)-(a.width||0)).find(i=>i.ratio==='16_9'&&i.width>=500)?.url || ev.images[0].url
+    : null;
+  const cat = ev.classifications && ev.classifications[0] ? ev.classifications[0].segment?.name || ev.classifications[0].genre?.name || '' : '';
+  const date = ev.dates?.start?.localDate;
+  const time = ev.dates?.start?.localTime;
+  const venue = ev._embedded?.venues?.[0];
+  const venueName = venue ? `${venue.name}${venue.city?.name ? ', '+venue.city.name : ''}` : null;
+  const icon = iconFor(cat);
+
+  return `<div class="event-card">
+    <div class="event-img">${imgUrl ? `<img src="${imgUrl}" alt="${escHtml(ev.name)}" loading="lazy" onerror="this.parentElement.innerHTML='${icon}'"/>` : icon}</div>
+    <div class="event-body">
+      <div class="event-cat">${escHtml(cat) || 'Event'}</div>
+      <div class="event-name">${escHtml(ev.name)}</div>
+      <div class="event-meta">
+        ${date ? `<div class="event-meta-row">${calSvg} ${escHtml(fmtDate(date))}${time ? ' · ' + escHtml(fmtTime(time)) : ''}</div>` : ''}
+        ${venueName ? `<div class="event-meta-row">${pinSvg} ${escHtml(venueName)}</div>` : ''}
+      </div>
+    </div>
+    <div class="event-footer">
+      <div class="event-price">${escHtml(fmtPrice(ev))}</div>
+      ${ev.url ? `<a href="${escHtml(ev.url)}" target="_blank" rel="noopener" class="btn-ticket">Get Tickets</a>` : '<span class="btn-ticket secondary">View</span>'}
+    </div>
+  </div>`;
+}
+
+const calSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+const pinSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>`;
+
+function escHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Main search ──
+async function doSearch() {
+  const city = document.getElementById('city-input').value.trim();
   if (!city) {
-    document.getElementById('location-input').focus();
-    document.getElementById('location-input').style.borderColor = '#f87171';
-    setTimeout(() => document.getElementById('location-input').style.borderColor = '', 1500);
+    document.getElementById('city-input').focus();
+    document.getElementById('city-input').style.borderColor = '#ef4444';
+    setTimeout(()=>document.getElementById('city-input').style.borderColor='', 2000);
     return;
   }
 
@@ -691,395 +701,226 @@ async function searchEvents() {
   const endDate = document.getElementById('end-date').value;
   const category = document.getElementById('category-select').value;
 
-  setBtnLoading(true);
-  clearError();
-  showSkeletons();
-  showAISkeletons();
+  showState('loading');
 
-  // Fire Ticketmaster and AI calls in parallel
-  searchAI(city, startDate, endDate);
+  const [tmResult, _] = await Promise.allSettled([
+    fetchTicketmaster(city, startDate, endDate, category),
+    Promise.resolve()
+  ]);
 
-  try {
-    const params = new URLSearchParams({
-      apikey: TICKETMASTER_KEY,
-      city,
-      size: 50,
-      sort: 'date,asc',
-    });
-    if (startDate) params.set('startDateTime', toTicketmasterDate(startDate));
-    if (endDate) params.set('endDateTime', toTicketmasterDate(endDate).replace('T00:00:00Z', 'T23:59:59Z'));
-    if (category !== 'all') params.set('classificationName', category);
-
-    const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`);
-    const data = await res.json();
-
-    if (data.fault || data.errors) {
-      throw new Error(data.fault?.faultstring || data.errors?.[0]?.detail || 'API error');
-    }
-
-    const events = data._embedded?.events || [];
-    allEvents = events;
-    currentFilter = 'all';
-    setChipActive('all');
-    applyFilter('all');
-
-  } catch (err) {
-    console.error(err);
-    showError('Could not load events. Please check the city name and try again. (API key may need to be configured.)');
-    hideSkeletons();
-    document.getElementById('results-section').classList.add('visible');
-    document.getElementById('empty-state').classList.add('visible');
-    document.getElementById('events-grid').innerHTML = '';
-  } finally {
-    setBtnLoading(false);
+  // Handle TM results
+  let tmEvents = [];
+  if (tmResult.status === 'fulfilled' && tmResult.value) {
+    tmEvents = tmResult.value;
   }
+
+  // Show results view
+  showState('results');
+
+  const tmGrid = document.getElementById('tm-grid');
+  const tmSection = document.getElementById('tm-section');
+  const emptyNote = document.getElementById('state-empty');
+
+  if (tmEvents.length === 0) {
+    tmSection.style.display = 'none';
+    // Show the "empty" note inline above AI section
+    document.getElementById('state-empty').style.display = 'flex';
+    document.getElementById('state-empty').style.position = 'relative';
+    document.getElementById('state-empty').style.padding = '2rem 0 1rem';
+    document.getElementById('state-results').prepend(document.getElementById('state-empty'));
+  } else {
+    tmSection.style.display = 'block';
+    document.getElementById('state-empty').style.display = 'none';
+    document.getElementById('tm-count').textContent = tmEvents.length;
+    tmGrid.innerHTML = tmEvents.map(buildTmCard).join('');
+  }
+
+  // Kick off AI explore
+  fetchAiExplore(city, startDate, endDate, category);
 }
 
-// ── AI SEARCH (More to Explore) ──
-async function searchAI(city, startDate, endDate) {
-  const dateContext = startDate
-    ? ` around ${new Date(startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${endDate ? ' through ' + new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : ''}`
-    : '';
+// ── Ticketmaster fetch ──
+async function fetchTicketmaster(city, startDate, endDate, category) {
+  const payload = {
+    _service: 'ticketmaster',
+    city,
+    size: 24,
+  };
+  if (startDate) payload.startDateTime = startDate + 'T00:00:00Z';
+  if (endDate) payload.endDateTime = endDate + 'T00:00:00Z';
+  if (category && category !== 'all') payload.classificationName = category;
 
-  const prompt = `You are a local travel and events expert. For someone visiting ${city}${dateContext}, return ONLY valid JSON with no markdown:
-{
-  "freeEvents": [
-    { "name": "", "description": "", "when": "", "location": "", "tip": "" }
-  ],
-  "thingsToDo": [
-    { "name": "", "description": "", "category": "", "location": "", "tip": "" }
-  ]
+  const res = await fetch(WORKER_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error('Ticketmaster API error');
+  const data = await res.json();
+  return (data?._embedded?.events) || [];
 }
-freeEvents: 4-6 free or low-cost community events happening around that time (farmers markets, outdoor concerts, parades, free museum days, festivals, cultural events, etc.). Use "when" for a general time like "Saturdays" or "March weekends" or a specific date if known.
-thingsToDo: 5-8 timeless local attractions and experiences that don't require a specific date — landmarks, historic sites, parks, neighborhoods, food experiences, day trips, etc. Use one of these for "category": History, Nature, Food, Art, Outdoors, Entertainment, Shopping.
-Return only the JSON object, no other text.`;
+
+// ── Claude AI explore ──
+async function fetchAiExplore(city, startDate, endDate, category) {
+  const aiCard = document.getElementById('ai-card');
+  const aiLoading = document.getElementById('ai-loading');
+  aiCard.style.display = 'none';
+  aiLoading.style.display = 'block';
+
+  const dateRange = startDate && endDate
+    ? `from ${fmtDate(startDate)} to ${fmtDate(endDate)}`
+    : startDate ? `starting ${fmtDate(startDate)}` : 'any time';
+  const catContext = category && category !== 'all' ? ` with a focus on ${category}` : '';
+
+  const prompt = `You are a knowledgeable travel and events curator. A traveler is planning a trip to ${city} ${dateRange}${catContext}.
+
+Please provide a helpful, enthusiastic guide covering:
+1. **Signature Local Experiences** – 4-6 unique things to do or see in ${city} that aren't just ticketed events (neighborhoods, markets, scenic spots, local traditions, seasonal highlights for this time of year).
+2. **Food & Drink Highlights** – 3-4 notable restaurants, food markets, or drink experiences worth seeking out.
+3. **Local Tips** – 2-3 insider tips for getting the most out of ${city} (transport, neighborhoods to stay in, things to avoid, best times to visit attractions).
+4. **Event Scene** – A brief note on the general events/entertainment culture in ${city} and what types of events are typically popular during this time.
+
+Keep it conversational, specific, and genuinely useful. Use headers for each section. Be concise but rich with detail.`;
 
   try {
-    const resp = await fetch('https://3dbusinesssolutions.demersdd.workers.dev', {
+    const res = await fetch(WORKER_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1200,
         messages: [{ role: 'user', content: prompt }],
       }),
     });
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error.message || 'AI error');
-    const text = data.content.map(c => c.text || '').join('');
-    const result = JSON.parse(text.replace(/```json|```/g, '').trim());
-    renderFreeEvents(result.freeEvents || []);
-    renderThingsToDo(result.thingsToDo || []);
-    document.getElementById('explore-section').classList.add('visible');
-  } catch (err) {
-    console.warn('AI explore section failed:', err);
-    document.getElementById('explore-section').classList.remove('visible');
-  }
-}
+    const data = await res.json();
+    const text = data?.content?.[0]?.text || '';
+    aiLoading.style.display = 'none';
 
-function renderFreeEvents(items) {
-  const grid = document.getElementById('free-events-grid');
-  if (!items.length) { document.getElementById('free-events-block').style.display = 'none'; return; }
-  document.getElementById('free-events-block').style.display = '';
-  grid.innerHTML = items.map(item => `
-    <div class="explore-card free-card">
-      <div class="explore-card-top">
-        <div class="explore-card-name">${escHtml(item.name || '')}</div>
-        <span class="event-category-badge badge-free">Free</span>
+    if (text) {
+      aiCard.style.display = 'block';
+      aiCard.innerHTML = `<div class="ai-card-header">
+        <span class="ai-card-header-icon">✨</span>
+        <span class="ai-card-header-text">AI-Curated Experiences in ${escHtml(city)}</span>
       </div>
-      <div class="explore-card-desc">${escHtml(item.description || '')}</div>
-      <div class="explore-card-meta">
-        ${item.when ? `<div class="explore-card-meta-row"><span class="explore-card-meta-icon">📅</span><span>${escHtml(item.when)}</span></div>` : ''}
-        ${item.location ? `<div class="explore-card-meta-row"><span class="explore-card-meta-icon">📍</span><span>${escHtml(item.location)}</span></div>` : ''}
-      </div>
-      ${item.tip ? `<div class="explore-card-tip">💡 ${escHtml(item.tip)}</div>` : ''}
-    </div>`).join('');
-}
-
-function renderThingsToDo(items) {
-  const grid = document.getElementById('things-grid');
-  if (!items.length) { document.getElementById('things-todo-block').style.display = 'none'; return; }
-  document.getElementById('things-todo-block').style.display = '';
-  const catColors = {
-    History: 'badge-music', Nature: 'badge-family', Food: 'badge-sports',
-    Art: 'badge-arts', Outdoors: 'badge-family', Entertainment: 'badge-comedy',
-    Shopping: 'badge-misc',
-  };
-  grid.innerHTML = items.map(item => {
-    const badgeCls = catColors[item.category] || 'badge-misc';
-    return `
-    <div class="explore-card todo-card">
-      <div class="explore-card-top">
-        <div class="explore-card-name">${escHtml(item.name || '')}</div>
-        <span class="event-category-badge ${badgeCls}">${escHtml(item.category || 'Activity')}</span>
-      </div>
-      <div class="explore-card-desc">${escHtml(item.description || '')}</div>
-      <div class="explore-card-meta">
-        ${item.location ? `<div class="explore-card-meta-row"><span class="explore-card-meta-icon">📍</span><span>${escHtml(item.location)}</span></div>` : ''}
-      </div>
-      ${item.tip ? `<div class="explore-card-tip">💡 ${escHtml(item.tip)}</div>` : ''}
-    </div>`;
-  }).join('');
-}
-
-function showAISkeletons() {
-  document.getElementById('explore-section').classList.add('visible');
-  const skeletonHTML = Array(4).fill(0).map(() => `
-    <div class="ai-skeleton-card">
-      <div class="skeleton-line medium" style="margin-bottom:.75rem;height:16px"></div>
-      <div class="skeleton-line" style="margin-bottom:.5rem"></div>
-      <div class="skeleton-line short" style="margin-bottom:.5rem"></div>
-      <div class="skeleton-line medium"></div>
-    </div>`).join('');
-  document.getElementById('free-events-grid').innerHTML = skeletonHTML;
-  document.getElementById('things-grid').innerHTML = skeletonHTML;
-}
-
-// ── FILTER ──
-function filterChip(el, filter) {
-  currentFilter = filter;
-  setChipActive(filter);
-  applyFilter(filter);
-}
-
-function setChipActive(filter) {
-  document.querySelectorAll('#filter-chips .chip').forEach(c => {
-    c.classList.toggle('active', c.getAttribute('onclick').includes(`'${filter}'`));
-  });
-}
-
-function applyFilter(filter) {
-  const now = new Date();
-  const endOfWeek = new Date(now);
-  endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
-  endOfWeek.setHours(23, 59, 59);
-
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
-
-  // Weekend = next Sat & Sun
-  const daysToSat = (6 - now.getDay() + 7) % 7 || 7;
-  const satStart = new Date(now); satStart.setDate(now.getDate() + daysToSat); satStart.setHours(0,0,0,0);
-  const sunEnd = new Date(satStart); sunEnd.setDate(satStart.getDate() + 1); sunEnd.setHours(23,59,59);
-
-  filteredEvents = allEvents.filter(ev => {
-    if (filter === 'all') return true;
-    const evDate = new Date(ev.dates?.start?.dateTime || ev.dates?.start?.localDate);
-    if (filter === 'week') return evDate >= now && evDate <= endOfWeek;
-    if (filter === 'weekend') return evDate >= satStart && evDate <= sunEnd;
-    if (filter === 'month') return evDate >= now && evDate <= endOfMonth;
-    return true;
-  });
-
-  displayedCount = 0;
-  document.getElementById('events-grid').innerHTML = '';
-  document.getElementById('empty-state').classList.remove('visible');
-  document.getElementById('results-section').classList.add('visible');
-
-  renderNextPage();
-  updateResultsCount();
-}
-
-// ── RENDER ──
-function renderNextPage() {
-  const slice = filteredEvents.slice(displayedCount, displayedCount + PAGE_SIZE);
-  const grid = document.getElementById('events-grid');
-
-  if (slice.length === 0 && displayedCount === 0) {
-    document.getElementById('empty-state').classList.add('visible');
-    document.getElementById('load-more-btn').classList.add('hidden');
-    return;
-  }
-
-  slice.forEach(ev => {
-    grid.insertAdjacentHTML('beforeend', buildEventCard(ev));
-  });
-
-  displayedCount += slice.length;
-  const hasMore = displayedCount < filteredEvents.length;
-  document.getElementById('load-more-btn').classList.toggle('hidden', !hasMore);
-}
-
-function loadMore() {
-  renderNextPage();
-  updateResultsCount();
-}
-
-function updateResultsCount() {
-  const countEl = document.getElementById('results-count');
-  const city = document.getElementById('location-input').value.trim();
-  if (filteredEvents.length === 0) {
-    countEl.textContent = '';
-  } else {
-    countEl.innerHTML = `<span>${filteredEvents.length}</span> event${filteredEvents.length !== 1 ? 's' : ''} found near <span>${city}</span>`;
-  }
-}
-
-function buildEventCard(ev) {
-  const name = ev.name || 'Unnamed Event';
-  const url = ev.url || '#';
-
-  // Date
-  const dateStr = ev.dates?.start?.dateTime || ev.dates?.start?.localDate;
-  const dateObj = dateStr ? new Date(dateStr) : null;
-  const displayDate = dateObj
-    ? dateObj.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })
-    : 'Date TBA';
-  const displayTime = (dateObj && ev.dates?.start?.dateTime)
-    ? dateObj.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })
-    : '';
-
-  // Venue
-  const venue = ev._embedded?.venues?.[0];
-  const venueName = venue?.name || '';
-  const venueCity = venue?.city?.name || '';
-  const venueState = venue?.state?.stateCode || '';
-  const venueLocation = [venueName, [venueCity, venueState].filter(Boolean).join(', ')].filter(Boolean).join(' · ');
-
-  // Image
-  const imgs = ev.images || [];
-  const img16x9 = imgs.find(i => i.ratio === '16_9' && i.width >= 500);
-  const imgFallback = imgs.find(i => i.width >= 400);
-  const imgSrc = img16x9?.url || imgFallback?.url || '';
-
-  // Category
-  const segment = ev.classifications?.[0]?.segment?.name || '';
-  const genre = ev.classifications?.[0]?.genre?.name || '';
-  const catBadge = getCategoryBadge(segment, genre);
-
-  // Price
-  const priceRanges = ev.priceRanges?.[0];
-  const priceStr = priceRanges
-    ? (priceRanges.min === priceRanges.max
-      ? `$${Math.round(priceRanges.min)}`
-      : `$${Math.round(priceRanges.min)} – $${Math.round(priceRanges.max)}`)
-    : '';
-
-  return `
-<article class="event-card">
-  <div class="event-img-wrap">
-    ${imgSrc
-      ? `<img class="event-img" src="${escHtml(imgSrc)}" alt="${escHtml(name)}" loading="lazy" />`
-      : `<div class="event-img-placeholder">${getCategoryEmoji(segment)}</div>`
+      <div class="ai-card-body">${markdownToHtml(text)}</div>`;
     }
-    <span class="event-category-badge ${catBadge.cls}">${catBadge.label}</span>
-  </div>
-  <div class="event-body">
-    <div class="event-name">${escHtml(name)}</div>
-    <div class="event-meta">
-      <div class="event-meta-row">
-        <span class="event-meta-icon">📅</span>
-        <span>${escHtml(displayDate)}${displayTime ? ' · ' + escHtml(displayTime) : ''}</span>
-      </div>
-      ${venueLocation ? `
-      <div class="event-meta-row">
-        <span class="event-meta-icon">📍</span>
-        <span>${escHtml(venueLocation)}</span>
-      </div>` : ''}
-    </div>
-    ${priceStr ? `<span class="event-price">${escHtml(priceStr)}</span>` : ''}
-    <a class="event-link" href="${escHtml(url)}" target="_blank" rel="noopener">
-      View Details →
-    </a>
-  </div>
-</article>`;
-}
-
-function getCategoryBadge(segment, genre) {
-  const s = (segment || '').toLowerCase();
-  const g = (genre || '').toLowerCase();
-  if (s.includes('music')) return { cls: 'badge-music', label: genre || 'Music' };
-  if (s.includes('sport')) return { cls: 'badge-sports', label: genre || 'Sports' };
-  if (s.includes('arts') || s.includes('theatre')) return { cls: 'badge-arts', label: genre || 'Arts' };
-  if (s.includes('family')) return { cls: 'badge-family', label: 'Family' };
-  if (g.includes('comedy')) return { cls: 'badge-comedy', label: 'Comedy' };
-  return { cls: 'badge-misc', label: segment || 'Event' };
-}
-
-function getCategoryEmoji(segment) {
-  const s = (segment || '').toLowerCase();
-  if (s.includes('music')) return '🎵';
-  if (s.includes('sport')) return '🏆';
-  if (s.includes('arts') || s.includes('theatre')) return '🎭';
-  if (s.includes('family')) return '👨‍👩‍👧';
-  return '🎫';
-}
-
-function escHtml(str) {
-  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ── SKELETON ──
-function showSkeletons() {
-  const grid = document.getElementById('events-grid');
-  grid.innerHTML = Array(6).fill(0).map(() => `
-    <div class="skeleton-card">
-      <div class="skeleton-img"></div>
-      <div class="skeleton-body">
-        <div class="skeleton-line medium"></div>
-        <div class="skeleton-line short"></div>
-        <div class="skeleton-line medium"></div>
-        <div class="skeleton-line short"></div>
-      </div>
-    </div>`).join('');
-  document.getElementById('results-section').classList.add('visible');
-  document.getElementById('empty-state').classList.remove('visible');
-  document.getElementById('load-more-btn').classList.add('hidden');
-}
-
-function hideSkeletons() {
-  document.getElementById('events-grid').innerHTML = '';
-}
-
-// ── BUTTON STATE ──
-function setBtnLoading(loading) {
-  const btn = document.getElementById('search-btn');
-  const icon = document.getElementById('btn-icon');
-  const txt = document.getElementById('btn-text');
-  btn.disabled = loading;
-  icon.textContent = loading ? '⏳' : '🔍';
-  txt.textContent = loading ? 'Searching...' : 'Search Events';
-}
-
-// ── ERROR ──
-function showError(msg) {
-  const el = document.getElementById('error-banner');
-  el.textContent = '⚠️ ' + msg;
-  el.classList.add('visible');
-}
-function clearError() {
-  document.getElementById('error-banner').classList.remove('visible');
-}
-
-// ── CTA FORMS ──
-function submitTraveler() {
-  const email = document.getElementById('traveler-email').value.trim();
-  if (!email || !email.includes('@')) {
-    document.getElementById('traveler-email').focus();
-    return;
+  } catch (e) {
+    aiLoading.style.display = 'none';
   }
-  const city = document.getElementById('location-input').value.trim() || 'an upcoming destination';
-  const subject = encodeURIComponent('Trip Planner Request — ' + city);
-  const body = encodeURIComponent(`Hi,\n\nI found an event in ${city} using the Event Searcher tool and I'd love to connect with a travel planner to help build a trip around it.\n\nMy email: ${email}\n\nThanks!`);
-  window.open(`mailto:demersdd@gmail.com?subject=${subject}&body=${body}`, '_blank');
-  document.getElementById('traveler-toast').classList.add('visible');
-  document.getElementById('traveler-email').value = '';
 }
 
-function submitAgent() {
-  const email = document.getElementById('agent-email').value.trim();
-  const agency = document.getElementById('agent-name').value.trim();
-  if (!email || !email.includes('@')) {
-    document.getElementById('agent-email').focus();
-    return;
+// ── Minimal markdown renderer ──
+function markdownToHtml(md) {
+  const lines = md.split('\n');
+  const out = [];
+  let inList = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i]
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+    if (/^#{1,3} (.+)/.test(line)) {
+      if (inList) { out.push('</ul>'); inList = false; }
+      out.push('<h3>' + line.replace(/^#{1,3} /, '') + '</h3>');
+    } else if (/^[-*] (.+)/.test(line)) {
+      if (!inList) { out.push('<ul>'); inList = true; }
+      out.push('<li>' + line.replace(/^[-*] /, '') + '</li>');
+    } else if (line.trim() === '') {
+      if (inList) { out.push('</ul>'); inList = false; }
+    } else {
+      if (inList) { out.push('</ul>'); inList = false; }
+      out.push('<p>' + line + '</p>');
+    }
   }
-  const subject = encodeURIComponent('Travel Agent Partnership Inquiry');
-  const body = encodeURIComponent(`Hi,\n\nI'm a travel agent interested in partnering with you through the Event Searcher tool.\n\nEmail: ${email}\nAgency: ${agency || 'Not provided'}\n\nLooking forward to connecting!`);
-  window.open(`mailto:demersdd@gmail.com?subject=${subject}&body=${body}`, '_blank');
-  document.getElementById('agent-toast').classList.add('visible');
-  document.getElementById('agent-email').value = '';
-  document.getElementById('agent-name').value = '';
+  if (inList) out.push('</ul>');
+  return out.join('');
 }
+
+// ── Modal logic ──
+let currentTab = 'traveler';
+function openModal(tab) {
+  currentTab = tab || 'traveler';
+  switchTab(currentTab);
+  document.getElementById('modal-success').style.display = 'none';
+  document.getElementById('modal-content-wrapper').style.display = 'block';
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+
+  // Pre-fill destination if available
+  const city = document.getElementById('city-input').value.trim();
+  if (city) document.getElementById('form-destination').value = city;
+}
+function closeModal() {
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModal();
+}
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('tab-traveler').classList.toggle('active', tab === 'traveler');
+  document.getElementById('tab-agent').classList.toggle('active', tab === 'agent');
+  document.getElementById('traveler-fields').style.display = tab === 'traveler' ? 'flex' : 'none';
+  document.getElementById('traveler-fields').style.flexDirection = 'column';
+  document.getElementById('traveler-fields').style.gap = '.75rem';
+  document.getElementById('agent-fields').style.display = tab === 'agent' ? 'flex' : 'none';
+  document.getElementById('agent-fields').style.flexDirection = 'column';
+  document.getElementById('agent-fields').style.gap = '.75rem';
+  if (tab === 'traveler') {
+    document.getElementById('modal-icon').textContent = '✈️';
+    document.getElementById('modal-title').textContent = 'Connect with a Travel Planner';
+    document.getElementById('modal-sub').textContent = "Tell us where you're headed and we'll connect you with an expert who can build your perfect trip.";
+  } else {
+    document.getElementById('modal-icon').textContent = '🤝';
+    document.getElementById('modal-title').textContent = 'Partner with Us';
+    document.getElementById('modal-sub').textContent = "Are you a travel agent or agency? We'd love to explore how we can work together.";
+  }
+}
+
+async function submitForm(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.btn-submit');
+  btn.textContent = 'Sending…';
+  btn.disabled = true;
+
+  const name = document.getElementById('form-name').value;
+  const email = document.getElementById('form-email').value;
+  const message = document.getElementById('form-message').value;
+  const type = currentTab;
+
+  let details = '';
+  if (type === 'traveler') {
+    const dest = document.getElementById('form-destination').value;
+    const dates = document.getElementById('form-dates').value;
+    details = `Destination: ${dest}\nDates: ${dates}`;
+  } else {
+    const agency = document.getElementById('form-agency').value;
+    const interest = document.getElementById('form-interest').value;
+    details = `Agency: ${agency}\nInterest: ${interest}`;
+  }
+
+  // Submit via Claude AI to generate a confirmation (or just mailto fallback)
+  const mailtoLink = `mailto:demersdd@gmail.com?subject=${encodeURIComponent(`Travel Inquiry (${type}) – ${name}`)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\nType: ${type}\n${details}\n\nMessage:\n${message}`)}`;
+
+  // Show success
+  document.getElementById('modal-content-wrapper').style.display = 'none';
+  document.getElementById('modal-success').style.display = 'block';
+
+  // Open mail client
+  setTimeout(() => { window.location.href = mailtoLink; }, 600);
+}
+
+// ── Enter key search ──
+document.getElementById('city-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+// ── ESC to close modal ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
 </script>
-
 </body>
 </html>
