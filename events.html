@@ -594,7 +594,7 @@ footer a { color: var(--primary); text-decoration: none; }
 </footer>
 
 <script>
-const WORKER_URL = 'https://worker.demersdd.workers.dev';
+const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
 
 // ── Date defaults ──
 (function() {
@@ -787,7 +787,7 @@ Keep it conversational, specific, and genuinely useful. Use headers for each sec
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1200,
         messages: [{ role: 'user', content: prompt }],
       }),
