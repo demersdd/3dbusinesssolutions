@@ -347,6 +347,78 @@ footer {
 .load-more-btn:hover { background: var(--primary); color: white; }
 .load-more-btn.hidden { display: none; }
 
+/* ── MORE TO EXPLORE ── */
+.explore-section {
+  max-width: 1200px; margin: 0 auto 2rem; padding: 0 2rem;
+  display: none;
+}
+.explore-section.visible { display: block; }
+.explore-divider {
+  display: flex; align-items: center; gap: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+.explore-divider-line { flex: 1; height: 1px; background: var(--border); }
+.explore-divider-label {
+  font-family: var(--head); font-size: 1.1rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  white-space: nowrap;
+}
+.explore-block { margin-bottom: 3rem; }
+.explore-block-header {
+  display: flex; align-items: center; gap: .75rem; margin-bottom: 1.25rem;
+}
+.explore-block-icon { font-size: 1.4rem; }
+.explore-block-title {
+  font-family: var(--head); font-size: 1.5rem; font-weight: 900;
+  text-transform: uppercase; letter-spacing: .02em; color: var(--text);
+}
+.explore-block-title em { font-style: normal; }
+.explore-block-sub { font-size: .82rem; color: var(--muted); margin-left: auto; }
+
+/* Free event cards */
+.badge-free { background: #dcfce7; color: #15803d; }
+.badge-timeless { background: #f3e8ff; color: #7e22ce; }
+.explore-card {
+  background: white; border-radius: var(--radius);
+  box-shadow: var(--card-shadow); overflow: hidden;
+  transition: transform .25s, box-shadow .25s;
+  display: flex; flex-direction: column;
+  padding: 1.4rem;
+  border-left: 4px solid transparent;
+}
+.explore-card:hover { transform: translateY(-3px); box-shadow: var(--card-shadow-hover); }
+.explore-card.free-card { border-left-color: #22c55e; }
+.explore-card.todo-card { border-left-color: #a855f7; }
+.explore-card-top {
+  display: flex; align-items: flex-start; justify-content: space-between;
+  gap: .75rem; margin-bottom: .75rem;
+}
+.explore-card-name {
+  font-size: 1rem; font-weight: 700; color: var(--text); line-height: 1.3;
+}
+.explore-card-desc {
+  font-size: .88rem; color: var(--body); line-height: 1.6; margin-bottom: .75rem;
+}
+.explore-card-meta {
+  display: flex; flex-direction: column; gap: .3rem; margin-bottom: .75rem;
+}
+.explore-card-meta-row {
+  display: flex; align-items: center; gap: .5rem;
+  font-size: .82rem; color: var(--body);
+}
+.explore-card-meta-icon { color: var(--muted); width: 1rem; text-align: center; }
+.explore-card-tip {
+  font-size: .8rem; color: var(--primary); font-style: italic;
+  padding: .5rem .75rem; background: var(--primary-light);
+  border-radius: var(--radius-sm); line-height: 1.5;
+}
+
+/* AI skeleton */
+.ai-skeleton-card {
+  background: white; border-radius: var(--radius); box-shadow: var(--card-shadow);
+  padding: 1.4rem; border-left: 4px solid var(--border);
+}
+
 /* ── ERROR BANNER ── */
 .error-banner {
   background: #fef2f2; border: 1.5px solid #fecaca; border-radius: var(--radius-sm);
@@ -370,7 +442,7 @@ footer {
   .why-grid { grid-template-columns: 1fr; }
   .results-header { flex-direction: column; align-items: flex-start; }
   footer { flex-direction: column; gap: .5rem; text-align: center; }
-  .cta-section, .why-section, .results-section { padding: 0 1rem; }
+  .cta-section, .why-section, .results-section, .explore-section { padding: 0 1rem; }
 }
 @media (max-width: 620px) {
   .search-grid { grid-template-columns: 1fr; }
@@ -476,6 +548,35 @@ footer {
     <button class="load-more-btn hidden" id="load-more-btn" onclick="loadMore()">
       Load More Events ↓
     </button>
+  </div>
+</section>
+
+<!-- ── MORE TO EXPLORE ── -->
+<section class="explore-section" id="explore-section">
+  <div class="explore-divider">
+    <div class="explore-divider-line"></div>
+    <div class="explore-divider-label">More to Explore</div>
+    <div class="explore-divider-line"></div>
+  </div>
+
+  <!-- Free & Local Events -->
+  <div class="explore-block" id="free-events-block">
+    <div class="explore-block-header">
+      <span class="explore-block-icon">🎪</span>
+      <div class="explore-block-title">Free &amp; <em style="color:var(--primary)">Local Events</em></div>
+      <div class="explore-block-sub">Community events, free admission &amp; more</div>
+    </div>
+    <div class="events-grid" id="free-events-grid"></div>
+  </div>
+
+  <!-- Things To Do -->
+  <div class="explore-block" id="things-todo-block">
+    <div class="explore-block-header">
+      <span class="explore-block-icon">🗺️</span>
+      <div class="explore-block-title">Things <em style="color:#a855f7">To Do</em></div>
+      <div class="explore-block-sub">Attractions &amp; experiences — no ticket required</div>
+    </div>
+    <div class="events-grid" id="things-grid"></div>
   </div>
 </section>
 
@@ -593,6 +694,10 @@ async function searchEvents() {
   setBtnLoading(true);
   clearError();
   showSkeletons();
+  showAISkeletons();
+
+  // Fire Ticketmaster and AI calls in parallel
+  searchAI(city, startDate, endDate);
 
   try {
     const params = new URLSearchParams({
@@ -628,6 +733,106 @@ async function searchEvents() {
   } finally {
     setBtnLoading(false);
   }
+}
+
+// ── AI SEARCH (More to Explore) ──
+async function searchAI(city, startDate, endDate) {
+  const dateContext = startDate
+    ? ` around ${new Date(startDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}${endDate ? ' through ' + new Date(endDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric' }) : ''}`
+    : '';
+
+  const prompt = `You are a local travel and events expert. For someone visiting ${city}${dateContext}, return ONLY valid JSON with no markdown:
+{
+  "freeEvents": [
+    { "name": "", "description": "", "when": "", "location": "", "tip": "" }
+  ],
+  "thingsToDo": [
+    { "name": "", "description": "", "category": "", "location": "", "tip": "" }
+  ]
+}
+freeEvents: 4-6 free or low-cost community events happening around that time (farmers markets, outdoor concerts, parades, free museum days, festivals, cultural events, etc.). Use "when" for a general time like "Saturdays" or "March weekends" or a specific date if known.
+thingsToDo: 5-8 timeless local attractions and experiences that don't require a specific date — landmarks, historic sites, parks, neighborhoods, food experiences, day trips, etc. Use one of these for "category": History, Nature, Food, Art, Outdoors, Entertainment, Shopping.
+Return only the JSON object, no other text.`;
+
+  try {
+    const resp = await fetch('https://3dbusinesssolutions.demersdd.workers.dev', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1500,
+        messages: [{ role: 'user', content: prompt }],
+      }),
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error.message || 'AI error');
+    const text = data.content.map(c => c.text || '').join('');
+    const result = JSON.parse(text.replace(/```json|```/g, '').trim());
+    renderFreeEvents(result.freeEvents || []);
+    renderThingsToDo(result.thingsToDo || []);
+    document.getElementById('explore-section').classList.add('visible');
+  } catch (err) {
+    console.warn('AI explore section failed:', err);
+    document.getElementById('explore-section').classList.remove('visible');
+  }
+}
+
+function renderFreeEvents(items) {
+  const grid = document.getElementById('free-events-grid');
+  if (!items.length) { document.getElementById('free-events-block').style.display = 'none'; return; }
+  document.getElementById('free-events-block').style.display = '';
+  grid.innerHTML = items.map(item => `
+    <div class="explore-card free-card">
+      <div class="explore-card-top">
+        <div class="explore-card-name">${escHtml(item.name || '')}</div>
+        <span class="event-category-badge badge-free">Free</span>
+      </div>
+      <div class="explore-card-desc">${escHtml(item.description || '')}</div>
+      <div class="explore-card-meta">
+        ${item.when ? `<div class="explore-card-meta-row"><span class="explore-card-meta-icon">📅</span><span>${escHtml(item.when)}</span></div>` : ''}
+        ${item.location ? `<div class="explore-card-meta-row"><span class="explore-card-meta-icon">📍</span><span>${escHtml(item.location)}</span></div>` : ''}
+      </div>
+      ${item.tip ? `<div class="explore-card-tip">💡 ${escHtml(item.tip)}</div>` : ''}
+    </div>`).join('');
+}
+
+function renderThingsToDo(items) {
+  const grid = document.getElementById('things-grid');
+  if (!items.length) { document.getElementById('things-todo-block').style.display = 'none'; return; }
+  document.getElementById('things-todo-block').style.display = '';
+  const catColors = {
+    History: 'badge-music', Nature: 'badge-family', Food: 'badge-sports',
+    Art: 'badge-arts', Outdoors: 'badge-family', Entertainment: 'badge-comedy',
+    Shopping: 'badge-misc',
+  };
+  grid.innerHTML = items.map(item => {
+    const badgeCls = catColors[item.category] || 'badge-misc';
+    return `
+    <div class="explore-card todo-card">
+      <div class="explore-card-top">
+        <div class="explore-card-name">${escHtml(item.name || '')}</div>
+        <span class="event-category-badge ${badgeCls}">${escHtml(item.category || 'Activity')}</span>
+      </div>
+      <div class="explore-card-desc">${escHtml(item.description || '')}</div>
+      <div class="explore-card-meta">
+        ${item.location ? `<div class="explore-card-meta-row"><span class="explore-card-meta-icon">📍</span><span>${escHtml(item.location)}</span></div>` : ''}
+      </div>
+      ${item.tip ? `<div class="explore-card-tip">💡 ${escHtml(item.tip)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function showAISkeletons() {
+  document.getElementById('explore-section').classList.add('visible');
+  const skeletonHTML = Array(4).fill(0).map(() => `
+    <div class="ai-skeleton-card">
+      <div class="skeleton-line medium" style="margin-bottom:.75rem;height:16px"></div>
+      <div class="skeleton-line" style="margin-bottom:.5rem"></div>
+      <div class="skeleton-line short" style="margin-bottom:.5rem"></div>
+      <div class="skeleton-line medium"></div>
+    </div>`).join('');
+  document.getElementById('free-events-grid').innerHTML = skeletonHTML;
+  document.getElementById('things-grid').innerHTML = skeletonHTML;
 }
 
 // ── FILTER ──
