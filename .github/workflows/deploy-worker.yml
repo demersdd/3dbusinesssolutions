@@ -5,6 +5,10 @@ on:
     branches: [main]
     paths:
       - 'worker.js'
+      - 'events.html'
+      - '*.html'
+      - '*.css'
+      - '*.js'
 
 jobs:
   deploy:

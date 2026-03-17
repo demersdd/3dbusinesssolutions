@@ -594,7 +594,8 @@ footer a { color: var(--primary); text-decoration: none; }
 </footer>
 
 <script>
-const WORKER_URL = 'https://worker.demersdd.workers.dev';
+const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+const TICKETMASTER_KEY = 'M7Gq0HfCKFtkM8ncLULGkpyT6cSrnRe5';
 
 // ── Date defaults ──
 (function() {
@@ -739,25 +740,23 @@ async function doSearch() {
   fetchAiExplore(city, startDate, endDate, category);
 }
 
-// ── Ticketmaster fetch ──
+// ── Ticketmaster fetch (direct API call) ──
 async function fetchTicketmaster(city, startDate, endDate, category) {
-  const payload = {
-    _service: 'ticketmaster',
+  const params = new URLSearchParams({
+    apikey: TICKETMASTER_KEY,
     city,
     size: 24,
-  };
-  if (startDate) payload.startDateTime = startDate + 'T00:00:00Z';
-  if (endDate) payload.endDateTime = endDate + 'T00:00:00Z';
-  if (category && category !== 'all') payload.classificationName = category;
-
-  const res = await fetch(WORKER_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
+    sort: 'date,asc',
   });
+  if (startDate) params.set('startDateTime', startDate + 'T00:00:00Z');
+  if (endDate) params.set('endDateTime', endDate + 'T23:59:59Z');
+  if (category && category !== 'all') params.set('classificationName', category);
+
+  const res = await fetch(`https://app.ticketmaster.com/discovery/v2/events.json?${params}`);
   if (!res.ok) throw new Error('Ticketmaster API error');
   const data = await res.json();
-  return (data?._embedded?.events) || [];
+  if (data.fault || data.errors) throw new Error(data.fault?.faultstring || data.errors?.[0]?.detail || 'API error');
+  return data?._embedded?.events || [];
 }
 
 // ── Claude AI explore ──
@@ -787,7 +786,7 @@ Keep it conversational, specific, and genuinely useful. Use headers for each sec
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
+        model: 'claude-sonnet-4-20250514',
         max_tokens: 1200,
         messages: [{ role: 'user', content: prompt }],
       }),
