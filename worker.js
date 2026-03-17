@@ -1,3 +1,4 @@
+// Worker v2
 export default {
   async fetch(request, env) {
     const allowedOrigins = [
