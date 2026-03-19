@@ -518,7 +518,236 @@
     footer a { color: var(--ocean); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
+    /* ── BOARD TABS ── */
+    .filters {
+      border-bottom: 2px solid var(--border);
+      margin-bottom: 0;
+      padding-bottom: 0;
+      gap: 0;
+    }
+
+    .filter-btn {
+      border-radius: 0;
+      border: none;
+      border-bottom: 3px solid transparent;
+      background: none;
+      color: var(--muted);
+      padding: 0.75rem 1.25rem;
+      margin-bottom: -2px;
+      font-size: 0.92rem;
+      font-weight: 600;
+      transition: color 0.18s, border-color 0.18s;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .filter-btn:hover {
+      color: var(--ocean);
+      border-bottom-color: var(--ocean);
+    }
+
+    .filter-btn.active {
+      background: none;
+      border-color: transparent;
+      color: var(--ocean2);
+      border-bottom: 3px solid var(--ocean);
+    }
+
+    .filter-btn.active.events { color: #3d8a6e; border-bottom-color: var(--seafoam); }
+    .filter-btn.active.sale   { color: #b05a45; border-bottom-color: var(--coral); }
+    .filter-btn.active.jobs   { color: var(--ocean2); border-bottom-color: var(--ocean); }
+
+    .tab-count {
+      display: inline-block;
+      background: var(--sand2);
+      border-radius: 10px;
+      padding: 0.1rem 0.45rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--muted);
+    }
+
+    .filter-btn.active .tab-count { background: rgba(0,0,0,0.1); color: inherit; }
+
+    /* ── TAG CHIPS ── */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      border-radius: 10px;
+      padding: 0.18rem 0.55rem;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+
+    .chip-selling { background: #e8f4f0; color: #2e7a5e; }
+    .chip-free    { background: #fef3ec; color: #b05a45; border: 1.5px dashed var(--coral); }
+    .chip-wanted  { background: #edf3fa; color: var(--ocean2); border: 1.5px dashed var(--ocean); }
+    .chip-offering { background: var(--job-bg); color: var(--ocean2); }
+    .chip-request  { background: #f3eef8; color: #7b56a0; }
+
+    /* ── OFFICIAL BADGE ── */
+    .badge-official {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: #fef8e1;
+      color: #a07800;
+      border: 1.5px solid #e6c84a;
+      border-radius: 10px;
+      padding: 0.18rem 0.55rem;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+
+    .badge-official::before { content: '★ '; font-size: 0.65rem; }
+
+    /* ── VIEW TOGGLE ── */
+    .view-toggle {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .view-toggle.visible { display: flex; }
+
+    .view-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+      font-family: var(--font-sans);
+    }
+
+    .view-btn:hover { border-color: var(--ocean); color: var(--ocean); }
+    .view-btn.active { background: var(--ocean); border-color: var(--ocean); color: #fff; }
+
+    /* ── CALENDAR ── */
+    .calendar-wrap {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 1px 4px var(--shadow);
+      overflow: hidden;
+    }
+
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem 0.75rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cal-nav-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.65rem;
+      cursor: pointer;
+      font-size: 1.1rem;
+      color: var(--muted);
+      line-height: 1;
+      transition: all 0.15s;
+      font-family: var(--font-sans);
+    }
+
+    .cal-nav-btn:hover { border-color: var(--ocean); color: var(--ocean); }
+
+    .cal-month-label {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      color: var(--ink);
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+
+    .cal-day-header {
+      padding: 0.5rem 0;
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .cal-cell {
+      min-height: 68px;
+      padding: 0.35rem 0.4rem;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .cal-cell:nth-child(7n) { border-right: none; }
+    .cal-cell:hover { background: var(--sand); }
+    .cal-cell.other-month { background: var(--cream); }
+    .cal-cell.other-month .cal-day-num { color: var(--border); }
+
+    .cal-cell.today .cal-day-num {
+      background: var(--ocean);
+      color: #fff;
+      border-radius: 50%;
+    }
+
+    .cal-cell.has-events { background: var(--event-bg); }
+    .cal-cell.selected { outline: 2px solid var(--seafoam); outline-offset: -2px; }
+
+    .cal-day-num {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--ink2);
+      margin-bottom: 0.3rem;
+      width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .cal-dot-row { display: flex; gap: 3px; flex-wrap: wrap; }
+
+    .cal-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--event-dot);
+    }
+
+    .cal-day-detail {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .cal-day-detail h4 {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      margin-bottom: 0.75rem;
+      color: var(--ink);
+    }
+
     /* ── RESPONSIVE ── */
+    @media (max-width: 600px) {
+      .cal-cell { min-height: 48px; padding: 0.2rem; }
+      .cal-day-num { font-size: 0.72rem; }
+      .cal-dot { width: 5px; height: 5px; }
+    }
+
     @media (max-width: 600px) {
       nav { padding: 0 1rem; }
       .hero { padding: 2.5rem 1rem 2rem; }
@@ -555,20 +784,24 @@
     </button>
   </div>
 
-  <!-- FILTERS -->
-  <div class="filters">
-    <button class="filter-btn active" data-cat="all" onclick="setFilter('all', this)">All Posts</button>
-    <button class="filter-btn" data-cat="events" onclick="setFilter('events', this)">🗓 Events</button>
-    <button class="filter-btn" data-cat="sale" onclick="setFilter('sale', this)">🏷 For Sale</button>
-    <button class="filter-btn" data-cat="jobs" onclick="setFilter('jobs', this)">🤝 Jobs & Odd Jobs</button>
+  <!-- BOARD TABS -->
+  <div class="filters" id="tab-bar">
+    <button class="filter-btn active" data-cat="all"    onclick="setFilter('all',    this)">All Posts <span class="tab-count" id="count-all"></span></button>
+    <button class="filter-btn"        data-cat="events" onclick="setFilter('events', this)">🗓 Events <span class="tab-count" id="count-events"></span></button>
+    <button class="filter-btn"        data-cat="sale"   onclick="setFilter('sale',   this)">🏷 Marketplace <span class="tab-count" id="count-sale"></span></button>
+    <button class="filter-btn"        data-cat="jobs"   onclick="setFilter('jobs',   this)">🤝 Jobs Board <span class="tab-count" id="count-jobs"></span></button>
   </div>
 
   <!-- BOARD -->
   <div class="board-wrap">
     <div class="board-header">
       <div class="board-count" id="board-count"></div>
+      <div class="view-toggle" id="view-toggle">
+        <button class="view-btn active" id="btn-list" onclick="setView('list')">☰ List</button>
+        <button class="view-btn"        id="btn-cal"  onclick="setView('cal')">📅 Calendar</button>
+      </div>
     </div>
-    <div class="listings" id="listings"></div>
+    <div id="listings"></div>
   </div>
 
   <!-- FOOTER -->
@@ -623,11 +856,27 @@
             <label for="form-location">Location</label>
             <input type="text" id="form-location" placeholder="e.g. Ocean Point dock, Eastern Point Rd" />
           </div>
+          <div class="form-group">
+            <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-weight:400;">
+              <input type="checkbox" id="form-official" style="width:auto;" />
+              <span>Official community event</span>
+            </label>
+            <div class="form-hint">Check if posting on behalf of the Ocean Point Association.</div>
+          </div>
         </div>
 
         <!-- For Sale fields -->
         <div id="sale-fields" style="display:none">
-          <div class="form-row">
+          <div class="form-group">
+            <label>Listing Type</label>
+            <div style="display:flex; gap:0.5rem;">
+              <button type="button" class="cat-btn active-sale" data-lt="selling" onclick="selectListingType('selling',this)">🏷 Selling</button>
+              <button type="button" class="cat-btn" data-lt="free"    onclick="selectListingType('free',this)">🎁 Free</button>
+              <button type="button" class="cat-btn" data-lt="wanted"  onclick="selectListingType('wanted',this)">🔍 Wanted</button>
+            </div>
+            <input type="hidden" id="form-listing-type" value="selling" />
+          </div>
+          <div class="form-row" id="sale-price-row">
             <div class="form-group">
               <label for="form-price">Price</label>
               <input type="text" id="form-price" placeholder="e.g. $25 or Free" />
@@ -647,6 +896,14 @@
 
         <!-- Jobs fields -->
         <div id="jobs-fields" style="display:none">
+          <div class="form-group">
+            <label>Post Type</label>
+            <div style="display:flex; gap:0.5rem;">
+              <button type="button" class="cat-btn active-jobs" data-jt="offering" onclick="selectJobType('offering',this)">📢 Offering</button>
+              <button type="button" class="cat-btn" data-jt="request" onclick="selectJobType('request',this)">🙋 Request</button>
+            </div>
+            <input type="hidden" id="form-job-type" value="offering" />
+          </div>
           <div class="form-row">
             <div class="form-group">
               <label for="form-pay">Pay / Rate</label>
@@ -675,24 +932,26 @@
 
   <script>
     // ── DATA ──────────────────────────────────────────────────────────────
-    const STORAGE_KEY = 'ocean-point-board-v1';
+    const STORAGE_KEY = 'ocean-point-board-v2';
 
     const SAMPLE_POSTS = [
       {
         id: 'sample-1',
         cat: 'events',
-        title: 'Sunset Lobster Bake at the Point',
-        desc: 'Bring your own chairs and drinks — we\'ll have lobster, corn, and clam chowder. All are welcome! Hosted by the Hendersons.',
-        date: '2026-07-12',
-        time: '5:30 pm',
-        location: 'Ocean Point Beach, end of Ocean Point Rd',
-        contact: 'Sue Henderson — knock on the green door, Cottage 14',
+        official: true,
+        title: 'Annual Clambake — Ocean Point Association',
+        desc: 'The OPA\'s annual clambake returns to the beach. Lobster, clams, corn, and dessert included with your ticket. All residents welcome.',
+        date: '2026-07-04',
+        time: '4:00 pm',
+        location: 'Ocean Point Beach',
+        contact: 'OPA Events Committee — opa@email.com',
         posted: '2026-03-17T10:00:00Z',
         sample: true
       },
       {
         id: 'sample-2',
         cat: 'events',
+        official: false,
         title: 'Morning Bird Walk — Spruce Point',
         desc: 'Easy 90-minute walk with binoculars. Great for beginners and kids. Meet at the trailhead parking.',
         date: '2026-06-21',
@@ -704,7 +963,21 @@
       },
       {
         id: 'sample-3',
+        cat: 'events',
+        official: true,
+        title: '4th of July Parade & Bonfire',
+        desc: 'Decorate your golf cart or bike! Parade starts at the flagpole at 10am, bonfire at dusk on the beach.',
+        date: '2026-07-04',
+        time: '10:00 am',
+        location: 'Ocean Point flagpole → beach',
+        contact: 'OPA — opa@email.com',
+        posted: '2026-03-15T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'sample-4',
         cat: 'sale',
+        listingType: 'selling',
         title: 'Vintage wooden kayak paddle',
         desc: 'Beautiful old spruce paddle, 8 ft, some age marks but totally solid. Perfect for a camp wall or light paddling.',
         price: '$40',
@@ -714,19 +987,33 @@
         sample: true
       },
       {
-        id: 'sample-4',
+        id: 'sample-5',
         cat: 'sale',
-        title: 'Cast iron skillet — 10 inch Lodge',
-        desc: 'Well-seasoned, cooks great. Downsizing the kitchen this summer.',
-        price: '$20',
+        listingType: 'free',
+        title: 'Cast iron skillet — free to good home',
+        desc: 'Well-seasoned 10-inch Lodge. Cooks great, just downsizing the camp kitchen.',
+        price: '',
         condition: 'Good',
         contact: 'Linda at Cottage 22 on Shore Rd',
         posted: '2026-03-14T09:15:00Z',
         sample: true
       },
       {
-        id: 'sample-5',
+        id: 'sample-6',
+        cat: 'sale',
+        listingType: 'wanted',
+        title: 'Looking for a folding kayak or canoe',
+        desc: 'Happy to borrow or buy outright. Anything that fits a car roof rack. Ideally something a beginner can handle.',
+        price: '',
+        condition: '',
+        contact: 'Al — ask at Cottage 31',
+        posted: '2026-03-11T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'sample-7',
         cat: 'jobs',
+        jobType: 'offering',
         title: 'Babysitter wanted — July weekends',
         desc: 'Two kids, ages 5 and 8. Very easy-going. Would love someone local who the kids can get comfortable with over the summer.',
         pay: '$18/hr',
@@ -736,14 +1023,15 @@
         sample: true
       },
       {
-        id: 'sample-6',
+        id: 'sample-8',
         cat: 'jobs',
-        title: 'Help moving a dock section — one afternoon',
-        desc: 'Need 2–3 people to help move a 20-ft floating dock section before July 4. Light work, I\'ll have all equipment. Happy to return the favor.',
-        pay: 'Barter / Beer & lobster rolls',
-        when: 'Late June, flexible',
-        contact: 'Phil Dorsey — 207-555-0188',
-        posted: '2026-03-12T11:00:00Z',
+        jobType: 'request',
+        title: 'Available for odd jobs & yard work',
+        desc: 'Local teen, reliable, can help with yard cleanup, painting, hauling, and errands. References available on request.',
+        pay: 'Negotiable',
+        when: 'Weekdays in June–August',
+        contact: 'Jake P. — ask at Cottage 31',
+        posted: '2026-03-10T14:00:00Z',
         sample: true
       }
     ];
@@ -759,18 +1047,30 @@
       try { localStorage.setItem(STORAGE_KEY, JSON.stringify(posts)); } catch(e) {}
     }
 
+    function normPost(p) {
+      if (p.cat === 'sale'   && !p.listingType)   p.listingType = 'selling';
+      if (p.cat === 'jobs'   && !p.jobType)        p.jobType     = 'offering';
+      if (p.cat === 'events' && p.official == null) p.official   = false;
+      return p;
+    }
+
     function getAllPosts() {
       const user = loadPosts();
-      return [...user, ...SAMPLE_POSTS];
+      return [...user, ...SAMPLE_POSTS].map(normPost);
     }
 
     // ── RENDER ────────────────────────────────────────────────────────────
     let currentFilter = 'all';
+    let currentView   = 'list';  // 'list' | 'cal'
+    let selectedCalDate = null;
+    const _now = new Date();
+    let calYear  = _now.getFullYear();
+    let calMonth = _now.getMonth();
 
     const LABELS = {
       events: { label: 'Event',       emoji: '🗓' },
-      sale:   { label: 'For Sale',    emoji: '🏷' },
-      jobs:   { label: 'Job / Odd Job', emoji: '🤝' }
+      sale:   { label: 'Marketplace', emoji: '🏷' },
+      jobs:   { label: 'Jobs Board',  emoji: '🤝' }
     };
 
     function formatDate(iso) {
@@ -794,19 +1094,35 @@
       const isSample = p.sample;
       const deleteBtn = isSample ? '' : `<button class="card-delete" title="Remove post" onclick="deletePost('${p.id}')">✕</button>`;
 
+      // Extra badge decorations
+      const officialBadge = (p.cat === 'events' && p.official)
+        ? `<span class="badge-official">Official</span>` : '';
+
+      const listingChip = p.cat === 'sale'
+        ? `<span class="chip chip-${p.listingType}">${
+            p.listingType === 'selling' ? '🏷 Selling'
+          : p.listingType === 'free'    ? '🎁 Free'
+          :                               '🔍 Wanted'
+          }</span>` : '';
+
+      const jobChip = p.cat === 'jobs'
+        ? `<span class="chip chip-${p.jobType}">${
+            p.jobType === 'offering' ? '📢 Offering' : '🙋 Request'
+          }</span>` : '';
+
       let extraLeft = '';
       let extraRight = '';
 
       if (p.cat === 'events') {
-        if (p.date) extraLeft += `<span>📅 ${formatDate(p.date)}${p.time ? ' · ' + p.time : ''}</span>`;
+        if (p.date)     extraLeft += `<span>📅 ${formatDate(p.date)}${p.time ? ' · ' + p.time : ''}</span>`;
         if (p.location) extraLeft += `<span>📍 ${escHtml(p.location)}</span>`;
       }
       if (p.cat === 'sale') {
-        if (p.condition) extraLeft += `<span>✦ ${escHtml(p.condition)}</span>`;
-        if (p.price) extraRight = `<div class="card-price">${escHtml(p.price)}</div>`;
+        if (p.condition && p.listingType !== 'wanted') extraLeft += `<span>✦ ${escHtml(p.condition)}</span>`;
+        if (p.price && p.listingType === 'selling') extraRight = `<div class="card-price">${escHtml(p.price)}</div>`;
       }
       if (p.cat === 'jobs') {
-        if (p.pay) extraLeft += `<span>💰 ${escHtml(p.pay)}</span>`;
+        if (p.pay)  extraLeft += `<span>💰 ${escHtml(p.pay)}</span>`;
         if (p.when) extraLeft += `<span>📆 ${escHtml(p.when)}</span>`;
       }
 
@@ -814,9 +1130,8 @@
         <div class="card" data-id="${p.id}">
           ${deleteBtn}
           <div class="card-left">
-            <div class="card-badge ${p.cat}">
-              <div class="dot"></div>
-              ${cat.label}
+            <div style="margin-bottom:0.45rem;">
+              <span class="card-badge ${p.cat}"><div class="dot"></div>${cat.label}</span>${officialBadge}${listingChip}${jobChip}
             </div>
             <div class="card-title">${escHtml(p.title)}</div>
             ${p.desc ? `<div class="card-desc">${escHtml(p.desc)}</div>` : ''}
@@ -840,33 +1155,180 @@
       const all = getAllPosts();
       const filtered = currentFilter === 'all' ? all : all.filter(p => p.cat === currentFilter);
 
+      // Update tab counts
+      document.getElementById('count-all').textContent    = all.length;
+      document.getElementById('count-events').textContent = all.filter(p => p.cat === 'events').length;
+      document.getElementById('count-sale').textContent   = all.filter(p => p.cat === 'sale').length;
+      document.getElementById('count-jobs').textContent   = all.filter(p => p.cat === 'jobs').length;
+
+      // Show/hide view toggle (events tab only)
+      const toggle = document.getElementById('view-toggle');
+      if (currentFilter === 'events') {
+        toggle.classList.add('visible');
+      } else {
+        toggle.classList.remove('visible');
+        if (currentView === 'cal') { currentView = 'list'; updateViewBtns(); }
+      }
+
+      // Update posting count label
       const count = document.getElementById('board-count');
       count.textContent = filtered.length === 0 ? '' :
         filtered.length === 1 ? '1 posting' : `${filtered.length} postings`;
 
       const el = document.getElementById('listings');
       if (filtered.length === 0) {
-        const labels = { all: 'any', events: 'event', sale: 'for sale', jobs: 'job' };
+        const labels = { all: 'something', events: 'an event', sale: 'a listing', jobs: 'a job post' };
         el.innerHTML = `
           <div class="empty">
             <div class="empty-icon">🌊</div>
             <h3>Nothing here yet</h3>
-            <p>Be the first to post ${currentFilter === 'all' ? 'something' : 'a ' + labels[currentFilter]}!</p>
+            <p>Be the first to post ${labels[currentFilter] || 'something'}!</p>
           </div>`;
+        return;
+      }
+
+      if (currentFilter === 'events' && currentView === 'cal') {
+        renderCalendar(filtered);
       } else {
-        el.innerHTML = filtered.map(renderCard).join('');
+        el.innerHTML = `<div class="listings">${filtered.map(renderCard).join('')}</div>`;
       }
     }
 
     // ── FILTERS ───────────────────────────────────────────────────────────
     function setFilter(cat, btn) {
       currentFilter = cat;
+      selectedCalDate = null;
       document.querySelectorAll('.filter-btn').forEach(b => {
         b.classList.remove('active', 'events', 'sale', 'jobs');
       });
       btn.classList.add('active');
       if (cat !== 'all') btn.classList.add(cat);
       render();
+    }
+
+    // ── VIEW TOGGLE ───────────────────────────────────────────────────────
+    function updateViewBtns() {
+      document.getElementById('btn-list').classList.toggle('active', currentView === 'list');
+      document.getElementById('btn-cal').classList.toggle('active',  currentView === 'cal');
+    }
+
+    function setView(view) {
+      currentView = view;
+      selectedCalDate = null;
+      updateViewBtns();
+      render();
+    }
+
+    // ── CALENDAR ──────────────────────────────────────────────────────────
+    function calPrev() {
+      calMonth--;
+      if (calMonth < 0) { calMonth = 11; calYear--; }
+      selectedCalDate = null;
+      render();
+    }
+
+    function calNext() {
+      calMonth++;
+      if (calMonth > 11) { calMonth = 0; calYear++; }
+      selectedCalDate = null;
+      render();
+    }
+
+    function selectCalDate(dateStr) {
+      selectedCalDate = selectedCalDate === dateStr ? null : dateStr;
+      const eventPosts = getAllPosts().filter(p => p.cat === 'events');
+      renderCalendar(eventPosts);
+    }
+
+    function renderCalendar(eventPosts) {
+      const MONTHS = ['January','February','March','April','May','June',
+                      'July','August','September','October','November','December'];
+      const DAYS   = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+
+      const firstDay    = new Date(calYear, calMonth, 1);
+      const startDow    = firstDay.getDay();
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const todayStr    = new Date().toISOString().slice(0, 10);
+
+      // Build event map: { 'YYYY-MM-DD': [post, ...] }
+      const eventMap = {};
+      eventPosts.forEach(p => {
+        if (!p.date) return;
+        if (!eventMap[p.date]) eventMap[p.date] = [];
+        eventMap[p.date].push(p);
+      });
+
+      // Build 42 cells (6 rows × 7 cols)
+      const cells = [];
+      const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
+      for (let i = 0; i < 42; i++) {
+        if (i < startDow) {
+          cells.push({ day: prevMonthDays - startDow + i + 1, cur: false });
+        } else if (i < startDow + daysInMonth) {
+          const day = i - startDow + 1;
+          const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+          cells.push({ day, cur: true, dateStr });
+        } else {
+          cells.push({ day: i - startDow - daysInMonth + 1, cur: false });
+        }
+      }
+
+      const dayHeaders = DAYS.map(d => `<div class="cal-day-header">${d}</div>`).join('');
+
+      const cellsHtml = cells.map(c => {
+        if (!c.cur) return `<div class="cal-cell other-month"><div class="cal-day-num">${c.day}</div></div>`;
+        const events   = eventMap[c.dateStr] || [];
+        const isToday  = c.dateStr === todayStr;
+        const hasDots  = events.length > 0;
+        const isSelect = c.dateStr === selectedCalDate;
+        const classes  = ['cal-cell',
+          isToday  ? 'today'      : '',
+          hasDots  ? 'has-events' : '',
+          isSelect ? 'selected'   : ''
+        ].filter(Boolean).join(' ');
+        const dots = events.slice(0, 3).map(() => `<div class="cal-dot"></div>`).join('');
+        return `<div class="${classes}" onclick="selectCalDate('${c.dateStr}')">
+          <div class="cal-day-num">${c.day}</div>
+          ${dots ? `<div class="cal-dot-row">${dots}</div>` : ''}
+        </div>`;
+      }).join('');
+
+      // Day detail panel
+      let detailHtml = '';
+      if (selectedCalDate && eventMap[selectedCalDate]) {
+        const d = new Date(selectedCalDate + 'T00:00:00');
+        const label = d.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const cards = eventMap[selectedCalDate].map(renderCard).join('');
+        detailHtml = `<div class="cal-day-detail"><h4>${label}</h4>${cards}</div>`;
+      }
+
+      document.getElementById('listings').innerHTML = `
+        <div class="calendar-wrap">
+          <div class="cal-nav">
+            <button class="cal-nav-btn" onclick="calPrev()">&#8249;</button>
+            <div class="cal-month-label">${MONTHS[calMonth]} ${calYear}</div>
+            <button class="cal-nav-btn" onclick="calNext()">&#8250;</button>
+          </div>
+          <div class="cal-grid">${dayHeaders}${cellsHtml}</div>
+          ${detailHtml}
+        </div>`;
+    }
+
+    // ── LISTING TYPE / JOB TYPE ───────────────────────────────────────────
+    function selectListingType(lt, btn) {
+      document.getElementById('form-listing-type').value = lt;
+      document.querySelectorAll('[data-lt]').forEach(b =>
+        b.classList.remove('active-events','active-sale','active-jobs'));
+      btn.classList.add('active-sale');
+      // Hide price row for "wanted" (no price to list)
+      document.getElementById('sale-price-row').style.display = lt === 'wanted' ? 'none' : '';
+    }
+
+    function selectJobType(jt, btn) {
+      document.getElementById('form-job-type').value = jt;
+      document.querySelectorAll('[data-jt]').forEach(b =>
+        b.classList.remove('active-events','active-sale','active-jobs'));
+      btn.classList.add('active-jobs');
     }
 
     // ── MODAL ─────────────────────────────────────────────────────────────
@@ -879,6 +1341,10 @@
       document.getElementById('modal').classList.remove('open');
       document.body.style.overflow = '';
       document.getElementById('post-form').reset();
+      document.getElementById('form-official').checked = false;
+      selectListingType('selling', document.querySelector('[data-lt="selling"]'));
+      selectJobType('offering', document.querySelector('[data-jt="offering"]'));
+      document.getElementById('sale-price-row').style.display = '';
       selectCat('events', document.querySelector('.cat-btn[data-cat="events"]'));
     }
 
@@ -892,7 +1358,7 @@
       selectedCat = cat;
       document.getElementById('form-cat').value = cat;
 
-      document.querySelectorAll('.cat-btn').forEach(b => {
+      document.querySelectorAll('.cat-btn[data-cat]').forEach(b => {
         b.classList.remove('active-events', 'active-sale', 'active-jobs');
       });
       btn.classList.add('active-' + cat);
@@ -925,14 +1391,17 @@
         post.date     = document.getElementById('form-date').value;
         post.time     = document.getElementById('form-time').value.trim();
         post.location = document.getElementById('form-location').value.trim();
+        post.official = document.getElementById('form-official').checked;
       }
       if (cat === 'sale') {
-        post.price     = document.getElementById('form-price').value.trim();
-        post.condition = document.getElementById('form-condition').value;
+        post.listingType = document.getElementById('form-listing-type').value;
+        post.price       = document.getElementById('form-price').value.trim();
+        post.condition   = document.getElementById('form-condition').value;
       }
       if (cat === 'jobs') {
-        post.pay  = document.getElementById('form-pay').value.trim();
-        post.when = document.getElementById('form-when').value.trim();
+        post.jobType = document.getElementById('form-job-type').value;
+        post.pay     = document.getElementById('form-pay').value.trim();
+        post.when    = document.getElementById('form-when').value.trim();
       }
 
       const posts = loadPosts();
