@@ -153,11 +153,77 @@
 
     .post-btn-hero:hover { background: var(--ocean2); transform: translateY(-1px); }
 
+    /* ── PAGE LAYOUT ── */
+    .page-wrap {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 0 2.5rem;
+      align-items: start;
+    }
+
+    .main-col { min-width: 0; }
+
+    .sidebar {
+      position: sticky;
+      top: 72px;
+      padding-top: 2rem;
+    }
+
+    .org-card {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .org-card-title {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 600;
+      color: #fff;
+      background: var(--ocean2);
+      padding: 0.75rem 1.1rem;
+      letter-spacing: 0.01em;
+    }
+
+    .org-list {
+      list-style: none;
+      padding: 0.4rem 0;
+    }
+
+    .org-list li {
+      padding: 0.65rem 1.1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .org-list li:last-child { border-bottom: none; }
+
+    .org-tag {
+      font-size: 0.74rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin-bottom: 0.2rem;
+    }
+
+    .org-list a {
+      font-size: 0.9rem;
+      color: var(--ocean);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .org-list a:hover { text-decoration: underline; }
+
     /* ── FILTERS ── */
     .filters {
-      max-width: 860px;
-      margin: 2rem auto 0;
-      padding: 0 1.5rem;
+      margin: 2rem 0 0;
+      padding: 0;
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
@@ -196,9 +262,9 @@
 
     /* ── BOARD ── */
     .board-wrap {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 5rem;
+      max-width: none;
+      margin: 0;
+      padding: 2rem 0 5rem;
     }
 
     .board-header {
@@ -748,11 +814,23 @@
       .cal-dot { width: 5px; height: 5px; }
     }
 
+    @media (max-width: 800px) {
+      .page-wrap {
+        grid-template-columns: 1fr;
+        padding: 0 1rem;
+      }
+      .sidebar {
+        position: static;
+        padding-top: 0;
+        padding-bottom: 2rem;
+        order: -1; /* show orgs above the board on mobile */
+      }
+    }
+
     @media (max-width: 600px) {
       nav { padding: 0 1rem; }
       .hero { padding: 2.5rem 1rem 2rem; }
-      .filters { padding: 0 1rem; }
-      .board-wrap { padding: 1.5rem 1rem 4rem; }
+      .board-wrap { padding: 1.5rem 0 4rem; }
       .form-row { grid-template-columns: 1fr; }
       .modal { padding: 1.5rem 1.25rem 1.25rem; }
       .card { grid-template-columns: 1fr; }
@@ -784,35 +862,61 @@
     </button>
   </div>
 
-  <!-- BOARD TABS -->
-  <div class="filters" id="tab-bar">
-    <button class="filter-btn active" data-cat="all"    onclick="setFilter('all',    this)">All Posts <span class="tab-count" id="count-all"></span></button>
-    <button class="filter-btn"        data-cat="events" onclick="setFilter('events', this)">🗓 Events <span class="tab-count" id="count-events"></span></button>
-    <button class="filter-btn"        data-cat="sale"   onclick="setFilter('sale',   this)">🏷 Marketplace <span class="tab-count" id="count-sale"></span></button>
-    <button class="filter-btn"        data-cat="jobs"   onclick="setFilter('jobs',   this)">🤝 Jobs Board <span class="tab-count" id="count-jobs"></span></button>
-  </div>
+  <!-- TWO-COLUMN LAYOUT -->
+  <div class="page-wrap">
+    <div class="main-col">
 
-  <!-- BOARD -->
-  <div class="board-wrap">
-    <div class="board-header">
-      <div class="board-count" id="board-count"></div>
-      <div class="view-toggle" id="view-toggle">
-        <button class="view-btn active" id="btn-list" onclick="setView('list')">☰ List</button>
-        <button class="view-btn"        id="btn-cal"  onclick="setView('cal')">📅 Calendar</button>
+      <!-- BOARD TABS -->
+      <div class="filters" id="tab-bar">
+        <button class="filter-btn active" data-cat="all"    onclick="setFilter('all',    this)">All Posts <span class="tab-count" id="count-all"></span></button>
+        <button class="filter-btn"        data-cat="events" onclick="setFilter('events', this)">🗓 Events <span class="tab-count" id="count-events"></span></button>
+        <button class="filter-btn"        data-cat="sale"   onclick="setFilter('sale',   this)">🏷 Marketplace <span class="tab-count" id="count-sale"></span></button>
+        <button class="filter-btn"        data-cat="jobs"   onclick="setFilter('jobs',   this)">🤝 Jobs Board <span class="tab-count" id="count-jobs"></span></button>
       </div>
-    </div>
-    <div id="listings"></div>
-  </div>
+
+      <!-- BOARD -->
+      <div class="board-wrap">
+        <div class="board-header">
+          <div class="board-count" id="board-count"></div>
+          <div class="view-toggle" id="view-toggle">
+            <button class="view-btn active" id="btn-list" onclick="setView('list')">☰ List</button>
+            <button class="view-btn"        id="btn-cal"  onclick="setView('cal')">📅 Calendar</button>
+          </div>
+        </div>
+        <div id="listings"></div>
+      </div>
+
+    </div><!-- /.main-col -->
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="org-card">
+        <div class="org-card-title">Local Organizations</div>
+        <ul class="org-list">
+          <li>
+            <div class="org-tag">Getting married?</div>
+            <a href="https://www.boothbayharbor.com/live/wilson-memorial-chapel/" target="_blank" rel="noopener">Wilson Memorial Chapel</a>
+          </li>
+          <li>
+            <div class="org-tag">Athletics &amp; Events</div>
+            <a href="https://www.oceanpointcolonytrust.org/" target="_blank" rel="noopener">Ocean Point Colony Trust</a>
+          </li>
+          <li>
+            <div class="org-tag">Moorings &amp; Dock Info</div>
+            <a href="mailto:demersdd@gmail.com">Card Cove Association</a>
+          </li>
+          <li>
+            <div class="org-tag">Dining &amp; Lodging</div>
+            <a href="https://www.larkhotels.com/maine/east-boothbay/ocean-point" target="_blank" rel="noopener">Ocean Point Inn</a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+
+  </div><!-- /.page-wrap -->
 
   <!-- FOOTER -->
   <footer>
-    <div style="margin-bottom:0.75rem; display:flex; align-items:center; justify-content:center; gap:1.5rem; flex-wrap:wrap;">
-      <a href="https://www.oceanpointcolonytrust.org/" target="_blank" rel="noopener">Ocean Point Colony Trust</a>
-      <span style="color:var(--border);">|</span>
-      <a href="mailto:demersdd@gmail.com">Card Cove Association</a>
-      <span style="color:var(--border);">|</span>
-      <a href="https://www.larkhotels.com/maine/east-boothbay/ocean-point" target="_blank" rel="noopener">Ocean Point Inn</a>
-    </div>
     A community board for <strong>Ocean Point, Boothbay, Maine</strong> &nbsp;·&nbsp;
     <a href="index.html">3D Business Solutions</a>
   </footer>
