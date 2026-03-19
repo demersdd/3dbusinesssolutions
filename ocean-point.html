@@ -806,6 +806,13 @@
 
   <!-- FOOTER -->
   <footer>
+    <div style="margin-bottom:0.75rem; display:flex; align-items:center; justify-content:center; gap:1.5rem; flex-wrap:wrap;">
+      <a href="https://www.oceanpointcolonytrust.org/" target="_blank" rel="noopener">Ocean Point Colony Trust</a>
+      <span style="color:var(--border);">|</span>
+      <a href="mailto:demersdd@gmail.com">Card Cove Association</a>
+      <span style="color:var(--border);">|</span>
+      <a href="https://www.larkhotels.com/maine/east-boothbay/ocean-point" target="_blank" rel="noopener">Ocean Point Inn</a>
+    </div>
     A community board for <strong>Ocean Point, Boothbay, Maine</strong> &nbsp;·&nbsp;
     <a href="index.html">3D Business Solutions</a>
   </footer>
@@ -899,8 +906,8 @@
           <div class="form-group">
             <label>Post Type</label>
             <div style="display:flex; gap:0.5rem;">
-              <button type="button" class="cat-btn active-jobs" data-jt="offering" onclick="selectJobType('offering',this)">📢 Offering</button>
-              <button type="button" class="cat-btn" data-jt="request" onclick="selectJobType('request',this)">🙋 Request</button>
+              <button type="button" class="cat-btn active-jobs" data-jt="offering" onclick="selectJobType('offering',this)">🔔 Help Wanted</button>
+              <button type="button" class="cat-btn" data-jt="request" onclick="selectJobType('request',this)">🙋 For Hire</button>
             </div>
             <input type="hidden" id="form-job-type" value="offering" />
           </div>
@@ -1107,7 +1114,7 @@
 
       const jobChip = p.cat === 'jobs'
         ? `<span class="chip chip-${p.jobType}">${
-            p.jobType === 'offering' ? '📢 Offering' : '🙋 Request'
+            p.jobType === 'offering' ? '🔔 Help Wanted' : '🙋 For Hire'
           }</span>` : '';
 
       let extraLeft = '';
