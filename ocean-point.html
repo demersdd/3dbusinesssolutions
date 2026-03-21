@@ -584,57 +584,69 @@
     footer a { color: var(--ocean); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
 
-    /* ── BOARD TABS ── */
+    /* ── BOARD TABS (card style) ── */
     .filters {
-      border-bottom: 2px solid var(--border);
-      margin-bottom: 0;
+      border-bottom: none;
+      margin: 1.5rem 0 0.75rem;
       padding-bottom: 0;
-      gap: 0;
+      gap: 0.5rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
     }
 
     .filter-btn {
-      border-radius: 0;
-      border: none;
-      border-bottom: 3px solid transparent;
-      background: none;
+      border-radius: 10px;
+      border: 2px solid var(--border);
+      background: #fff;
       color: var(--muted);
-      padding: 0.75rem 1.25rem;
-      margin-bottom: -2px;
-      font-size: 0.92rem;
-      font-weight: 600;
-      transition: color 0.18s, border-color 0.18s;
-      display: flex;
+      padding: 0.7rem 0.4rem;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      flex-direction: column;
       align-items: center;
-      gap: 0.35rem;
+      justify-content: center;
+      gap: 0.15rem;
+      margin-bottom: 0;
+      line-height: 1.3;
+      transition: all 0.18s;
     }
 
+    .tab-emoji { font-size: 1.25rem; display: block; margin-bottom: 0.1rem; }
+
     .filter-btn:hover {
+      border-color: var(--ocean);
       color: var(--ocean);
+      background: #f0f8fd;
       border-bottom-color: var(--ocean);
     }
 
     .filter-btn.active {
-      background: none;
-      border-color: transparent;
-      color: var(--ocean2);
-      border-bottom: 3px solid var(--ocean);
+      background: var(--sand2);
+      border: 2px solid var(--driftwood);
+      color: var(--driftwood);
     }
 
-    .filter-btn.active.events { color: #3d8a6e; border-bottom-color: var(--seafoam); }
-    .filter-btn.active.sale   { color: #b05a45; border-bottom-color: var(--coral); }
-    .filter-btn.active.jobs   { color: var(--ocean2); border-bottom-color: var(--ocean); }
+    .filter-btn.active.events { background: var(--event-bg); border-color: var(--seafoam); color: #3d8a6e; }
+    .filter-btn.active.sale   { background: var(--sale-bg);  border-color: var(--coral);   color: #b05a45; }
+    .filter-btn.active.jobs   { background: var(--job-bg);   border-color: var(--ocean);   color: var(--ocean2); }
 
     .tab-count {
       display: inline-block;
-      background: var(--sand2);
+      background: rgba(0,0,0,0.07);
       border-radius: 10px;
-      padding: 0.1rem 0.45rem;
-      font-size: 0.72rem;
+      padding: 0.08rem 0.4rem;
+      font-size: 0.68rem;
       font-weight: 700;
-      color: var(--muted);
+      color: inherit;
+      opacity: 0.75;
     }
 
-    .filter-btn.active .tab-count { background: rgba(0,0,0,0.1); color: inherit; }
+    .filter-btn.active .tab-count { opacity: 0.9; }
+
+    @media (max-width: 480px) {
+      .filters { grid-template-columns: repeat(2, 1fr); }
+    }
 
     /* ── TAG CHIPS ── */
     .chip {
@@ -978,6 +990,46 @@
       font-size: 0.88rem;
       font-style: italic;
     }
+
+    /* ── WEATHER WIDGET ── */
+    .wx-content { padding: 0.85rem 1.1rem 0.75rem; }
+    .wx-main { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.45rem; }
+    .wx-icon-lg { font-size: 2.2rem; line-height: 1; }
+    .wx-temp { font-family: var(--font-serif); font-size: 1.55rem; font-weight: 700; color: var(--ink); line-height: 1; }
+    .wx-desc { font-size: 0.8rem; color: var(--ink2); margin-top: 0.15rem; }
+    .wx-wind { font-size: 0.76rem; color: var(--muted); }
+    .wx-loc  { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* ── TIDE WIDGET ── */
+    .tide-content { padding: 0.6rem 1.1rem 0.75rem; }
+    .tide-chart-wrap { margin-bottom: 0.6rem; }
+    .tide-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.28rem 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .tide-row:last-of-type { border-bottom: none; }
+    .tide-label { font-size: 0.78rem; font-weight: 700; }
+    .tide-high  { color: var(--ocean); }
+    .tide-low   { color: var(--muted); }
+    .tide-right { text-align: right; }
+    .tide-time  { font-size: 0.8rem; font-weight: 600; color: var(--ink); }
+    .tide-ht    { font-size: 0.7rem; color: var(--muted); }
+    .tide-src   { font-size: 0.65rem; color: var(--muted); margin-top: 0.45rem; }
+
+    /* ── CALENDAR EVENT LIST ── */
+    .cal-events-list { margin-top: 1.5rem; }
+    .cal-events-list-title {
+      font-family: var(--font-serif);
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--ink);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid var(--border);
+    }
   </style>
 </head>
 <body>
@@ -1010,10 +1062,18 @@
 
       <!-- BOARD TABS -->
       <div class="filters" id="tab-bar">
-        <button class="filter-btn active" data-cat="all"    onclick="setFilter('all',    this)">All Posts <span class="tab-count" id="count-all"></span></button>
-        <button class="filter-btn"        data-cat="events" onclick="setFilter('events', this)">🗓 Events <span class="tab-count" id="count-events"></span></button>
-        <button class="filter-btn"        data-cat="sale"   onclick="setFilter('sale',   this)">🏷 Marketplace <span class="tab-count" id="count-sale"></span></button>
-        <button class="filter-btn"        data-cat="jobs"   onclick="setFilter('jobs',   this)">🤝 Jobs Board <span class="tab-count" id="count-jobs"></span></button>
+        <button class="filter-btn" data-cat="all" onclick="setFilter('all', this)">
+          <span class="tab-emoji">☰</span>All Posts<span class="tab-count" id="count-all"></span>
+        </button>
+        <button class="filter-btn active events" data-cat="events" onclick="setFilter('events', this)">
+          <span class="tab-emoji">📅</span>Events<span class="tab-count" id="count-events"></span>
+        </button>
+        <button class="filter-btn" data-cat="sale" onclick="setFilter('sale', this)">
+          <span class="tab-emoji">🏷</span>Marketplace<span class="tab-count" id="count-sale"></span>
+        </button>
+        <button class="filter-btn" data-cat="jobs" onclick="setFilter('jobs', this)">
+          <span class="tab-emoji">🤝</span>Jobs<span class="tab-count" id="count-jobs"></span>
+        </button>
       </div>
 
       <!-- BOARD -->
@@ -1032,6 +1092,23 @@
 
     <!-- SIDEBAR -->
     <aside class="sidebar">
+
+      <!-- WEATHER WIDGET -->
+      <div class="org-card" style="margin-bottom:1rem;">
+        <div class="org-card-title">⛅ Current Weather</div>
+        <div class="wx-content" id="wx-content">
+          <div style="color:var(--muted);font-size:0.82rem;">Loading weather…</div>
+        </div>
+      </div>
+
+      <!-- TIDE WIDGET -->
+      <div class="org-card" style="margin-bottom:1rem;">
+        <div class="org-card-title">🌊 Today's Tides</div>
+        <div class="tide-content" id="tide-content">
+          <div style="color:var(--muted);font-size:0.82rem;">Loading tides…</div>
+        </div>
+      </div>
+
       <div class="org-card">
         <div class="org-card-title">Local Organizations</div>
         <ul class="org-list">
@@ -1335,8 +1412,8 @@
     }
 
     // ── RENDER ────────────────────────────────────────────────────────────
-    let currentFilter = 'all';
-    let currentView   = 'list';  // 'list' | 'cal'
+    let currentFilter = 'events';
+    let currentView   = 'cal';  // 'list' | 'cal'
     let selectedCalDate = null;
     const _now = new Date();
     let calYear  = _now.getFullYear();
@@ -1577,6 +1654,12 @@
         detailHtml = `<div class="cal-day-detail"><h4>${label}</h4>${cards}</div>`;
       }
 
+      // Sort events by date for the list below the calendar
+      const sortedForList = [...eventPosts]
+        .filter(p => p.date)
+        .sort((a, b) => a.date.localeCompare(b.date))
+        .concat(eventPosts.filter(p => !p.date));
+
       document.getElementById('listings').innerHTML = `
         <div class="calendar-wrap">
           <div class="cal-nav">
@@ -1586,6 +1669,10 @@
           </div>
           <div class="cal-grid">${dayHeaders}${cellsHtml}</div>
           ${detailHtml}
+        </div>
+        <div class="cal-events-list">
+          <div class="cal-events-list-title">All Upcoming Events</div>
+          <div class="listings">${sortedForList.map(renderCard).join('')}</div>
         </div>`;
     }
 
@@ -1699,8 +1786,137 @@
       render();
     }
 
+    // ── WEATHER ───────────────────────────────────────────────────────────
+    function wxIcon(code) {
+      if (code === 0) return '☀️';
+      if (code <= 2)  return '🌤️';
+      if (code === 3) return '☁️';
+      if (code <= 48) return '🌫️';
+      if (code <= 55) return '🌦️';
+      if (code <= 65) return '🌧️';
+      if (code <= 77) return '❄️';
+      if (code <= 82) return '🌦️';
+      if (code <= 86) return '🌨️';
+      return '⛈️';
+    }
+
+    function wxDesc(code) {
+      if (code === 0)  return 'Clear sky';
+      if (code === 1)  return 'Mainly clear';
+      if (code === 2)  return 'Partly cloudy';
+      if (code === 3)  return 'Overcast';
+      if (code <= 48)  return 'Foggy';
+      if (code <= 55)  return 'Drizzle';
+      if (code <= 65)  return 'Rain';
+      if (code <= 77)  return 'Snow';
+      if (code <= 82)  return 'Showers';
+      if (code <= 86)  return 'Snow showers';
+      return 'Thunderstorm';
+    }
+
+    function windDir(deg) {
+      const dirs = ['N','NE','E','SE','S','SW','W','NW'];
+      return dirs[Math.round((deg || 0) / 45) % 8];
+    }
+
+    async function loadWeather() {
+      const el = document.getElementById('wx-content');
+      try {
+        const res  = await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.855&longitude=-69.631&current=temperature_2m,weathercode,windspeed_10m,wind_direction_10m&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=America%2FNew_York');
+        const data = await res.json();
+        const c = data.current;
+        el.innerHTML = `
+          <div class="wx-main">
+            <span class="wx-icon-lg">${wxIcon(c.weathercode)}</span>
+            <div>
+              <div class="wx-temp">${Math.round(c.temperature_2m)}°F</div>
+              <div class="wx-desc">${wxDesc(c.weathercode)}</div>
+            </div>
+          </div>
+          <div class="wx-wind">💨 ${Math.round(c.windspeed_10m)} mph ${windDir(c.wind_direction_10m)}</div>
+          <div class="wx-loc">Ocean Point, Maine · Open-Meteo</div>`;
+      } catch(e) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Weather unavailable</div>';
+      }
+    }
+
+    // ── TIDES ─────────────────────────────────────────────────────────────
+    function buildTideChart(hourly) {
+      if (!hourly || !hourly.length) return '';
+      const pts = hourly.slice(0, 24);
+      const W = 214, H = 52;
+      const vals = pts.map(p => parseFloat(p.v));
+      const min = Math.min(...vals), max = Math.max(...vals);
+      const range = max - min || 1;
+      const coords = pts.map((p, i) => {
+        const x = (i / (pts.length - 1)) * W;
+        const y = H - ((parseFloat(p.v) - min) / range) * (H - 4) - 2;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+      }).join(' ');
+      const now = new Date();
+      const nowX = ((now.getHours() + now.getMinutes() / 60) / 24) * W;
+      return `<svg width="100%" viewBox="0 0 ${W} ${H + 10}" style="display:block;overflow:visible;">
+        <defs>
+          <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#3a7ca5" stop-opacity="0.25"/>
+            <stop offset="100%" stop-color="#3a7ca5" stop-opacity="0.03"/>
+          </linearGradient>
+        </defs>
+        <polygon points="0,${H} ${coords} ${W},${H}" fill="url(#tg)"/>
+        <polyline points="${coords}" fill="none" stroke="#3a7ca5" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>
+        <line x1="${nowX.toFixed(1)}" y1="0" x2="${nowX.toFixed(1)}" y2="${H}" stroke="var(--coral)" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.8"/>
+        <text x="1" y="${H + 9}" font-size="7.5" fill="#7a7062">12 AM</text>
+        <text x="${(W / 2).toFixed(0)}" y="${H + 9}" font-size="7.5" fill="#7a7062" text-anchor="middle">12 PM</text>
+        <text x="${W}" y="${H + 9}" font-size="7.5" fill="#7a7062" text-anchor="end">11 PM</text>
+      </svg>`;
+    }
+
+    async function loadTides() {
+      const el = document.getElementById('tide-content');
+      try {
+        const today = new Date();
+        const fmt = d => d.toISOString().slice(0, 10).replace(/-/g, '');
+        const dateStr = fmt(today);
+
+        const [resHL, resH] = await Promise.all([
+          fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8418150&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=web_services&format=json&begin_date=${dateStr}&end_date=${dateStr}`),
+          fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8418150&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=h&units=english&application=web_services&format=json&begin_date=${dateStr}&end_date=${dateStr}`)
+        ]);
+
+        const [dataHL, dataH] = await Promise.all([resHL.json(), resH.json()]);
+        const preds  = dataHL.predictions || [];
+        const hourly = dataH.predictions  || [];
+
+        if (!preds.length) throw new Error('no data');
+
+        const rows = preds.map(p => {
+          const [hh, mm] = p.t.split(' ')[1].split(':').map(Number);
+          const ap = hh >= 12 ? 'PM' : 'AM';
+          const h12 = (hh % 12) || 12;
+          const isHigh = p.type === 'H';
+          return `<div class="tide-row">
+            <span class="tide-label ${isHigh ? 'tide-high' : 'tide-low'}">${isHigh ? '▲ High' : '▼ Low'}</span>
+            <div class="tide-right">
+              <div class="tide-time">${h12}:${String(mm).padStart(2,'0')} ${ap}</div>
+              <div class="tide-ht">${parseFloat(p.v).toFixed(1)} ft</div>
+            </div>
+          </div>`;
+        }).join('');
+
+        el.innerHTML = `
+          <div class="tide-chart-wrap">${buildTideChart(hourly)}</div>
+          ${rows}
+          <div class="tide-src">Portland, ME · NOAA station 8418150</div>`;
+      } catch(e) {
+        el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Tide data unavailable</div>';
+      }
+    }
+
     // ── INIT ──────────────────────────────────────────────────────────────
+    updateViewBtns();
     render();
+    loadWeather();
+    loadTides();
   </script>
 
   <!-- NEARBY EVENTS SCRIPT -->
