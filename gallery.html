@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Gallery | Ocean Point, Maine</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sand:      #f5f0e8;
+      --sand2:     #ede7d9;
+      --cream:     #faf8f4;
+      --ocean:     #3a7ca5;
+      --ocean2:    #2d6187;
+      --seafoam:   #6db8a0;
+      --ink:       #2c2c2c;
+      --ink2:      #4a4a4a;
+      --muted:     #7a7062;
+      --border:    #ddd5c5;
+      --font-serif: 'Lora', Georgia, serif;
+      --font-sans:  'Source Sans 3', system-ui, sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-sans); background: var(--cream); color: var(--ink); min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      background: var(--sand);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: sticky;
+      top: 0;
+      z-index: 200;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-family: var(--font-serif);
+      font-size: 1.15rem;
+      color: var(--ocean2);
+      text-decoration: none;
+    }
+    .nav-back { font-size: 0.82rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .nav-back:hover { color: var(--ocean); }
+
+    /* ── HERO ── */
+    .hero {
+      background: linear-gradient(160deg, #d6eaf8 0%, #e8f5ef 50%, var(--sand) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 3.5rem 2rem 2.5rem;
+      text-align: center;
+    }
+    .hero-tag {
+      display: inline-block;
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ocean);
+      font-weight: 600;
+      margin-bottom: 0.75rem;
+    }
+    .hero h1 {
+      font-family: var(--font-serif);
+      font-size: clamp(2rem, 5vw, 3rem);
+      color: var(--ink);
+      margin-bottom: 0.5rem;
+      line-height: 1.15;
+    }
+    .hero h1 em { font-style: italic; color: var(--ocean); }
+    .hero p { font-size: 0.97rem; color: var(--muted); max-width: 480px; margin: 0 auto; line-height: 1.65; }
+
+    /* ── FILTER TABS ── */
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      padding: 1.25rem 2rem 0;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .filter-btn {
+      background: var(--sand);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 0.35rem 1rem;
+      font-family: var(--font-sans);
+      font-size: 0.82rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.18s;
+    }
+    .filter-btn:hover { border-color: var(--ocean); color: var(--ocean); }
+    .filter-btn.active { background: var(--ocean); border-color: var(--ocean); color: #fff; }
+
+    /* ── GALLERY GRID ── */
+    .gallery-wrap {
+      max-width: 1200px;
+      margin: 1.5rem auto 4rem;
+      padding: 0 1.5rem;
+    }
+    .gallery-grid {
+      columns: 3 280px;
+      column-gap: 1rem;
+    }
+    .gallery-item {
+      break-inside: avoid;
+      margin-bottom: 1rem;
+      position: relative;
+      cursor: pointer;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      background: var(--sand2);
+    }
+    .gallery-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .gallery-item:hover img { transform: scale(1.03); }
+    .gallery-caption {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: linear-gradient(transparent, rgba(44,44,44,0.72));
+      color: #fff;
+      padding: 1.5rem 0.85rem 0.7rem;
+      font-size: 0.82rem;
+      line-height: 1.4;
+      transform: translateY(100%);
+      transition: transform 0.25s ease;
+    }
+    .gallery-caption .cap-title { font-weight: 600; }
+    .gallery-caption .cap-tag {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.8;
+      margin-bottom: 0.2rem;
+    }
+    .gallery-item:hover .gallery-caption { transform: translateY(0); }
+
+    /* empty state */
+    .gallery-empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted);
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(20,20,20,0.93);
+      z-index: 999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .lightbox.open { opacity: 1; pointer-events: all; }
+    .lb-inner {
+      position: relative;
+      max-width: 900px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .lb-img {
+      max-width: 100%;
+      max-height: 80vh;
+      object-fit: contain;
+      border-radius: 4px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+    }
+    .lb-caption {
+      color: rgba(255,255,255,0.85);
+      font-size: 0.88rem;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .lb-caption strong { color: #fff; }
+    .lb-close {
+      position: fixed;
+      top: 1.25rem; right: 1.5rem;
+      background: none;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.7);
+      font-size: 1.1rem;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .lb-close:hover { background: rgba(255,255,255,0.1); color: #fff; }
+    .lb-nav {
+      position: fixed;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+      font-size: 1.3rem;
+      width: 42px; height: 42px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .lb-nav:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .lb-prev { left: 1rem; }
+    .lb-next { right: 1rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--sand);
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 1.25rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--ocean); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 600px) {
+      .gallery-grid { columns: 2 160px; }
+      .lb-nav { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-brand" href="ocean-point.html">
+      <span>⚓</span>
+      Ocean Point Board
+    </a>
+    <a class="nav-back" href="ocean-point.html">← Back to Community Board</a>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-tag">Ocean Point, East Boothbay, Maine</div>
+    <h1>Photo <em>Gallery</em></h1>
+    <p>Scenes from Card Cove, the dock, the water, and the community that calls Ocean Point home.</p>
+  </div>
+
+  <!-- FILTER TABS -->
+  <div class="filters" id="filters">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All Photos</button>
+    <button class="filter-btn" data-filter="dock" onclick="setFilter('dock', this)">Dock &amp; Water</button>
+    <button class="filter-btn" data-filter="scenery" onclick="setFilter('scenery', this)">Scenery</button>
+    <button class="filter-btn" data-filter="events" onclick="setFilter('events', this)">Events</button>
+    <button class="filter-btn" data-filter="community" onclick="setFilter('community', this)">Community</button>
+  </div>
+
+  <!-- GALLERY -->
+  <div class="gallery-wrap">
+    <div class="gallery-grid" id="gallery">
+
+      <!-- ═══ ADD / EDIT PHOTOS BELOW ═══
+           Each .gallery-item needs:
+             data-cat  = one of: dock | scenery | events | community
+             data-title = caption title
+             data-desc  = short description (optional)
+           ═══════════════════════════════ -->
+
+      <div class="gallery-item" data-cat="community" data-title="Dierk Demers" data-desc="Principal, 3D Business Solutions" onclick="openLightbox(this)">
+        <img src="images/dierk-demers.jpg" alt="Dierk Demers" loading="lazy" />
+        <div class="gallery-caption">
+          <div class="cap-tag">Community</div>
+          <div class="cap-title">Dierk Demers</div>
+        </div>
+      </div>
+
+      <div class="gallery-item" data-cat="community" data-title="Randall Slifer" data-desc="Principal, 3D Business Solutions" onclick="openLightbox(this)">
+        <img src="images/randall-slifer.jpg" alt="Randall Slifer" loading="lazy" />
+        <div class="gallery-caption">
+          <div class="cap-tag">Community</div>
+          <div class="cap-title">Randall Slifer</div>
+        </div>
+      </div>
+
+      <!-- ── NEW PHOTOS GO HERE ── -->
+      <!-- Example:
+      <div class="gallery-item" data-cat="dock" data-title="Card Cove Dock" data-desc="Looking out from the float at low tide" onclick="openLightbox(this)">
+        <img src="images/card-cove-dock.jpg" alt="Card Cove Dock" loading="lazy" />
+        <div class="gallery-caption">
+          <div class="cap-tag">Dock &amp; Water</div>
+          <div class="cap-title">Card Cove Dock</div>
+        </div>
+      </div>
+      -->
+
+    </div>
+    <div class="gallery-empty" id="gallery-empty">No photos in this category yet.</div>
+  </div>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox" onclick="handleLbClick(event)">
+    <button class="lb-close" onclick="closeLightbox()">✕</button>
+    <button class="lb-nav lb-prev" onclick="navLightbox(-1, event)">&#8592;</button>
+    <button class="lb-nav lb-next" onclick="navLightbox(1, event)">&#8594;</button>
+    <div class="lb-inner">
+      <img class="lb-img" id="lb-img" src="" alt="" />
+      <div class="lb-caption" id="lb-caption"></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    Ocean Point Gallery &nbsp;·&nbsp; East Boothbay, Maine &nbsp;·&nbsp;
+    <a href="ocean-point.html">Community Board</a> &nbsp;·&nbsp;
+    <a href="card-cove.html">Card Cove Association</a>
+  </footer>
+
+  <script>
+    // ── FILTER ──
+    let currentFilter = 'all';
+
+    function setFilter(cat, btn) {
+      currentFilter = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const items = document.querySelectorAll('.gallery-item');
+      let visible = 0;
+      items.forEach(item => {
+        const show = cat === 'all' || item.dataset.cat === cat;
+        item.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('gallery-empty').style.display = visible === 0 ? 'block' : 'none';
+    }
+
+    // ── LIGHTBOX ──
+    let lbItems = [];
+    let lbIndex = 0;
+
+    function visibleItems() {
+      return Array.from(document.querySelectorAll('.gallery-item'))
+        .filter(el => el.style.display !== 'none');
+    }
+
+    function openLightbox(el) {
+      lbItems = visibleItems();
+      lbIndex = lbItems.indexOf(el);
+      showLbItem(lbIndex);
+      document.getElementById('lightbox').classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function showLbItem(i) {
+      const item = lbItems[i];
+      const img = item.querySelector('img');
+      document.getElementById('lb-img').src = img.src;
+      document.getElementById('lb-img').alt = img.alt;
+      const title = item.dataset.title || '';
+      const desc  = item.dataset.desc  || '';
+      document.getElementById('lb-caption').innerHTML =
+        (title ? `<strong>${title}</strong>` : '') +
+        (title && desc ? ' &mdash; ' : '') +
+        (desc || '');
+    }
+
+    function closeLightbox() {
+      document.getElementById('lightbox').classList.remove('open');
+      document.body.style.overflow = '';
+    }
+
+    function navLightbox(dir, e) {
+      e && e.stopPropagation();
+      lbIndex = (lbIndex + dir + lbItems.length) % lbItems.length;
+      showLbItem(lbIndex);
+    }
+
+    function handleLbClick(e) {
+      if (e.target === document.getElementById('lightbox')) closeLightbox();
+    }
+
+    // keyboard navigation
+    document.addEventListener('keydown', e => {
+      if (!document.getElementById('lightbox').classList.contains('open')) return;
+      if (e.key === 'Escape')      closeLightbox();
+      if (e.key === 'ArrowRight')  navLightbox(1);
+      if (e.key === 'ArrowLeft')   navLightbox(-1);
+    });
+  </script>
+
+</body>
+</html>
