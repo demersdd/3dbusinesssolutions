@@ -97,10 +97,13 @@
 
     /* ── HERO ── */
     .hero {
-      background: linear-gradient(160deg, #d6eaf8 0%, #e8f5ef 50%, var(--sand) 100%);
+      background: linear-gradient(rgba(20,45,60,0.58), rgba(15,35,50,0.72)), url('images/gallery/IMG_0507.jpeg');
+      background-size: cover;
+      background-position: center 60%;
       border-bottom: 1px solid var(--border);
       padding: 3.5rem 2rem 2.5rem;
       text-align: center;
+      color: #fff;
     }
 
     .hero-tag {
@@ -108,7 +111,7 @@
       font-size: 0.75rem;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--ocean);
+      color: #a8e0f0;
       font-weight: 600;
       margin-bottom: 0.75rem;
     }
@@ -116,19 +119,20 @@
     .hero h1 {
       font-family: var(--font-serif);
       font-size: clamp(2rem, 5vw, 3rem);
-      color: var(--ink);
+      color: #fff;
       margin-bottom: 0.5rem;
       line-height: 1.15;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.4);
     }
 
     .hero h1 em {
       font-style: italic;
-      color: var(--ocean);
+      color: #a8e0f0;
     }
 
     .hero p {
       font-size: 1rem;
-      color: var(--ink2);
+      color: rgba(255,255,255,0.85);
       max-width: 520px;
       margin: 0 auto 1.8rem;
       line-height: 1.65;
