@@ -998,7 +998,20 @@
     .wx-temp { font-family: var(--font-serif); font-size: 1.55rem; font-weight: 700; color: var(--ink); line-height: 1; }
     .wx-desc { font-size: 0.8rem; color: var(--ink2); margin-top: 0.15rem; }
     .wx-wind { font-size: 0.76rem; color: var(--muted); }
+    .wx-wave { font-size: 0.76rem; color: var(--muted); margin-top: 0.18rem; }
     .wx-loc  { font-size: 0.68rem; color: var(--muted); margin-top: 0.3rem; }
+    .wx-expand { font-size: 0.7rem; color: var(--accent); margin-top: 0.55rem; cursor: pointer; user-select: none; display: inline-block; }
+    .wx-expand:hover { text-decoration: underline; }
+    .wx-forecast { margin-top: 0.55rem; border-top: 1px solid var(--border); padding-top: 0.45rem; display: none; }
+    .wx-forecast.open { display: block; }
+    .wx-fday { display: grid; grid-template-columns: 2.4rem 1.3rem 1fr auto; align-items: center; gap: 0.3rem; padding: 0.28rem 0; border-bottom: 1px solid var(--border); }
+    .wx-fday:last-child { border-bottom: none; }
+    .wx-fday-name { font-size: 0.72rem; color: var(--ink2); }
+    .wx-fday-icon { font-size: 0.95rem; text-align: center; }
+    .wx-fday-detail { font-size: 0.68rem; color: var(--muted); }
+    .wx-fday-temps { text-align: right; white-space: nowrap; }
+    .wx-fday-hi { font-size: 0.76rem; font-weight: 600; color: var(--ink); }
+    .wx-fday-lo { font-size: 0.72rem; color: var(--muted); margin-left: 0.22rem; }
 
     /* ── TIDE WIDGET ── */
     .tide-content { padding: 0.6rem 1.1rem 0.75rem; }
@@ -1113,8 +1126,8 @@
         <div class="org-card-title">Local Organizations &amp; Contacts</div>
         <ul class="org-list">
           <li>
-            <div class="org-tag">Harbor Master</div>
-            <a href="https://www.townofboothbay.org/directory.aspx?EID=38" target="_blank" rel="noopener">Town of Boothbay Harbor Master</a>
+            <div class="org-tag">Harbor Master &amp; Mooring Info</div>
+            <a href="https://www.townofboothbay.org/directory.aspx?EID=38" target="_blank" rel="noopener">Pete Ripley</a>
           </li>
           <li>
             <div class="org-tag">Getting married?</div>
@@ -1125,8 +1138,8 @@
             <a href="https://www.oceanpointcolonytrust.org/" target="_blank" rel="noopener">Ocean Point Colony Trust</a>
           </li>
           <li>
-            <div class="org-tag">Moorings &amp; Dock Info</div>
-            <a href="mailto:demersdd@gmail.com">Card Cove Association</a>
+            <div class="org-tag">Dock Info</div>
+            <a href="mailto:demersdd@gmail.com">Ocean Point Dock Info</a>
           </li>
           <li>
             <div class="org-tag">Dining &amp; Lodging</div>
@@ -1832,9 +1845,53 @@
     async function loadWeather() {
       const el = document.getElementById('wx-content');
       try {
-        const res  = await fetch('https://api.open-meteo.com/v1/forecast?latitude=43.855&longitude=-69.631&current=temperature_2m,weathercode,windspeed_10m,wind_direction_10m&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=America%2FNew_York');
-        const data = await res.json();
-        const c = data.current;
+        const [wxRes, marineRes] = await Promise.all([
+          fetch('https://api.open-meteo.com/v1/forecast?latitude=43.855&longitude=-69.631' +
+            '&current=temperature_2m,weathercode,windspeed_10m,wind_direction_10m' +
+            '&daily=temperature_2m_max,temperature_2m_min,weathercode,windspeed_10m_max,wind_direction_10m_dominant' +
+            '&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=America%2FNew_York&forecast_days=5'),
+          fetch('https://marine-api.open-meteo.com/v1/marine?latitude=43.855&longitude=-69.631' +
+            '&current=wave_height,swell_wave_height,swell_wave_period' +
+            '&daily=wave_height_max,swell_wave_height_max' +
+            '&timezone=America%2FNew_York&forecast_days=5')
+        ]);
+        const wx = await wxRes.json();
+        const marine = marineRes.ok ? await marineRes.json() : null;
+        const c  = wx.current;
+        const mc = marine?.current;
+
+        // Current wave/swell row
+        const waveFt  = mc?.wave_height  != null ? (mc.wave_height  * 3.281).toFixed(1) : null;
+        const swellFt = mc?.swell_wave_height != null ? (mc.swell_wave_height * 3.281).toFixed(1) : null;
+        const swellPer = mc?.swell_wave_period != null ? Math.round(mc.swell_wave_period) : null;
+        let waveHtml = '';
+        if (waveFt) {
+          waveHtml = `<div class="wx-wave">🌊 Waves ${waveFt} ft`;
+          if (swellFt && swellPer) waveHtml += ` &nbsp;·&nbsp; Swell ${swellFt} ft @ ${swellPer}s`;
+          waveHtml += `</div>`;
+        }
+
+        // 5-day forecast rows
+        const dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        const todayStr = new Date().toISOString().slice(0, 10);
+        let fcastRows = '';
+        wx.daily.time.forEach((dateStr, i) => {
+          const label = dateStr === todayStr ? 'Today' : dayNames[new Date(dateStr + 'T12:00:00').getDay()];
+          const hi   = Math.round(wx.daily.temperature_2m_max[i]);
+          const lo   = Math.round(wx.daily.temperature_2m_min[i]);
+          const icon = wxIcon(wx.daily.weathercode[i]);
+          const wind = Math.round(wx.daily.windspeed_10m_max[i]);
+          const wDir = windDir(wx.daily.wind_direction_10m_dominant[i]);
+          const waveMax = marine?.daily?.wave_height_max?.[i];
+          const waveDFt = waveMax != null ? ` · 🌊 ${(waveMax * 3.281).toFixed(1)} ft` : '';
+          fcastRows += `<div class="wx-fday">
+            <span class="wx-fday-name">${label}</span>
+            <span class="wx-fday-icon">${icon}</span>
+            <span class="wx-fday-detail">💨 ${wind} ${wDir}${waveDFt}</span>
+            <span class="wx-fday-temps"><span class="wx-fday-hi">${hi}°</span><span class="wx-fday-lo">${lo}°</span></span>
+          </div>`;
+        });
+
         el.innerHTML = `
           <div class="wx-main">
             <span class="wx-icon-lg">${wxIcon(c.weathercode)}</span>
@@ -1844,7 +1901,16 @@
             </div>
           </div>
           <div class="wx-wind">💨 ${Math.round(c.windspeed_10m)} mph ${windDir(c.wind_direction_10m)}</div>
-          <div class="wx-loc">Ocean Point, Maine · Open-Meteo</div>`;
+          ${waveHtml}
+          <div class="wx-loc">Ocean Point, Maine · Open-Meteo</div>
+          <div class="wx-expand" id="wx-expand-btn">5-day forecast ▾</div>
+          <div class="wx-forecast" id="wx-forecast">${fcastRows}</div>`;
+
+        document.getElementById('wx-expand-btn').addEventListener('click', function() {
+          const panel = document.getElementById('wx-forecast');
+          panel.classList.toggle('open');
+          this.textContent = panel.classList.contains('open') ? 'Hide forecast ▴' : '5-day forecast ▾';
+        });
       } catch(e) {
         el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Weather unavailable</div>';
       }
