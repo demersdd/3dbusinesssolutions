@@ -1970,8 +1970,8 @@
         const dateStr = fmt(today);
 
         const [resHL, resH] = await Promise.all([
-          fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=44032&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=web_services&format=json&begin_date=${dateStr}&end_date=${dateStr}`),
-          fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=44032&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=h&units=english&application=web_services&format=json&begin_date=${dateStr}&end_date=${dateStr}`)
+          fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8418150&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=hilo&units=english&application=web_services&format=json&begin_date=${dateStr}&end_date=${dateStr}`),
+          fetch(`https://api.tidesandcurrents.noaa.gov/api/prod/datagetter?station=8418150&product=predictions&datum=MLLW&time_zone=lst_ldt&interval=h&units=english&application=web_services&format=json&begin_date=${dateStr}&end_date=${dateStr}`)
         ]);
 
         const [dataHL, dataH] = await Promise.all([resHL.json(), resH.json()]);
@@ -1997,7 +1997,7 @@
         el.innerHTML = `
           <div class="tide-chart-wrap">${buildTideChart(hourly)}</div>
           ${rows}
-          <div class="tide-src">East Boothbay, ME · NOAA station 44032</div>`;
+          <div class="tide-src">Portland, ME · NOAA station 8418150</div>`;
       } catch(e) {
         el.innerHTML = '<div style="color:var(--muted);font-size:0.82rem;">Tide data unavailable</div>';
       }
