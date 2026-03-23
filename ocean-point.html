@@ -692,6 +692,105 @@
 
     .badge-official::before { content: '★ '; font-size: 0.65rem; }
 
+    .badge-boothbay {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      background: #e8f4fb;
+      color: #1d5c82;
+      border: 1.5px solid #5ba3c9;
+      border-radius: 10px;
+      padding: 0.18rem 0.55rem;
+      margin-left: 0.4rem;
+      vertical-align: middle;
+    }
+    .badge-boothbay::before { content: '⚓ '; font-size: 0.65rem; }
+
+    /* ── EVENT SOURCE FILTER ── */
+    .event-source-filter {
+      display: none;
+      align-items: center;
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .event-source-filter.visible { display: flex; }
+    .src-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 0.25rem 0.65rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+    }
+    .src-btn:hover { border-color: var(--ocean); color: var(--ocean); }
+    .src-btn.active { background: var(--ocean); border-color: var(--ocean); color: #fff; }
+    .src-btn.active.boothbay { background: #1d5c82; border-color: #1d5c82; }
+
+    /* ── ICS EXPORT ── */
+    .ics-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      padding: 0.3rem 0.7rem;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--muted);
+      transition: all 0.15s;
+      font-family: var(--font-sans);
+      white-space: nowrap;
+      display: none;
+    }
+    .ics-btn.visible { display: inline-flex; align-items: center; gap: 0.3rem; }
+    .ics-btn:hover { border-color: var(--ocean); color: var(--ocean); }
+    .ics-wrap { position: relative; }
+    .ics-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(44,44,44,0.13);
+      padding: 0.5rem;
+      z-index: 50;
+      min-width: 180px;
+    }
+    .ics-menu.open { display: block; }
+    .ics-menu-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      padding: 0.2rem 0.5rem 0.5rem;
+    }
+    .ics-menu button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      border-radius: 6px;
+      padding: 0.45rem 0.6rem;
+      font-family: var(--font-sans);
+      font-size: 0.85rem;
+      cursor: pointer;
+      color: var(--ink);
+      transition: background 0.12s;
+    }
+    .ics-menu button:hover { background: var(--sand); }
+
     /* ── VIEW TOGGLE ── */
     .view-toggle {
       display: none;
@@ -810,6 +909,8 @@
       border-radius: 50%;
       background: var(--event-dot);
     }
+    .cal-dot.boothbay { background: #5ba3c9; }
+    .cal-dot.official { background: #c9a800; }
 
     .cal-day-detail {
       padding: 1rem 1.25rem;
@@ -1100,9 +1201,25 @@
       <div class="board-wrap">
         <div class="board-header">
           <div class="board-count" id="board-count"></div>
-          <div class="view-toggle" id="view-toggle">
-            <button class="view-btn active" id="btn-list" onclick="setView('list')">☰ List</button>
-            <button class="view-btn"        id="btn-cal"  onclick="setView('cal')">📅 Calendar</button>
+          <div style="display:flex;align-items:center;gap:0.5rem;flex-wrap:wrap;justify-content:flex-end;">
+            <div class="event-source-filter" id="event-source-filter">
+              <button class="src-btn active" id="src-all" onclick="setEventSource('all',this)">All Events</button>
+              <button class="src-btn" id="src-official" onclick="setEventSource('official',this)">Official</button>
+              <button class="src-btn boothbay" id="src-boothbay" onclick="setEventSource('boothbay',this)">⚓ Boothbay Region</button>
+            </div>
+            <div class="view-toggle" id="view-toggle">
+              <button class="view-btn active" id="btn-list" onclick="setView('list')">☰ List</button>
+              <button class="view-btn"        id="btn-cal"  onclick="setView('cal')">📅 Calendar</button>
+            </div>
+            <div class="ics-wrap">
+              <button class="ics-btn" id="ics-btn" onclick="toggleIcsMenu()" title="Export to calendar app">📅 Export .ics</button>
+              <div class="ics-menu" id="ics-menu">
+                <div class="ics-menu-title">Export calendar</div>
+                <button onclick="downloadIcs('all')">All Events</button>
+                <button onclick="downloadIcs('official')">Official Events Only</button>
+                <button onclick="downloadIcs('boothbay')">Boothbay Region Only</button>
+              </div>
+            </div>
           </div>
         </div>
         <div id="listings"></div>
@@ -1364,6 +1481,106 @@
         posted: '2026-03-15T09:00:00Z',
         sample: true
       },
+      // ── Boothbay Region events ──
+      {
+        id: 'bbh-1',
+        cat: 'events',
+        official: false,
+        boothbay: true,
+        title: 'Windjammer Days Festival',
+        desc: 'Boothbay Harbor\'s signature summer festival — four parades, tug of war across the harbor, live music, windjammer schooner tours, food and drink events, and fireworks.',
+        date: '2026-06-22',
+        time: 'Various times',
+        location: 'Boothbay Harbor, ME',
+        contact: 'boothbayharbor.com/festivals-event',
+        posted: '2026-03-01T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'bbh-2',
+        cat: 'events',
+        official: false,
+        boothbay: true,
+        title: 'The Claw Down Competition',
+        desc: '13th Annual lobster-themed cook-off and eating competition at the harbor. Local chefs and competitors battle it out for the top claws.',
+        date: '2026-06-18',
+        time: '11:00 am',
+        location: 'Boothbay Harbor, ME',
+        contact: 'boothbayharbor.com/festivals-event',
+        posted: '2026-03-01T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'bbh-3',
+        cat: 'events',
+        official: false,
+        boothbay: true,
+        title: 'Fishin\' for Fashion Show',
+        desc: '11th Annual nautical-themed fashion show fundraiser — local designers, maritime flair, and a great cause.',
+        date: '2026-06-20',
+        time: '6:00 pm',
+        location: 'Boothbay Harbor, ME',
+        contact: 'boothbayharbor.com/festivals-event',
+        posted: '2026-03-01T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'bbh-4',
+        cat: 'events',
+        official: false,
+        boothbay: true,
+        title: 'Boothbay Harbor Tuna Challenge',
+        desc: 'Annual offshore fishing tournament targeting bluefin tuna. One of Maine\'s biggest fishing events, drawing boats from across New England.',
+        date: '2026-09-12',
+        time: 'All day',
+        location: 'Boothbay Harbor Marina',
+        contact: 'boothbayharbor.com/festivals-event',
+        posted: '2026-03-01T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'bbh-5',
+        cat: 'events',
+        official: false,
+        boothbay: true,
+        title: 'Oktoberfest at Boothbay Craft Brewery',
+        desc: 'Live music, seasonal beers, local food vendors, and fall fun at the brewery.',
+        date: '2026-09-26',
+        time: '12:00 pm',
+        location: 'Boothbay Craft Brewery, Boothbay, ME',
+        contact: 'boothbayharbor.com/festivals-event',
+        posted: '2026-03-01T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'bbh-6',
+        cat: 'events',
+        official: false,
+        boothbay: true,
+        title: 'Fall Foliage Festival',
+        desc: '58th Annual Fall Foliage Festival at the Boothbay Railway Village Museum — antique cars, steam trains, crafts, music, and peak-season color.',
+        date: '2026-10-10',
+        time: '10:00 am',
+        location: 'Boothbay Railway Village, Boothbay, ME',
+        contact: 'boothbayharbor.com/festivals-event',
+        posted: '2026-03-01T09:00:00Z',
+        sample: true
+      },
+      {
+        id: 'bbh-7',
+        cat: 'events',
+        official: false,
+        boothbay: true,
+        title: 'Gardens Aglow — Festival of Lights',
+        desc: 'Coastal Maine Botanical Gardens transforms into a winter wonderland with over 360,000 lights. One of New England\'s top holiday light displays.',
+        date: '2026-11-27',
+        time: '5:00 pm',
+        location: 'Coastal Maine Botanical Gardens, Boothbay, ME',
+        contact: 'gardenaglow.org',
+        posted: '2026-03-01T09:00:00Z',
+        sample: true
+      },
+      // ── End Boothbay Region events ──
       {
         id: 'sample-4',
         cat: 'sale',
@@ -1438,9 +1655,10 @@
     }
 
     function normPost(p) {
-      if (p.cat === 'sale'   && !p.listingType)   p.listingType = 'selling';
-      if (p.cat === 'jobs'   && !p.jobType)        p.jobType     = 'offering';
-      if (p.cat === 'events' && p.official == null) p.official   = false;
+      if (p.cat === 'sale'   && !p.listingType)    p.listingType = 'selling';
+      if (p.cat === 'jobs'   && !p.jobType)         p.jobType     = 'offering';
+      if (p.cat === 'events' && p.official == null) p.official    = false;
+      if (p.cat === 'events' && p.boothbay == null) p.boothbay   = false;
       return p;
     }
 
@@ -1450,9 +1668,10 @@
     }
 
     // ── RENDER ────────────────────────────────────────────────────────────
-    let currentFilter = 'events';
-    let currentView   = 'cal';  // 'list' | 'cal'
-    let selectedCalDate = null;
+    let currentFilter      = 'events';
+    let currentView        = 'cal';  // 'list' | 'cal'
+    let currentEventSource = 'all';  // 'all' | 'official' | 'boothbay'
+    let selectedCalDate    = null;
     const _now = new Date();
     let calYear  = _now.getFullYear();
     let calMonth = _now.getMonth();
@@ -1487,6 +1706,8 @@
       // Extra badge decorations
       const officialBadge = (p.cat === 'events' && p.official)
         ? `<span class="badge-official">Official</span>` : '';
+      const boothbayBadge = (p.cat === 'events' && p.boothbay)
+        ? `<span class="badge-boothbay">Boothbay Region</span>` : '';
 
       const listingChip = p.cat === 'sale'
         ? `<span class="chip chip-${p.listingType}">${
@@ -1521,7 +1742,7 @@
           ${deleteBtn}
           <div class="card-left">
             <div style="margin-bottom:0.45rem;">
-              <span class="card-badge ${p.cat}"><div class="dot"></div>${cat.label}</span>${officialBadge}${listingChip}${jobChip}
+              <span class="card-badge ${p.cat}"><div class="dot"></div>${cat.label}</span>${officialBadge}${boothbayBadge}${listingChip}${jobChip}
             </div>
             <div class="card-title">${escHtml(p.title)}</div>
             ${p.desc ? `<div class="card-desc">${escHtml(p.desc)}</div>` : ''}
@@ -1545,28 +1766,43 @@
       const all = getAllPosts();
       const filtered = currentFilter === 'all' ? all : all.filter(p => p.cat === currentFilter);
 
-      // Update tab counts
+      // Apply event source sub-filter within the Events tab
+      let display = filtered;
+      if (currentFilter === 'events' && currentEventSource !== 'all') {
+        display = filtered.filter(p =>
+          currentEventSource === 'official' ? p.official :
+          currentEventSource === 'boothbay' ? p.boothbay : true
+        );
+      }
+
+      // Update tab counts (always full, unfiltered by source)
       document.getElementById('count-all').textContent    = all.length;
       document.getElementById('count-events').textContent = all.filter(p => p.cat === 'events').length;
       document.getElementById('count-sale').textContent   = all.filter(p => p.cat === 'sale').length;
       document.getElementById('count-jobs').textContent   = all.filter(p => p.cat === 'jobs').length;
 
-      // Show/hide view toggle (events tab only)
-      const toggle = document.getElementById('view-toggle');
+      // Show/hide view toggle, source filter, and ICS button (events tab only)
+      const toggle    = document.getElementById('view-toggle');
+      const srcFilter = document.getElementById('event-source-filter');
+      const icsBtn    = document.getElementById('ics-btn');
       if (currentFilter === 'events') {
         toggle.classList.add('visible');
+        srcFilter.classList.add('visible');
+        icsBtn.classList.add('visible');
       } else {
         toggle.classList.remove('visible');
+        srcFilter.classList.remove('visible');
+        icsBtn.classList.remove('visible');
         if (currentView === 'cal') { currentView = 'list'; updateViewBtns(); }
       }
 
       // Update posting count label
       const count = document.getElementById('board-count');
-      count.textContent = filtered.length === 0 ? '' :
-        filtered.length === 1 ? '1 posting' : `${filtered.length} postings`;
+      count.textContent = display.length === 0 ? '' :
+        display.length === 1 ? '1 posting' : `${display.length} postings`;
 
       const el = document.getElementById('listings');
-      if (filtered.length === 0) {
+      if (display.length === 0) {
         const labels = { all: 'something', events: 'an event', sale: 'a listing', jobs: 'a job post' };
         el.innerHTML = `
           <div class="empty">
@@ -1578,21 +1814,34 @@
       }
 
       if (currentFilter === 'events' && currentView === 'cal') {
-        renderCalendar(filtered);
+        renderCalendar(display);
       } else {
-        el.innerHTML = `<div class="listings">${filtered.map(renderCard).join('')}</div>`;
+        el.innerHTML = `<div class="listings">${display.map(renderCard).join('')}</div>`;
       }
     }
 
     // ── FILTERS ───────────────────────────────────────────────────────────
     function setFilter(cat, btn) {
       currentFilter = cat;
+      currentEventSource = 'all';
       selectedCalDate = null;
       document.querySelectorAll('.filter-btn').forEach(b => {
         b.classList.remove('active', 'events', 'sale', 'jobs');
       });
       btn.classList.add('active');
       if (cat !== 'all') btn.classList.add(cat);
+      // Reset source filter button state
+      document.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById('src-all').classList.add('active');
+      render();
+    }
+
+    // ── EVENT SOURCE FILTER ───────────────────────────────────────────────
+    function setEventSource(source, btn) {
+      currentEventSource = source;
+      selectedCalDate = null;
+      document.querySelectorAll('.src-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       render();
     }
 
@@ -1676,7 +1925,10 @@
           hasDots  ? 'has-events' : '',
           isSelect ? 'selected'   : ''
         ].filter(Boolean).join(' ');
-        const dots = events.slice(0, 3).map(() => `<div class="cal-dot"></div>`).join('');
+        const dots = events.slice(0, 3).map(ev => {
+          const cls = ev.boothbay ? 'boothbay' : ev.official ? 'official' : '';
+          return `<div class="cal-dot${cls ? ' ' + cls : ''}"></div>`;
+        }).join('');
         return `<div class="${classes}" onclick="selectCalDate('${c.dateStr}')">
           <div class="cal-day-num">${c.day}</div>
           ${dots ? `<div class="cal-dot-row">${dots}</div>` : ''}
@@ -1822,6 +2074,113 @@
       const posts = loadPosts().filter(p => p.id !== id);
       savePosts(posts);
       render();
+    }
+
+    // ── ICS EXPORT ────────────────────────────────────────────────────────
+    function toggleIcsMenu() {
+      const menu = document.getElementById('ics-menu');
+      menu.classList.toggle('open');
+      // Close on outside click
+      if (menu.classList.contains('open')) {
+        setTimeout(() => {
+          document.addEventListener('click', function closeMenu(e) {
+            if (!e.target.closest('.ics-wrap')) {
+              menu.classList.remove('open');
+              document.removeEventListener('click', closeMenu);
+            }
+          });
+        }, 0);
+      }
+    }
+
+    function icsEscape(s) {
+      return (s || '').replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\n/g, '\\n');
+    }
+
+    function icsDateTime(dateStr, timeStr) {
+      // Returns DTSTART/DTEND strings
+      if (!dateStr) return null;
+      const [y, m, d] = dateStr.split('-');
+      // Parse time if present
+      if (timeStr && /\d/.test(timeStr)) {
+        const match = timeStr.match(/(\d+):(\d+)\s*(am|pm)?/i);
+        if (match) {
+          let h = parseInt(match[1], 10);
+          const min = match[2] || '00';
+          const ampm = match[3] ? match[3].toLowerCase() : null;
+          if (ampm === 'pm' && h < 12) h += 12;
+          if (ampm === 'am' && h === 12) h = 0;
+          return { dt: `${y}${m}${d}T${String(h).padStart(2,'0')}${min}00`, allDay: false };
+        }
+      }
+      return { dt: `${y}${m}${d}`, allDay: true };
+    }
+
+    function buildIcs(source) {
+      const all = getAllPosts();
+      let events = all.filter(p => p.cat === 'events' && p.date);
+      if (source === 'official') events = events.filter(p => p.official);
+      if (source === 'boothbay') events = events.filter(p => p.boothbay);
+
+      const lines = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Ocean Point Community Board//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        `X-WR-CALNAME:${source === 'official' ? 'Official Events' : source === 'boothbay' ? 'Boothbay Region Events' : 'Ocean Point Events'}`,
+        'X-WR-TIMEZONE:America/New_York'
+      ];
+
+      events.forEach(p => {
+        const dtInfo = icsDateTime(p.date, p.time);
+        if (!dtInfo) return;
+        const uid = `${p.id}@oceanpoint.community`;
+        const now = new Date().toISOString().replace(/[-:]/g,'').slice(0,15) + 'Z';
+
+        lines.push('BEGIN:VEVENT');
+        lines.push(`UID:${uid}`);
+        lines.push(`DTSTAMP:${now}`);
+        if (dtInfo.allDay) {
+          lines.push(`DTSTART;VALUE=DATE:${dtInfo.dt}`);
+          // End = next day for all-day
+          const end = new Date(p.date + 'T00:00:00');
+          end.setDate(end.getDate() + 1);
+          const ey = end.getFullYear();
+          const em = String(end.getMonth()+1).padStart(2,'0');
+          const ed = String(end.getDate()).padStart(2,'0');
+          lines.push(`DTEND;VALUE=DATE:${ey}${em}${ed}`);
+        } else {
+          lines.push(`DTSTART;TZID=America/New_York:${dtInfo.dt}`);
+          // Default 2-hour duration
+          const endHour = parseInt(dtInfo.dt.slice(9,11), 10) + 2;
+          lines.push(`DTEND;TZID=America/New_York:${dtInfo.dt.slice(0,9)}${String(endHour).padStart(2,'0')}${dtInfo.dt.slice(11)}`);
+        }
+        lines.push(`SUMMARY:${icsEscape(p.title)}`);
+        if (p.desc)     lines.push(`DESCRIPTION:${icsEscape(p.desc)}`);
+        if (p.location) lines.push(`LOCATION:${icsEscape(p.location)}`);
+        const cats = [p.official ? 'Official' : null, p.boothbay ? 'Boothbay Region' : null].filter(Boolean);
+        if (cats.length) lines.push(`CATEGORIES:${cats.join(',')}`);
+        lines.push('END:VEVENT');
+      });
+
+      lines.push('END:VCALENDAR');
+      return lines.join('\r\n');
+    }
+
+    function downloadIcs(source) {
+      document.getElementById('ics-menu').classList.remove('open');
+      const ics = buildIcs(source);
+      const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      const label = source === 'official' ? 'official-events' : source === 'boothbay' ? 'boothbay-region-events' : 'all-events';
+      a.download = `ocean-point-${label}.ics`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     // ── WEATHER ───────────────────────────────────────────────────────────
