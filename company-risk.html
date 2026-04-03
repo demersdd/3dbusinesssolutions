@@ -9,9 +9,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root {
-  --bg:#050a0f;--bg2:#080f18;--panel:#0b1622;--panel2:#0d1a28;
-  --accent:#00e5ff;--accent2:#ff6b35;--accent3:#39ff14;--accent4:#ffd700;
-  --text:#e8f4f8;--muted:#6a8fa8;--border:rgba(0,229,255,.15);
+  --bg:#f8fafb;--bg2:#f0f3f6;--panel:#ffffff;--panel2:#f5f7fa;
+  --accent:#0080a3;--accent2:#cc5522;--accent3:#2d7d2d;--accent4:#a68f00;
+  --text:#2c3e50;--muted:#7a8fa3;--border:rgba(0,128,163,.12);
   --mono:'Share Tech Mono',monospace;--head:'Barlow Condensed',sans-serif;--body:'Barlow',sans-serif;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -20,7 +20,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:1
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.02) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
 
 /* NAV */
-nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.95);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+nav{position:sticky;top:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(248,250,251,.98);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
 .nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
 .nav-logo span{color:var(--accent);}
 .nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
