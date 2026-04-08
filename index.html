@@ -113,6 +113,46 @@ footer { padding:1.5rem 3rem; border-top:1px solid var(--border); display:flex; 
   .why-grid { grid-template-columns:1fr; }
   footer { flex-direction:column; gap:.5rem; text-align:center; }
 }
+/* ── Chat Widget ──────────────────────────────────────────────────────── */
+#chat-btn{position:fixed;bottom:1.8rem;right:1.8rem;z-index:9999;width:56px;height:56px;border-radius:50%;background:var(--accent);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,229,255,.35);transition:transform .2s,box-shadow .2s;}
+#chat-btn:hover{transform:scale(1.08);box-shadow:0 6px 28px rgba(0,229,255,.5);}
+#chat-btn svg{width:24px;height:24px;fill:var(--bg);}
+#chat-btn.pulse::after{content:'';position:absolute;width:56px;height:56px;border-radius:50%;border:2px solid var(--accent);animation:chatPulse 2s ease-out infinite;}
+@keyframes chatPulse{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+#chat-window{position:fixed;bottom:5.5rem;right:1.8rem;z-index:9998;width:360px;height:500px;background:var(--panel);border:1px solid var(--border);display:flex;flex-direction:column;box-shadow:0 12px 48px rgba(0,0,0,.6);transform:translateY(20px) scale(.97);opacity:0;pointer-events:none;transition:transform .25s ease,opacity .25s ease;}
+#chat-window.open{transform:translateY(0) scale(1);opacity:1;pointer-events:all;}
+#chat-header{padding:.9rem 1.2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.75rem;background:var(--bg2);}
+.chat-avatar{width:32px;height:32px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-family:var(--head);font-weight:900;color:var(--bg);flex-shrink:0;}
+.chat-header-info{flex:1;}
+.chat-header-name{font-family:var(--head);font-size:.95rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--text);}
+.chat-header-status{font-family:var(--mono);font-size:.6rem;color:var(--accent3);letter-spacing:.1em;}
+#chat-close{background:none;border:none;cursor:pointer;color:var(--muted);font-size:1.1rem;line-height:1;padding:.2rem;transition:color .2s;}
+#chat-close:hover{color:var(--text);}
+#chat-messages{flex:1;overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.75rem;scrollbar-width:thin;scrollbar-color:var(--border) transparent;}
+#chat-messages::-webkit-scrollbar{width:4px;}
+#chat-messages::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.chat-msg{max-width:82%;display:flex;flex-direction:column;}
+.chat-msg.bot{align-self:flex-start;}
+.chat-msg.user{align-self:flex-end;align-items:flex-end;}
+.chat-bubble{padding:.65rem .9rem;font-size:.82rem;line-height:1.55;border-radius:2px;}
+.chat-msg.bot .chat-bubble{background:var(--bg2);color:var(--text);border-left:2px solid var(--accent);}
+.chat-msg.user .chat-bubble{background:var(--accent);color:var(--bg);font-family:var(--mono);font-size:.75rem;letter-spacing:.02em;}
+.chat-typing{display:flex;align-items:center;gap:.3rem;padding:.65rem .9rem;background:var(--bg2);border-left:2px solid var(--accent);align-self:flex-start;border-radius:2px;}
+.chat-typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:typingDot .8s ease-in-out infinite;}
+.chat-typing span:nth-child(2){animation-delay:.15s;}
+.chat-typing span:nth-child(3){animation-delay:.3s;}
+@keyframes typingDot{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
+.chat-booking-wrap{align-self:flex-start;margin-top:.25rem;}
+.chat-booking-btn{display:inline-flex;align-items:center;gap:.5rem;font-family:var(--mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;padding:.65rem 1.2rem;background:var(--accent);color:var(--bg);border:none;cursor:pointer;font-weight:700;text-decoration:none;transition:box-shadow .2s;}
+.chat-booking-btn:hover{box-shadow:0 0 20px rgba(0,229,255,.4);}
+#chat-input-row{padding:.75rem;border-top:1px solid var(--border);display:flex;gap:.5rem;background:var(--bg2);}
+#chat-input{flex:1;background:var(--bg);border:1px solid var(--border);color:var(--text);font-family:var(--body);font-size:.82rem;padding:.6rem .8rem;outline:none;transition:border-color .2s;}
+#chat-input:focus{border-color:var(--accent);}
+#chat-input::placeholder{color:var(--muted);}
+#chat-send{background:var(--accent);border:none;color:var(--bg);padding:.6rem .9rem;cursor:pointer;transition:opacity .2s;display:flex;align-items:center;justify-content:center;}
+#chat-send:hover{opacity:.85;}
+#chat-send svg{width:16px;height:16px;fill:var(--bg);}
+@media(max-width:480px){#chat-window{width:calc(100vw - 2rem);right:1rem;bottom:5rem;}}
 </style>
 </head>
 <body>
@@ -310,6 +350,193 @@ footer { padding:1.5rem 3rem; border-top:1px solid var(--border); display:flex; 
 <script>
 const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('visible');});},{threshold:.1});
 document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+</script>
+
+<!-- ── Chat Widget ──────────────────────────────────────────────────────── -->
+<button id="chat-btn" class="pulse" aria-label="Chat with us">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+</button>
+
+<div id="chat-window" role="dialog" aria-label="Chat with 3D Business Solutions">
+  <div id="chat-header">
+    <div class="chat-avatar">3D</div>
+    <div class="chat-header-info">
+      <div class="chat-header-name">3D Business Solutions</div>
+      <div class="chat-header-status">● Online · Typically replies instantly</div>
+    </div>
+    <button id="chat-close" aria-label="Close chat">✕</button>
+  </div>
+  <div id="chat-messages"></div>
+  <div id="chat-input-row">
+    <input id="chat-input" type="text" placeholder="Type your message…" autocomplete="off" maxlength="500">
+    <button id="chat-send" aria-label="Send message">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+(function() {
+  // ── Config ─────────────────────────────────────────────────────────────
+  const BOOKING_URL = 'https://calendar.app.google/f3fS1RE6HKYoyVZJ7';
+
+  const SYSTEM_PROMPT = `You are the intake assistant for 3D Business Solutions (3D BS), a boutique technology consulting firm based in Greater Boston serving clients remotely nationwide. Your role is to warmly greet visitors, understand their business challenges, qualify them as potential clients, and — when the fit is clear — offer to book a discovery call with Dierk.
+
+Services 3D BS offers:
+- Tech support & troubleshooting (broken software, integrations, tools the team doesn't understand)
+- ERP consulting (SAP Business One, open-source ERP, automations, reporting)
+- AI & automation workflows (agentic workflows, LLM integrations, cutting overhead)
+- Process & documentation design (SOPs, training systems, process redesigns)
+- Vendor & contractor management (third-party negotiations, technical vendor oversight)
+- Operational infrastructure (KPI tracking, forecasting, cross-functional workflows)
+- Supply chain risk management (vendor due diligence, sanctions screening, tariff exposure, ESG gaps)
+
+Ideal clients: SMBs (5–500 employees), early-stage startups, operations-heavy businesses (supply chain, logistics, manufacturing), service firms (agencies, consultancies, professional services).
+
+Qualification flow — keep it conversational, ask ONE question at a time:
+1. Understand the nature of their problem (what's broken, what's slowing them down, what they want to build)
+2. Understand their company type and rough size
+3. Gauge timeline or urgency
+4. Ask if they've worked with outside consultants or tech firms before
+
+After 3–4 exchanges where you have enough context to assess fit:
+- If they're a strong fit: summarise what you've heard in 1–2 sentences, then end your message with exactly the text [SHOW_BOOKING] — nothing after it.
+- If they're clearly not a fit (e.g. large enterprise seeking a big agency, pure product dev shop with a full in-house team): be honest and warm, point them toward better resources, do NOT include [SHOW_BOOKING].
+
+Rules:
+- Keep responses to 2–3 sentences max.
+- Be direct, warm, and jargon-free. Reflect the 3D BS brand: real operators, no nonsense, plain language.
+- Never say "Great question!" or "Absolutely!" or similar filler.
+- Do not list all services upfront — let the conversation guide you.
+- Ask one question at a time.`;
+
+  // ── State ──────────────────────────────────────────────────────────────
+  let chatHistory = [];
+  let chatOpen = false;
+  let chatGreeted = false;
+
+  // ── DOM helpers ────────────────────────────────────────────────────────
+  function appendMsg(role, text) {
+    const msgs = document.getElementById('chat-messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-msg ' + role;
+    const bubble = document.createElement('div');
+    bubble.className = 'chat-bubble';
+    bubble.textContent = text;
+    wrap.appendChild(bubble);
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('chat-messages');
+    const el = document.createElement('div');
+    el.className = 'chat-typing';
+    el.id = 'chat-typing-indicator';
+    el.innerHTML = '<span></span><span></span><span></span>';
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function hideTyping() {
+    const el = document.getElementById('chat-typing-indicator');
+    if (el) el.remove();
+  }
+
+  function showBookingBtn() {
+    const msgs = document.getElementById('chat-messages');
+    const wrap = document.createElement('div');
+    wrap.className = 'chat-booking-wrap';
+    const btn = document.createElement('a');
+    btn.className = 'chat-booking-btn';
+    btn.href = BOOKING_URL;
+    btn.target = '_blank';
+    btn.rel = 'noopener noreferrer';
+    btn.textContent = '📅 Book a Discovery Call →';
+    wrap.appendChild(btn);
+    msgs.appendChild(wrap);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  // ── API call ───────────────────────────────────────────────────────────
+  async function callClaude(userMessage) {
+    chatHistory.push({ role: 'user', content: userMessage });
+    showTyping();
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 300,
+          system: SYSTEM_PROMPT,
+          messages: chatHistory
+        })
+      });
+      const data = await res.json();
+      hideTyping();
+      let reply = (data && data.content && data.content[0] && data.content[0].text)
+        ? data.content[0].text
+        : 'Something went wrong on my end. Feel free to email us at demersdd@gmail.com.';
+      const showBooking = reply.includes('[SHOW_BOOKING]');
+      reply = reply.replace('[SHOW_BOOKING]', '').trim();
+      chatHistory.push({ role: 'assistant', content: reply });
+      appendMsg('bot', reply);
+      if (showBooking) showBookingBtn();
+    } catch (e) {
+      hideTyping();
+      appendMsg('bot', 'Sorry, I ran into a connection issue. Feel free to email us directly at demersdd@gmail.com.');
+    }
+  }
+
+  // ── Greeting ───────────────────────────────────────────────────────────
+  async function sendGreeting() {
+    showTyping();
+    await new Promise(r => setTimeout(r, 900));
+    hideTyping();
+    const greeting = "Hey — welcome to 3D Business Solutions. I'm here to help figure out if we're a good fit for what you're dealing with. What's going on with your business right now?";
+    chatHistory.push({ role: 'assistant', content: greeting });
+    appendMsg('bot', greeting);
+  }
+
+  // ── Send message ───────────────────────────────────────────────────────
+  async function sendMessage() {
+    const input = document.getElementById('chat-input');
+    const text = input.value.trim();
+    if (!text) return;
+    input.value = '';
+    input.disabled = true;
+    document.getElementById('chat-send').disabled = true;
+    appendMsg('user', text);
+    await callClaude(text);
+    input.disabled = false;
+    document.getElementById('chat-send').disabled = false;
+    input.focus();
+  }
+
+  // ── Toggle ─────────────────────────────────────────────────────────────
+  function toggleChat() {
+    chatOpen = !chatOpen;
+    const win = document.getElementById('chat-window');
+    const btn = document.getElementById('chat-btn');
+    if (chatOpen) {
+      win.classList.add('open');
+      btn.classList.remove('pulse');
+      document.getElementById('chat-input').focus();
+      if (!chatGreeted) { chatGreeted = true; sendGreeting(); }
+    } else {
+      win.classList.remove('open');
+    }
+  }
+
+  // ── Event listeners ────────────────────────────────────────────────────
+  document.getElementById('chat-btn').addEventListener('click', toggleChat);
+  document.getElementById('chat-close').addEventListener('click', toggleChat);
+  document.getElementById('chat-send').addEventListener('click', sendMessage);
+  document.getElementById('chat-input').addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  });
+})();
 </script>
 </body>
 </html>
