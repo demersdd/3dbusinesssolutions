@@ -19,7 +19,7 @@ body{background:var(--bg);color:var(--text);font-family:var(--body);}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
 
 /* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;display:flex;justify-content:space-between;align-items:center;padding:0 2rem;background:rgba(5,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
 .nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
 .nav-logo span{color:var(--accent);}
 .nav-back{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .2s;}
@@ -27,96 +27,113 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content
 .nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
 
 /* TOPBAR */
-.topbar{position:fixed;top:48px;left:0;right:0;z-index:50;display:flex;align-items:center;gap:.75rem;padding:.55rem 1.2rem;background:var(--bg2);border-bottom:1px solid var(--border);}
-#map-desc{flex:1;background:var(--panel);border:1px solid rgba(0,229,255,.2);color:var(--text);font-family:var(--mono);font-size:.7rem;padding:.5rem .8rem;outline:none;transition:border-color .2s;letter-spacing:.04em;}
+.topbar{position:fixed;top:48px;left:0;right:0;z-index:50;height:48px;display:flex;align-items:center;gap:.6rem;padding:0 1.2rem;background:var(--bg2);border-bottom:1px solid var(--border);}
+#map-desc{flex:1;background:var(--panel);border:1px solid rgba(0,229,255,.2);color:var(--text);font-family:var(--mono);font-size:.7rem;padding:.45rem .8rem;outline:none;transition:border-color .2s;letter-spacing:.04em;height:32px;}
 #map-desc:focus{border-color:var(--accent);}
 #map-desc::placeholder{color:var(--muted);}
-#btn-generate{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;padding:.5rem 1.2rem;background:var(--accent);color:var(--bg);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,opacity .2s;white-space:nowrap;}
+.topbar-btn{font-family:var(--mono);font-size:.65rem;letter-spacing:.1em;padding:0 1rem;height:32px;font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,opacity .2s;white-space:nowrap;}
+#btn-generate{background:var(--accent);color:var(--bg);}
 #btn-generate:hover{box-shadow:0 0 20px rgba(0,229,255,.4);}
 #btn-generate:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
-#map-title-display{font-family:var(--head);font-size:1rem;font-weight:900;text-transform:uppercase;color:var(--accent);letter-spacing:.06em;white-space:nowrap;min-width:140px;}
-.gen-spinner{display:none;width:14px;height:14px;border:2px solid rgba(0,229,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;}
+#btn-edit{background:transparent;color:var(--muted);border:1px solid rgba(0,229,255,.2);}
+#btn-edit:hover{color:var(--accent);border-color:var(--accent);}
+#btn-edit.active{background:rgba(57,255,20,.12);color:var(--accent3);border-color:var(--accent3);}
+#map-title-display{font-family:var(--head);font-size:.95rem;font-weight:900;text-transform:uppercase;color:var(--accent);letter-spacing:.06em;white-space:nowrap;min-width:120px;}
+.gen-spinner{display:none;width:14px;height:14px;border:2px solid rgba(0,229,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;flex:none;}
 .gen-spinner.active{display:block;}
 @keyframes spin{to{transform:rotate(360deg)}}
-#topbar-error{font-family:var(--mono);font-size:.6rem;color:var(--accent2);letter-spacing:.06em;display:none;}
+#topbar-error{font-family:var(--mono);font-size:.58rem;color:var(--accent2);display:none;white-space:nowrap;}
 
 /* LAYOUT */
-.layout{display:flex;height:100vh;padding-top:96px;position:relative;z-index:1;}
+.layout{position:fixed;top:96px;bottom:58px;left:0;right:0;display:flex;z-index:1;}
 
 /* CANVAS */
 #map-canvas{flex:1;display:block;background:#050a0f;cursor:default;min-width:0;}
 
 /* SIDEBAR */
-.sidebar{width:300px;min-width:300px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
-.sidebar-scroll{flex:1;overflow-y:auto;}
+.sidebar{width:290px;min-width:290px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-scroll{flex:1;overflow-y:auto;padding-bottom:.5rem;}
 .sidebar-scroll::-webkit-scrollbar{width:3px;}
 .sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border);}
 
 /* PANELS */
-.panel{border-bottom:1px solid var(--border);padding:.9rem 1.1rem;}
-.panel-title{font-family:var(--head);font-size:.95rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem;}
-.panel-title::before{content:'//';color:var(--accent2);font-size:.6rem;font-family:var(--mono);}
+.panel{border-bottom:1px solid var(--border);padding:.8rem 1rem;}
+.panel-title{font-family:var(--head);font-size:.9rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem;}
+.panel-title::before{content:'//';color:var(--accent2);font-size:.58rem;font-family:var(--mono);}
 
 /* FORM INPUTS */
-.field-row{display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center;}
-.field-input{flex:1;background:var(--panel);border:1px solid rgba(0,229,255,.15);color:var(--text);font-family:var(--mono);font-size:.68rem;padding:.4rem .6rem;outline:none;transition:border-color .2s;min-width:0;}
+.field-row{display:flex;gap:.4rem;margin-bottom:.4rem;align-items:center;}
+.field-input{flex:1;background:var(--panel);border:1px solid rgba(0,229,255,.15);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:.35rem .55rem;outline:none;transition:border-color .2s;min-width:0;}
 .field-input:focus{border-color:var(--accent);}
 .field-input::placeholder{color:var(--muted);}
-.field-input-sm{width:56px;flex:none;}
-.panel-btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;padding:.4rem .8rem;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;text-transform:uppercase;transition:background .2s,color .2s;white-space:nowrap;}
+.field-input-xs{width:44px;flex:none;}
+.panel-btn{font-family:var(--mono);font-size:.6rem;letter-spacing:.08em;padding:.35rem .7rem;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;text-transform:uppercase;transition:background .2s;white-space:nowrap;}
 .panel-btn:hover{background:rgba(0,229,255,.1);}
-.panel-btn-danger{border-color:var(--accent2);color:var(--accent2);}
-.panel-btn-danger:hover{background:rgba(255,107,53,.1);}
 
 /* TOKEN LIST */
-.token-list{display:flex;flex-direction:column;gap:.3rem;margin-top:.4rem;}
-.token-row{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;background:var(--panel);border:1px solid rgba(0,229,255,.08);}
-.token-row-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+.token-list{display:flex;flex-direction:column;gap:.25rem;margin-top:.3rem;}
+.token-row{display:flex;align-items:center;gap:.45rem;padding:.3rem .45rem;background:var(--panel);border:1px solid rgba(0,229,255,.07);}
+.token-row-dot{width:7px;height:7px;border-radius:50%;flex:none;}
 .token-row-dot.enemy{background:var(--accent2);}
 .token-row-dot.player{background:var(--accent);}
-.token-row-name{font-family:var(--mono);font-size:.62rem;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.token-row-remove{font-family:var(--mono);font-size:.6rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:.1rem .3rem;transition:color .15s;flex:none;}
+.token-row-dot.object{background:#a08060;border-radius:2px;}
+.token-row-name{font-family:var(--mono);font-size:.6rem;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.token-row-meta{font-family:var(--mono);font-size:.55rem;color:var(--muted);flex:none;}
+.token-row-remove{font-family:var(--mono);font-size:.58rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:.1rem .28rem;transition:color .15s;flex:none;}
 .token-row-remove:hover{color:var(--accent2);}
-.empty-hint{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.06em;padding:.2rem 0;}
+.empty-hint{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.06em;padding:.15rem 0;}
+
+/* OBJECT PRESETS */
+.obj-presets{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.3rem;margin-bottom:.5rem;}
+.obj-preset-btn{background:var(--panel);border:1px solid rgba(0,229,255,.1);padding:.4rem .3rem;cursor:pointer;text-align:center;transition:border-color .15s,background .15s;font-size:.9rem;line-height:1.2;}
+.obj-preset-btn:hover{border-color:var(--accent2);background:rgba(255,107,53,.06);}
+.obj-preset-label{display:block;font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-top:.15rem;}
 
 /* INITIATIVE */
-.init-list{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.6rem;}
-.init-row{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-left:2px solid transparent;transition:background .2s,border-color .2s;}
+.init-list{display:flex;flex-direction:column;gap:.2rem;margin-bottom:.5rem;}
+.init-row{display:flex;align-items:center;gap:.45rem;padding:.35rem .55rem;border-left:2px solid transparent;transition:background .2s,border-color .2s;}
 .init-row.active{background:rgba(57,255,20,.07);border-left-color:var(--accent3);}
-.init-num{font-family:var(--mono);font-size:.8rem;font-weight:700;color:var(--muted);min-width:22px;}
+.init-num{font-family:var(--mono);font-size:.78rem;font-weight:700;color:var(--muted);min-width:20px;}
 .init-row.active .init-num{color:var(--accent3);}
-.init-dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.init-dot{width:6px;height:6px;border-radius:50%;flex:none;}
 .init-dot.enemy{background:var(--accent2);}
 .init-dot.player{background:var(--accent);}
-.init-name{font-family:var(--mono);font-size:.62rem;flex:1;color:var(--text);}
-.init-active-label{font-family:var(--mono);font-size:.55rem;color:var(--accent3);letter-spacing:.1em;animation:initPulse 1.2s ease-in-out infinite;}
+.init-name{font-family:var(--mono);font-size:.6rem;flex:1;color:var(--text);}
+.init-active-label{font-family:var(--mono);font-size:.52rem;color:var(--accent3);letter-spacing:.1em;animation:initPulse 1.2s ease-in-out infinite;}
 @keyframes initPulse{0%,100%{opacity:.5}50%{opacity:1}}
-.init-controls{display:flex;gap:.5rem;margin-top:.4rem;}
+.init-controls{display:flex;gap:.4rem;flex-wrap:wrap;}
 
-/* DICE ROLLER */
-.die-selector{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem;}
-.die-btn{font-family:var(--mono);font-size:.62rem;padding:.3rem .55rem;border:1px solid rgba(0,229,255,.2);color:var(--muted);background:var(--panel);cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+/* TERRAIN PALETTE */
+.terrain-palette{display:grid;grid-template-columns:repeat(5,1fr);gap:.3rem;margin-bottom:.4rem;}
+.terrain-swatch{height:28px;border:2px solid transparent;cursor:pointer;position:relative;transition:border-color .15s;display:flex;align-items:center;justify-content:center;}
+.terrain-swatch:hover{border-color:rgba(255,255,255,.3);}
+.terrain-swatch.selected{border-color:#fff;}
+.terrain-swatch-label{font-family:var(--mono);font-size:.42rem;color:rgba(255,255,255,.7);text-align:center;line-height:1.1;padding:0 1px;pointer-events:none;}
+.edit-hint{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.05em;margin-top:.3rem;}
+.edit-hint.active-hint{color:var(--accent3);}
+
+/* BOTTOM DICE BAR */
+.dice-bar{position:fixed;bottom:0;left:0;right:0;height:58px;z-index:50;background:var(--bg2);border-top:1px solid var(--border);display:flex;align-items:center;gap:.6rem;padding:0 1.2rem;}
+.dice-bar-label{font-family:var(--mono);font-size:.58rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;}
+.die-selector{display:flex;gap:.3rem;}
+.die-btn{font-family:var(--mono);font-size:.62rem;padding:.28rem .5rem;border:1px solid rgba(0,229,255,.2);color:var(--muted);background:var(--panel);cursor:pointer;letter-spacing:.04em;transition:all .15s;}
 .die-btn:hover{border-color:var(--accent);color:var(--accent);}
 .die-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.08);}
-.modifier-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;}
-.mod-label{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em;}
-.mod-btn{width:24px;height:24px;border:1px solid rgba(0,229,255,.2);color:var(--accent);background:var(--panel);cursor:pointer;font-size:.9rem;line-height:1;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}
+.dice-sep{width:1px;height:30px;background:var(--border);flex:none;}
+.modifier-row{display:flex;align-items:center;gap:.4rem;}
+.mod-btn{width:22px;height:22px;border:1px solid rgba(0,229,255,.2);color:var(--accent);background:var(--panel);cursor:pointer;font-size:.85rem;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}
 .mod-btn:hover{border-color:var(--accent);}
-#mod-display{font-family:var(--mono);font-size:.75rem;color:var(--accent);min-width:30px;text-align:center;}
-.btn-roll{width:100%;font-family:var(--mono);font-size:.75rem;letter-spacing:.15em;padding:.6rem;background:var(--accent2);color:#fff;font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s;}
-.btn-roll:hover{box-shadow:0 0 20px rgba(255,107,53,.4);}
-.dice-result{margin-top:.6rem;text-align:center;display:none;}
-.dice-result.visible{display:block;}
-.dice-result-total{font-family:var(--head);font-size:3rem;font-weight:900;color:var(--accent);line-height:1;}
-.dice-result-breakdown{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.2rem;letter-spacing:.06em;}
-@keyframes rollFlash{0%{transform:scale(1.5);opacity:0}40%{transform:scale(1.05);opacity:1}100%{transform:scale(1)}}
-.roll-flash{animation:rollFlash .35s cubic-bezier(.16,1,.3,1) forwards;}
-.dice-history{margin-top:.5rem;display:flex;flex-direction:column;gap:.2rem;}
-.hist-row{display:flex;justify-content:space-between;align-items:center;padding:.25rem .4rem;background:var(--panel);}
-.hist-row.hist-latest{background:rgba(0,229,255,.06);}
-.hist-notation{font-family:var(--mono);font-size:.58rem;color:var(--muted);}
-.hist-total{font-family:var(--mono);font-size:.72rem;color:var(--text);font-weight:700;}
-.hist-row.hist-latest .hist-total{color:var(--accent);}
+#mod-display{font-family:var(--mono);font-size:.72rem;color:var(--accent);min-width:28px;text-align:center;}
+.btn-roll{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;padding:.3rem 1rem;background:var(--accent2);color:#fff;font-weight:700;text-transform:uppercase;border:none;cursor:pointer;height:32px;transition:box-shadow .2s;}
+.btn-roll:hover{box-shadow:0 0 16px rgba(255,107,53,.4);}
+.dice-result-bar{display:flex;align-items:baseline;gap:.5rem;min-width:80px;}
+.dice-result-num{font-family:var(--head);font-size:2rem;font-weight:900;color:var(--accent);line-height:1;}
+.dice-result-info{font-family:var(--mono);font-size:.55rem;color:var(--muted);letter-spacing:.04em;line-height:1.4;}
+@keyframes rollFlash{0%{transform:scale(1.6);opacity:0}40%{transform:scale(1.04);opacity:1}100%{transform:scale(1)}}
+.roll-flash{animation:rollFlash .3s cubic-bezier(.16,1,.3,1) forwards;}
+.dice-history-bar{display:flex;gap:.3rem;align-items:center;}
+.hist-chip{font-family:var(--mono);font-size:.6rem;padding:.2rem .45rem;background:var(--panel);color:var(--muted);border:1px solid rgba(0,229,255,.1);}
+.hist-chip.hist-latest{color:var(--accent);border-color:rgba(0,229,255,.3);}
 </style>
 </head>
 <body>
@@ -129,8 +146,9 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content
 
 <div class="topbar">
   <input id="map-desc" type="text" placeholder="Describe your map… e.g. 'a goblin cave with an underground river'" maxlength="200"/>
-  <button id="btn-generate">Generate Map</button>
+  <button id="btn-generate" class="topbar-btn">Generate Map</button>
   <div class="gen-spinner" id="gen-spinner"></div>
+  <button id="btn-edit" class="topbar-btn">✏ Edit Terrain</button>
   <span id="map-title-display"></span>
   <span id="topbar-error"></span>
 </div>
@@ -141,23 +159,36 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content
   <aside class="sidebar">
     <div class="sidebar-scroll">
 
-      <!-- Add Enemies -->
+      <!-- Enemies -->
       <div class="panel">
         <div class="panel-title">Enemies</div>
         <div class="field-row">
           <input id="enemy-name" class="field-input" type="text" placeholder="Name (e.g. Goblin)" maxlength="24"/>
-          <input id="enemy-count" class="field-input field-input-sm" type="number" value="1" min="1" max="20"/>
+          <input id="enemy-count" class="field-input field-input-xs" type="number" value="1" min="1" max="20"/>
           <button class="panel-btn" onclick="addEnemies()">Add</button>
         </div>
       </div>
 
-      <!-- Add Players -->
+      <!-- Players -->
       <div class="panel">
         <div class="panel-title">Players</div>
         <div class="field-row">
           <input id="player-name" class="field-input" type="text" placeholder="Character name" maxlength="24"/>
           <button class="panel-btn" onclick="addPlayer()">Add</button>
         </div>
+      </div>
+
+      <!-- Objects -->
+      <div class="panel">
+        <div class="panel-title">Objects</div>
+        <div class="obj-presets" id="obj-presets"></div>
+        <div class="field-row">
+          <input id="obj-name" class="field-input" type="text" placeholder="Custom name" maxlength="20"/>
+          <input id="obj-w" class="field-input field-input-xs" type="number" value="2" min="1" max="8" title="Width (cells)"/>
+          <input id="obj-h" class="field-input field-input-xs" type="number" value="2" min="1" max="8" title="Height (cells)"/>
+          <button class="panel-btn" onclick="addCustomObject()">Add</button>
+        </div>
+        <div id="object-list" class="token-list"></div>
       </div>
 
       <!-- Token List -->
@@ -168,7 +199,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content
         </div>
       </div>
 
-      <!-- Initiative & Turn Tracker -->
+      <!-- Initiative -->
       <div class="panel">
         <div class="panel-title">Initiative</div>
         <div id="initiative-list" class="init-list">
@@ -180,35 +211,53 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content
         </div>
       </div>
 
-      <!-- Dice Roller -->
+      <!-- Terrain Paint -->
       <div class="panel">
-        <div class="panel-title">Dice Roller</div>
-        <div class="die-selector" id="die-selector">
-          <button class="die-btn active" data-sides="20">d20</button>
-          <button class="die-btn" data-sides="12">d12</button>
-          <button class="die-btn" data-sides="10">d10</button>
-          <button class="die-btn" data-sides="8">d8</button>
-          <button class="die-btn" data-sides="6">d6</button>
-          <button class="die-btn" data-sides="4">d4</button>
-          <button class="die-btn" data-sides="100">d100</button>
-        </div>
-        <div class="modifier-row">
-          <span class="mod-label">Modifier</span>
-          <button class="mod-btn" id="mod-minus">−</button>
-          <span id="mod-display">+0</span>
-          <button class="mod-btn" id="mod-plus">+</button>
-        </div>
-        <button class="btn-roll" id="btn-roll">Roll</button>
-        <div class="dice-result" id="dice-result"></div>
-        <div class="dice-history" id="dice-history"></div>
+        <div class="panel-title">Terrain Paint</div>
+        <div class="terrain-palette" id="terrain-palette"></div>
+        <div class="edit-hint" id="edit-hint">Enable ✏ Edit Terrain above, then click cells to paint.</div>
       </div>
 
     </div>
   </aside>
 </div>
 
+<!-- BOTTOM DICE BAR -->
+<div class="dice-bar">
+  <span class="dice-bar-label">// Dice</span>
+  <div class="die-selector" id="die-selector">
+    <button class="die-btn active" data-sides="20">d20</button>
+    <button class="die-btn" data-sides="12">d12</button>
+    <button class="die-btn" data-sides="10">d10</button>
+    <button class="die-btn" data-sides="8">d8</button>
+    <button class="die-btn" data-sides="6">d6</button>
+    <button class="die-btn" data-sides="4">d4</button>
+    <button class="die-btn" data-sides="100">d100</button>
+  </div>
+  <div class="dice-sep"></div>
+  <div class="modifier-row">
+    <button class="mod-btn" id="mod-minus">−</button>
+    <span id="mod-display">+0</span>
+    <button class="mod-btn" id="mod-plus">+</button>
+  </div>
+  <button class="btn-roll" id="btn-roll">Roll</button>
+  <div class="dice-sep"></div>
+  <div class="dice-result-bar" id="dice-result-bar" style="display:none">
+    <span class="dice-result-num" id="dice-result-num"></span>
+    <span class="dice-result-info" id="dice-result-info"></span>
+  </div>
+  <div class="dice-history-bar" id="dice-history-bar"></div>
+</div>
+
 <script>
 const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+const DICE_BAR_H = 58;
+const NAV_H = 48;
+const TOPBAR_H = 48;
+const SIDEBAR_W = 290;
+const GRID_COLS = 20;
+const GRID_ROWS = 15;
+const FEET_PER_CELL = 5;
 
 const TERRAIN_COLORS = {
   'grass':         '#2d5a1b',
@@ -224,16 +273,27 @@ const TERRAIN_COLORS = {
 };
 
 const TERRAIN_SYMBOLS = {
-  'water':    '~',
-  'mountain': '▲',
-  'forest':   '♦',
-  'lava':     '✦',
-  'swamp':    '≈',
+  'water':        '~',
+  'mountain':     '▲',
+  'forest':       '♦',
+  'lava':         '✦',
+  'swamp':        '≈',
   'dungeon-wall': '▪',
 };
 
-const GRID_COLS = 20;
-const GRID_ROWS = 15;
+const TERRAIN_NAMES = ['grass','forest','water','mountain','dungeon-floor','dungeon-wall','road','desert','swamp','lava'];
+
+const OBJECT_PRESETS = [
+  { name: 'Barrel',   w: 1, h: 1, color: 'rgba(110,65,20,0.8)',  border: '#8b5e2a', emoji: '🛢️' },
+  { name: 'Wagon',    w: 2, h: 2, color: 'rgba(120,80,30,0.8)',  border: '#a06e28', emoji: '🪵' },
+  { name: 'Table',    w: 2, h: 1, color: 'rgba(100,65,25,0.8)',  border: '#8b5520', emoji: '🪑' },
+  { name: 'Tent',     w: 2, h: 2, color: 'rgba(55,75,55,0.8)',   border: '#4a6a4a', emoji: '⛺' },
+  { name: 'Building', w: 4, h: 4, color: 'rgba(65,65,85,0.8)',   border: '#5a5a80', emoji: '🏠' },
+  { name: 'Tower',    w: 2, h: 3, color: 'rgba(45,45,65,0.8)',   border: '#404060', emoji: '🗼' },
+  { name: 'Fire',     w: 1, h: 1, color: 'rgba(180,60,0,0.8)',   border: '#cc4400', emoji: '🔥' },
+  { name: 'Pit',      w: 2, h: 2, color: 'rgba(10,10,10,0.85)',  border: '#333',    emoji: '⬛' },
+  { name: 'Cart',     w: 1, h: 2, color: 'rgba(100,70,20,0.8)',  border: '#8a601a', emoji: '🛒' },
+];
 
 const STATE = {
   grid: [],
@@ -243,22 +303,33 @@ const STATE = {
   offsetX: 0,
   offsetY: 0,
   tokens: [],
+  objects: [],
   nextId: 1,
-  drag: { active: false, tokenId: null, offsetX: 0, offsetY: 0, pixelX: 0, pixelY: 0 },
+  drag: {
+    active: false,
+    type: null,       // 'token' | 'object'
+    entityId: null,
+    offsetX: 0,
+    offsetY: 0,
+    pixelX: 0,
+    pixelY: 0,
+    originCol: 0,
+    originRow: 0,
+  },
+  editMode: false,
+  painting: false,
+  selectedTerrain: 'grass',
+  hoverCell: { col: -1, row: -1 },
   initiativeOrder: [],
   currentTurnIndex: 0,
   diceHistory: [],
 };
 
 function escHtml(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── Canvas setup ─────────────────────────────────────────────────────────────
+// ── Canvas setup ──────────────────────────────────────────────────────────────
 
 const canvas = document.getElementById('map-canvas');
 let ctx = canvas.getContext('2d');
@@ -268,10 +339,8 @@ let logicalH = 0;
 
 function resizeCanvas() {
   dpr = window.devicePixelRatio || 1;
-  const layout = document.querySelector('.layout');
-  const sidebar = document.querySelector('.sidebar');
-  logicalW = layout.clientWidth - sidebar.offsetWidth;
-  logicalH = layout.clientHeight;
+  logicalW = window.innerWidth - SIDEBAR_W;
+  logicalH = window.innerHeight - NAV_H - TOPBAR_H - DICE_BAR_H;
 
   canvas.width  = Math.round(logicalW * dpr);
   canvas.height = Math.round(logicalH * dpr);
@@ -297,6 +366,8 @@ function computeCellSize() {
 function redraw() {
   ctx.clearRect(0, 0, logicalW, logicalH);
   drawGrid();
+  drawObjects();
+  drawMoveStaging();
   drawTokens();
 }
 
@@ -314,6 +385,12 @@ function drawGrid() {
       ctx.fillStyle = TERRAIN_COLORS[terrain] || '#1e1e2a';
       ctx.fillRect(x, y, STATE.cellW, STATE.cellH);
 
+      // Edit mode hover highlight
+      if (STATE.editMode && c === STATE.hoverCell.col && r === STATE.hoverCell.row) {
+        ctx.fillStyle = 'rgba(255,255,255,0.18)';
+        ctx.fillRect(x, y, STATE.cellW, STATE.cellH);
+      }
+
       ctx.strokeStyle = 'rgba(0,229,255,0.07)';
       ctx.lineWidth = 0.5;
       ctx.strokeRect(x + 0.5, y + 0.5, STATE.cellW - 1, STATE.cellH - 1);
@@ -321,19 +398,25 @@ function drawGrid() {
       const sym = TERRAIN_SYMBOLS[terrain];
       if (sym && STATE.cellW >= 22) {
         ctx.fillStyle = 'rgba(255,255,255,0.13)';
-        ctx.font = `${Math.floor(STATE.cellH * 0.42)}px monospace`;
+        ctx.font = `${Math.floor(STATE.cellH * 0.4)}px monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(sym, x + STATE.cellW / 2, y + STATE.cellH / 2);
       }
     }
   }
+
+  // Edit mode: outline selected terrain type in topbar region
+  if (STATE.editMode) {
+    ctx.strokeStyle = 'rgba(57,255,20,0.4)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([3, 3]);
+    ctx.strokeRect(STATE.offsetX, STATE.offsetY, STATE.cellW * GRID_COLS, STATE.cellH * GRID_ROWS);
+    ctx.setLineDash([]);
+  }
 }
 
 function drawEmptyMap() {
-  const msg = STATE.grid.length === 0
-    ? 'Describe a location above and click Generate Map'
-    : '';
   ctx.fillStyle = '#0d131a';
   ctx.fillRect(STATE.offsetX, STATE.offsetY, STATE.cellW * GRID_COLS, STATE.cellH * GRID_ROWS);
   for (let r = 0; r < GRID_ROWS; r++) {
@@ -348,40 +431,174 @@ function drawEmptyMap() {
       );
     }
   }
-  if (msg) {
-    ctx.fillStyle = 'rgba(106,143,168,0.5)';
-    ctx.font = `14px 'Share Tech Mono', monospace`;
+  ctx.fillStyle = 'rgba(106,143,168,0.45)';
+  ctx.font = `13px 'Share Tech Mono', monospace`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('Describe a location above and click Generate Map', logicalW / 2, logicalH / 2);
+}
+
+function drawObjects() {
+  const draggingId = STATE.drag.active && STATE.drag.type === 'object' ? STATE.drag.entityId : null;
+  for (const obj of STATE.objects) {
+    if (obj.id === draggingId) continue;
+    drawObject(obj, false);
+  }
+  if (draggingId) {
+    const obj = STATE.objects.find(o => o.id === draggingId);
+    if (obj) drawObject(obj, true);
+  }
+}
+
+function drawObject(obj, isDragging) {
+  const x = isDragging
+    ? STATE.drag.pixelX - obj.w * STATE.cellW / 2
+    : STATE.offsetX + obj.col * STATE.cellW;
+  const y = isDragging
+    ? STATE.drag.pixelY - obj.h * STATE.cellH / 2
+    : STATE.offsetY + obj.row * STATE.cellH;
+  const w = obj.w * STATE.cellW;
+  const h = obj.h * STATE.cellH;
+
+  // Fill
+  ctx.fillStyle = obj.color;
+  ctx.fillRect(x, y, w, h);
+
+  // Border
+  ctx.strokeStyle = isDragging ? '#fff' : obj.border;
+  ctx.lineWidth = isDragging ? 2 : 1.5;
+  ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+
+  // Label
+  const fontSize = Math.max(9, Math.min(14, Math.floor(Math.min(w, h) * 0.25)));
+  ctx.fillStyle = 'rgba(255,255,255,0.85)';
+  ctx.font = `700 ${fontSize}px 'Barlow Condensed', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(obj.name.toUpperCase(), x + w / 2, y + h / 2);
+
+  // Size badge (top-right corner)
+  if (w > 36 && h > 18) {
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(x + w - 28, y, 28, 14);
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = `${Math.max(7, fontSize - 3)}px 'Share Tech Mono', monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(msg, logicalW / 2, logicalH / 2);
+    ctx.fillText(`${obj.w}×${obj.h}`, x + w - 14, y + 7);
+  }
+}
+
+function drawMoveStaging() {
+  if (!STATE.drag.active || STATE.drag.type !== 'token') return;
+
+  const { originCol, originRow, pixelX, pixelY } = STATE.drag;
+  const originCX = STATE.offsetX + originCol * STATE.cellW + STATE.cellW / 2;
+  const originCY = STATE.offsetY + originRow * STATE.cellH + STATE.cellH / 2;
+
+  // Current target cell under drag
+  const targetCell = pixelToCell(pixelX, pixelY);
+  const targetCX = STATE.offsetX + targetCell.col * STATE.cellW + STATE.cellW / 2;
+  const targetCY = STATE.offsetY + targetCell.row * STATE.cellH + STATE.cellH / 2;
+
+  const dc = Math.abs(targetCell.col - originCol);
+  const dr = Math.abs(targetCell.row - originRow);
+  const chebyshev = Math.max(dc, dr);
+  const distFt = chebyshev * FEET_PER_CELL;
+  const moved = dc > 0 || dr > 0;
+
+  // Target cell highlight
+  if (moved) {
+    ctx.fillStyle = 'rgba(57,255,20,0.12)';
+    ctx.fillRect(
+      STATE.offsetX + targetCell.col * STATE.cellW,
+      STATE.offsetY + targetCell.row * STATE.cellH,
+      STATE.cellW, STATE.cellH
+    );
+    ctx.strokeStyle = 'rgba(57,255,20,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.strokeRect(
+      STATE.offsetX + targetCell.col * STATE.cellW + 0.5,
+      STATE.offsetY + targetCell.row * STATE.cellH + 0.5,
+      STATE.cellW - 1, STATE.cellH - 1
+    );
+  }
+
+  // Origin cell ghost outline
+  ctx.strokeStyle = 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  ctx.strokeRect(
+    STATE.offsetX + originCol * STATE.cellW + 0.5,
+    STATE.offsetY + originRow * STATE.cellH + 0.5,
+    STATE.cellW - 1, STATE.cellH - 1
+  );
+  ctx.setLineDash([]);
+
+  // Line from origin to target (only if actually moved)
+  if (moved) {
+    ctx.beginPath();
+    ctx.moveTo(originCX, originCY);
+    ctx.lineTo(targetCX, targetCY);
+    ctx.strokeStyle = 'rgba(57,255,20,0.7)';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([4, 3]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Distance label at midpoint
+    const midX = (originCX + targetCX) / 2;
+    const midY = (originCY + targetCY) / 2;
+    const label = `${distFt} ft`;
+    const labelW = label.length * 6 + 10;
+
+    ctx.fillStyle = 'rgba(5,10,15,0.85)';
+    ctx.fillRect(midX - labelW / 2, midY - 9, labelW, 18);
+    ctx.strokeStyle = 'rgba(57,255,20,0.5)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(midX - labelW / 2, midY - 9, labelW, 18);
+
+    ctx.fillStyle = '#39ff14';
+    ctx.font = `700 10px 'Share Tech Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, midX, midY + 1);
+  }
+
+  // Ghost token at origin (semi-transparent, drawn before the dragging token)
+  const tok = STATE.tokens.find(t => t.id === STATE.drag.entityId);
+  if (tok) {
+    ctx.globalAlpha = 0.3;
+    drawToken(tok, false, true); // force-draw at stored col/row (which hasn't changed)
+    ctx.globalAlpha = 1;
   }
 }
 
 function drawTokens() {
-  const draggingId = STATE.drag.active ? STATE.drag.tokenId : null;
+  const draggingId = STATE.drag.active && STATE.drag.type === 'token' ? STATE.drag.entityId : null;
   for (const tok of STATE.tokens) {
-    if (tok.id !== draggingId) drawToken(tok, false);
+    if (tok.id !== draggingId) drawToken(tok, false, false);
   }
   if (draggingId) {
     const tok = STATE.tokens.find(t => t.id === draggingId);
-    if (tok) drawToken(tok, true);
+    if (tok) drawToken(tok, true, false);
   }
 }
 
-function drawToken(tok, isDragging) {
+function drawToken(tok, isDragging, forceGrid) {
   const isCurrentTurn = STATE.initiativeOrder.length > 0 &&
     STATE.initiativeOrder[STATE.currentTurnIndex] === tok.id;
   const isEnemy = tok.type === 'enemy';
 
-  const cx = isDragging
+  const cx = (isDragging && !forceGrid)
     ? STATE.drag.pixelX
     : STATE.offsetX + tok.col * STATE.cellW + STATE.cellW / 2;
-  const cy = isDragging
+  const cy = (isDragging && !forceGrid)
     ? STATE.drag.pixelY
     : STATE.offsetY + tok.row * STATE.cellH + STATE.cellH / 2;
   const r = Math.min(STATE.cellW, STATE.cellH) * 0.33;
 
-  // Glow ring for active turn
+  // Active turn glow ring
   if (isCurrentTurn) {
     ctx.beginPath();
     ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
@@ -390,11 +607,9 @@ function drawToken(tok, isDragging) {
     ctx.stroke();
   }
 
-  // Shadow
   ctx.shadowColor = isEnemy ? 'rgba(255,107,53,0.5)' : 'rgba(0,229,255,0.5)';
   ctx.shadowBlur = isDragging ? 14 : 6;
 
-  // Token body
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI * 2);
   const grad = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, r * 0.05, cx, cy, r);
@@ -410,12 +625,10 @@ function drawToken(tok, isDragging) {
   ctx.shadowBlur = 0;
   ctx.shadowColor = 'transparent';
 
-  // Border
   ctx.strokeStyle = isDragging ? '#fff' : (isEnemy ? '#ff6b35' : '#00e5ff');
   ctx.lineWidth = 1.5;
   ctx.stroke();
 
-  // Label initial
   const fontSize = Math.max(10, Math.floor(r * 0.85));
   ctx.fillStyle = '#fff';
   ctx.font = `900 ${fontSize}px 'Barlow Condensed', sans-serif`;
@@ -423,7 +636,6 @@ function drawToken(tok, isDragging) {
   ctx.textBaseline = 'middle';
   ctx.fillText(tok.name.charAt(0).toUpperCase(), cx, cy + 1);
 
-  // Initiative badge
   if (tok.initiative !== null && tok.initiative !== undefined) {
     const bx = cx + r * 0.68;
     const by = cy - r * 0.68;
@@ -435,7 +647,6 @@ function drawToken(tok, isDragging) {
     ctx.strokeStyle = isCurrentTurn ? '#39ff14' : (isEnemy ? '#ff6b35' : '#00e5ff');
     ctx.lineWidth = 1;
     ctx.stroke();
-
     const bfSize = Math.max(7, Math.floor(br * 0.9));
     ctx.fillStyle = isCurrentTurn ? '#050a0f' : '#e8f4f8';
     ctx.font = `700 ${bfSize}px 'Share Tech Mono', monospace`;
@@ -469,10 +680,8 @@ Rules:
 async function generateMap() {
   const desc = document.getElementById('map-desc').value.trim();
   if (!desc) return;
-
   setGenerating(true);
   hideError();
-
   try {
     const resp = await fetch(WORKER_URL, {
       method: 'POST',
@@ -483,36 +692,26 @@ async function generateMap() {
         messages: [{ role: 'user', content: buildMapPrompt(desc) }],
       }),
     });
-
     const data = await resp.json();
-    let raw = data?.content?.[0]?.text || '';
-
-    // Strip markdown fences
-    raw = raw.replace(/```json|```/g, '').trim();
-
-    // Fallback: extract JSON object
-    const jsonMatch = raw.match(/\{[\s\S]*\}/);
-    if (jsonMatch) raw = jsonMatch[0];
-
+    let raw = (data?.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (match) raw = match[0];
     const result = JSON.parse(raw);
-
-    if (!Array.isArray(result.grid) ||
-        result.grid.length !== GRID_ROWS ||
+    if (!Array.isArray(result.grid) || result.grid.length !== GRID_ROWS ||
         !result.grid.every(row => Array.isArray(row) && row.length === GRID_COLS)) {
       throw new Error(`Grid must be ${GRID_ROWS}×${GRID_COLS}`);
     }
-
     STATE.grid = result.grid;
     STATE.mapTitle = result.title || desc;
     STATE.tokens = [];
+    STATE.objects = [];
     STATE.initiativeOrder = [];
     STATE.currentTurnIndex = 0;
-
     document.getElementById('map-title-display').textContent = STATE.mapTitle;
     renderTokenList();
+    renderObjectList();
     updateInitiativePanel();
     redraw();
-
   } catch (err) {
     showError('Generation failed: ' + err.message);
   } finally {
@@ -524,15 +723,58 @@ function setGenerating(on) {
   document.getElementById('btn-generate').disabled = on;
   document.getElementById('gen-spinner').classList.toggle('active', on);
 }
-
 function showError(msg) {
   const el = document.getElementById('topbar-error');
   el.textContent = msg;
   el.style.display = 'block';
 }
-
 function hideError() {
   document.getElementById('topbar-error').style.display = 'none';
+}
+
+// ── Terrain edit ──────────────────────────────────────────────────────────────
+
+function toggleEditMode() {
+  STATE.editMode = !STATE.editMode;
+  const btn = document.getElementById('btn-edit');
+  btn.classList.toggle('active', STATE.editMode);
+  btn.textContent = STATE.editMode ? '✏ Editing' : '✏ Edit Terrain';
+  const hint = document.getElementById('edit-hint');
+  hint.textContent = STATE.editMode
+    ? 'Click or drag on map cells to paint selected terrain.'
+    : 'Enable ✏ Edit Terrain above, then click cells to paint.';
+  hint.className = STATE.editMode ? 'edit-hint active-hint' : 'edit-hint';
+  canvas.style.cursor = STATE.editMode ? 'crosshair' : 'default';
+  redraw();
+}
+
+function paintTerrainAt(px, py) {
+  const cell = pixelToCell(px, py);
+  // Check if within grid bounds
+  if (px < STATE.offsetX || px > STATE.offsetX + GRID_COLS * STATE.cellW) return;
+  if (py < STATE.offsetY || py > STATE.offsetY + GRID_ROWS * STATE.cellH) return;
+  if (!STATE.grid.length) {
+    STATE.grid = Array.from({ length: GRID_ROWS }, () => Array(GRID_COLS).fill('grass'));
+  }
+  STATE.grid[cell.row][cell.col] = STATE.selectedTerrain;
+  redraw();
+}
+
+function renderTerrainPalette() {
+  const el = document.getElementById('terrain-palette');
+  el.innerHTML = TERRAIN_NAMES.map(t => `
+    <div class="terrain-swatch ${t === STATE.selectedTerrain ? 'selected' : ''}"
+         style="background:${TERRAIN_COLORS[t]}"
+         onclick="selectTerrain('${t}')"
+         title="${t}">
+      <span class="terrain-swatch-label">${t.replace('dungeon-','d-')}</span>
+    </div>
+  `).join('');
+}
+
+function selectTerrain(t) {
+  STATE.selectedTerrain = t;
+  renderTerrainPalette();
 }
 
 // ── Token system ──────────────────────────────────────────────────────────────
@@ -541,9 +783,7 @@ function addEnemies() {
   const name = document.getElementById('enemy-name').value.trim();
   const count = Math.max(1, Math.min(20, parseInt(document.getElementById('enemy-count').value) || 1));
   if (!name) return;
-
-  const placed = placeTokens(count, 'enemy', name);
-  STATE.tokens.push(...placed);
+  STATE.tokens.push(...placeTokens(count, 'enemy', name));
   redraw();
   renderTokenList();
 }
@@ -551,9 +791,7 @@ function addEnemies() {
 function addPlayer() {
   const name = document.getElementById('player-name').value.trim();
   if (!name) return;
-
-  const placed = placeTokens(1, 'player', name);
-  STATE.tokens.push(...placed);
+  STATE.tokens.push(...placeTokens(1, 'player', name));
   redraw();
   renderTokenList();
   document.getElementById('player-name').value = '';
@@ -561,21 +799,14 @@ function addPlayer() {
 
 function placeTokens(count, type, name) {
   const result = [];
-  const occupied = new Set(STATE.tokens.map(t => `${t.col},${t.row}`));
+  const occupied = new Set([
+    ...STATE.tokens.map(t => `${t.col},${t.row}`),
+  ]);
   const startCol = type === 'enemy' ? 15 : 3;
-  const startRow = 7;
-
   for (let i = 0; i < count; i++) {
-    const cell = findFreeCell(startCol, startRow, occupied);
+    const cell = findFreeCell(startCol, 7, occupied);
     occupied.add(`${cell.col},${cell.row}`);
-    result.push({
-      id: STATE.nextId++,
-      name: count > 1 ? `${name} ${i + 1}` : name,
-      type,
-      col: cell.col,
-      row: cell.row,
-      initiative: null,
-    });
+    result.push({ id: STATE.nextId++, name: count > 1 ? `${name} ${i+1}` : name, type, col: cell.col, row: cell.row, initiative: null });
   }
   return result;
 }
@@ -616,8 +847,69 @@ function renderTokenList() {
       <span class="token-row-dot ${tok.type}"></span>
       <span class="token-row-name">${escHtml(tok.name)}</span>
       <button class="token-row-remove" onclick="removeToken(${tok.id})">✕</button>
-    </div>
-  `).join('');
+    </div>`).join('');
+}
+
+// ── Objects ───────────────────────────────────────────────────────────────────
+
+function addPresetObject(presetName) {
+  const preset = OBJECT_PRESETS.find(p => p.name === presetName);
+  if (!preset) return;
+  const col = Math.floor(GRID_COLS / 2) - Math.floor(preset.w / 2);
+  const row = Math.floor(GRID_ROWS / 2) - Math.floor(preset.h / 2);
+  STATE.objects.push({
+    id: STATE.nextId++,
+    name: preset.name,
+    w: preset.w,
+    h: preset.h,
+    col: Math.max(0, Math.min(GRID_COLS - preset.w, col)),
+    row: Math.max(0, Math.min(GRID_ROWS - preset.h, row)),
+    color: preset.color,
+    border: preset.border,
+  });
+  redraw();
+  renderObjectList();
+}
+
+function addCustomObject() {
+  const name = document.getElementById('obj-name').value.trim() || 'Object';
+  const w = Math.max(1, Math.min(8, parseInt(document.getElementById('obj-w').value) || 2));
+  const h = Math.max(1, Math.min(8, parseInt(document.getElementById('obj-h').value) || 2));
+  const col = Math.max(0, Math.min(GRID_COLS - w, Math.floor(GRID_COLS / 2) - Math.floor(w / 2)));
+  const row = Math.max(0, Math.min(GRID_ROWS - h, Math.floor(GRID_ROWS / 2) - Math.floor(h / 2)));
+  STATE.objects.push({ id: STATE.nextId++, name, w, h, col, row, color: 'rgba(70,70,100,0.8)', border: '#5a5a90' });
+  redraw();
+  renderObjectList();
+  document.getElementById('obj-name').value = '';
+}
+
+function removeObject(id) {
+  STATE.objects = STATE.objects.filter(o => o.id !== id);
+  redraw();
+  renderObjectList();
+}
+
+function renderObjectList() {
+  const el = document.getElementById('object-list');
+  if (!STATE.objects.length) {
+    el.innerHTML = '<div class="empty-hint">No objects placed</div>';
+    return;
+  }
+  el.innerHTML = STATE.objects.map(obj => `
+    <div class="token-row">
+      <span class="token-row-dot object"></span>
+      <span class="token-row-name">${escHtml(obj.name)}</span>
+      <span class="token-row-meta">${obj.w}×${obj.h}</span>
+      <button class="token-row-remove" onclick="removeObject(${obj.id})">✕</button>
+    </div>`).join('');
+}
+
+function renderObjectPresets() {
+  document.getElementById('obj-presets').innerHTML = OBJECT_PRESETS.map(p => `
+    <button class="obj-preset-btn" onclick="addPresetObject('${escHtml(p.name)}')" title="${escHtml(p.name)} (${p.w}×${p.h})">
+      ${p.emoji}
+      <span class="obj-preset-label">${escHtml(p.name)}</span>
+    </button>`).join('');
 }
 
 // ── Drag-and-drop ─────────────────────────────────────────────────────────────
@@ -625,10 +917,7 @@ function renderTokenList() {
 function getCanvasPoint(e) {
   const rect = canvas.getBoundingClientRect();
   const src = e.touches ? e.touches[0] : e;
-  return {
-    x: src.clientX - rect.left,
-    y: src.clientY - rect.top,
-  };
+  return { x: src.clientX - rect.left, y: src.clientY - rect.top };
 }
 
 function tokenAtPoint(px, py) {
@@ -637,8 +926,17 @@ function tokenAtPoint(px, py) {
     const cx = STATE.offsetX + tok.col * STATE.cellW + STATE.cellW / 2;
     const cy = STATE.offsetY + tok.row * STATE.cellH + STATE.cellH / 2;
     const r = Math.min(STATE.cellW, STATE.cellH) * 0.33;
-    const dx = px - cx, dy = py - cy;
-    if (dx * dx + dy * dy <= r * r) return tok;
+    if ((px - cx) ** 2 + (py - cy) ** 2 <= r * r) return tok;
+  }
+  return null;
+}
+
+function objectAtPoint(px, py) {
+  for (let i = STATE.objects.length - 1; i >= 0; i--) {
+    const obj = STATE.objects[i];
+    const x = STATE.offsetX + obj.col * STATE.cellW;
+    const y = STATE.offsetY + obj.row * STATE.cellH;
+    if (px >= x && px <= x + obj.w * STATE.cellW && py >= y && py <= y + obj.h * STATE.cellH) return obj;
   }
   return null;
 }
@@ -652,56 +950,117 @@ function pixelToCell(px, py) {
 
 function onDragStart(e) {
   const { x, y } = getCanvasPoint(e);
-  const tok = tokenAtPoint(x, y);
-  if (!tok) return;
-  e.preventDefault();
 
-  const cx = STATE.offsetX + tok.col * STATE.cellW + STATE.cellW / 2;
-  const cy = STATE.offsetY + tok.row * STATE.cellH + STATE.cellH / 2;
-  STATE.drag.active   = true;
-  STATE.drag.tokenId  = tok.id;
-  STATE.drag.offsetX  = x - cx;
-  STATE.drag.offsetY  = y - cy;
-  STATE.drag.pixelX   = cx;
-  STATE.drag.pixelY   = cy;
-  canvas.style.cursor = 'grabbing';
+  // Edit mode: paint terrain
+  if (STATE.editMode) {
+    e.preventDefault();
+    STATE.painting = true;
+    paintTerrainAt(x, y);
+    return;
+  }
+
+  // Token hit (priority over objects)
+  const tok = tokenAtPoint(x, y);
+  if (tok) {
+    e.preventDefault();
+    const cx = STATE.offsetX + tok.col * STATE.cellW + STATE.cellW / 2;
+    const cy = STATE.offsetY + tok.row * STATE.cellH + STATE.cellH / 2;
+    STATE.drag.active    = true;
+    STATE.drag.type      = 'token';
+    STATE.drag.entityId  = tok.id;
+    STATE.drag.offsetX   = x - cx;
+    STATE.drag.offsetY   = y - cy;
+    STATE.drag.pixelX    = cx;
+    STATE.drag.pixelY    = cy;
+    STATE.drag.originCol = tok.col;
+    STATE.drag.originRow = tok.row;
+    canvas.style.cursor  = 'grabbing';
+    return;
+  }
+
+  // Object hit
+  const obj = objectAtPoint(x, y);
+  if (obj) {
+    e.preventDefault();
+    const cx = STATE.offsetX + (obj.col + obj.w / 2) * STATE.cellW;
+    const cy = STATE.offsetY + (obj.row + obj.h / 2) * STATE.cellH;
+    STATE.drag.active   = true;
+    STATE.drag.type     = 'object';
+    STATE.drag.entityId = obj.id;
+    STATE.drag.offsetX  = x - cx;
+    STATE.drag.offsetY  = y - cy;
+    STATE.drag.pixelX   = cx;
+    STATE.drag.pixelY   = cy;
+    canvas.style.cursor = 'grabbing';
+  }
 }
 
 function onDragMove(e) {
   const { x, y } = getCanvasPoint(e);
+
+  if (STATE.editMode) {
+    if (STATE.painting) {
+      e.preventDefault();
+      paintTerrainAt(x, y);
+    }
+    // Update hover cell for highlight
+    const cell = pixelToCell(x, y);
+    if (cell.col !== STATE.hoverCell.col || cell.row !== STATE.hoverCell.row) {
+      STATE.hoverCell = cell;
+      redraw();
+    }
+    return;
+  }
+
   if (STATE.drag.active) {
     e.preventDefault();
     STATE.drag.pixelX = x - STATE.drag.offsetX;
     STATE.drag.pixelY = y - STATE.drag.offsetY;
     redraw();
   } else {
-    canvas.style.cursor = tokenAtPoint(x, y) ? 'grab' : 'default';
+    canvas.style.cursor = (tokenAtPoint(x, y) || objectAtPoint(x, y)) ? 'grab' : 'default';
   }
 }
 
 function onDragEnd(e) {
+  STATE.painting = false;
+
   if (!STATE.drag.active) return;
+
   const pt = e.changedTouches ? e.changedTouches[0] : e;
   const rect = canvas.getBoundingClientRect();
   const x = pt.clientX - rect.left;
   const y = pt.clientY - rect.top;
+  const dropX = x - STATE.drag.offsetX;
+  const dropY = y - STATE.drag.offsetY;
 
-  const tok = STATE.tokens.find(t => t.id === STATE.drag.tokenId);
-  if (tok) {
-    const cell = pixelToCell(x - STATE.drag.offsetX, y - STATE.drag.offsetY);
-    tok.col = cell.col;
-    tok.row = cell.row;
+  if (STATE.drag.type === 'token') {
+    const tok = STATE.tokens.find(t => t.id === STATE.drag.entityId);
+    if (tok) {
+      const cell = pixelToCell(dropX, dropY);
+      tok.col = cell.col;
+      tok.row = cell.row;
+    }
+  } else if (STATE.drag.type === 'object') {
+    const obj = STATE.objects.find(o => o.id === STATE.drag.entityId);
+    if (obj) {
+      const cell = pixelToCell(dropX - obj.w * STATE.cellW / 2, dropY - obj.h * STATE.cellH / 2);
+      obj.col = Math.max(0, Math.min(GRID_COLS - obj.w, cell.col));
+      obj.row = Math.max(0, Math.min(GRID_ROWS - obj.h, cell.row));
+    }
   }
+
   STATE.drag.active = false;
-  STATE.drag.tokenId = null;
-  canvas.style.cursor = 'default';
+  STATE.drag.type = null;
+  STATE.drag.entityId = null;
+  canvas.style.cursor = STATE.editMode ? 'crosshair' : 'default';
   redraw();
 }
 
 canvas.addEventListener('mousedown', onDragStart);
 canvas.addEventListener('mousemove', onDragMove);
 canvas.addEventListener('mouseup', onDragEnd);
-canvas.addEventListener('mouseleave', onDragEnd);
+canvas.addEventListener('mouseleave', e => { STATE.hoverCell = { col: -1, row: -1 }; onDragEnd(e); });
 canvas.addEventListener('touchstart', onDragStart, { passive: false });
 canvas.addEventListener('touchmove', onDragMove, { passive: false });
 canvas.addEventListener('touchend', onDragEnd);
@@ -710,9 +1069,7 @@ canvas.addEventListener('touchend', onDragEnd);
 
 function rollInitiative() {
   if (!STATE.tokens.length) return;
-  STATE.tokens.forEach(tok => {
-    tok.initiative = Math.ceil(Math.random() * 20);
-  });
+  STATE.tokens.forEach(tok => { tok.initiative = Math.ceil(Math.random() * 20); });
   STATE.initiativeOrder = [...STATE.tokens]
     .sort((a, b) => {
       if (b.initiative !== a.initiative) return b.initiative - a.initiative;
@@ -742,14 +1099,12 @@ function updateInitiativePanel() {
     const tok = STATE.tokens.find(t => t.id === id);
     if (!tok) return '';
     const isActive = idx === STATE.currentTurnIndex;
-    return `
-      <div class="init-row ${isActive ? 'active' : ''}">
-        <span class="init-num">${String(tok.initiative).padStart(2, '0')}</span>
-        <span class="init-dot ${tok.type}"></span>
-        <span class="init-name">${escHtml(tok.name)}</span>
-        ${isActive ? '<span class="init-active-label">▶ TURN</span>' : ''}
-      </div>
-    `;
+    return `<div class="init-row ${isActive ? 'active' : ''}">
+      <span class="init-num">${String(tok.initiative).padStart(2,'0')}</span>
+      <span class="init-dot ${tok.type}"></span>
+      <span class="init-name">${escHtml(tok.name)}</span>
+      ${isActive ? '<span class="init-active-label">▶ TURN</span>' : ''}
+    </div>`;
   }).join('');
 }
 
@@ -766,19 +1121,11 @@ document.getElementById('die-selector').addEventListener('click', e => {
   selectedDie = parseInt(btn.dataset.sides);
 });
 
-document.getElementById('mod-minus').addEventListener('click', () => {
-  diceModifier--;
-  updateModDisplay();
-});
-
-document.getElementById('mod-plus').addEventListener('click', () => {
-  diceModifier++;
-  updateModDisplay();
-});
+document.getElementById('mod-minus').addEventListener('click', () => { diceModifier--; updateModDisplay(); });
+document.getElementById('mod-plus').addEventListener('click',  () => { diceModifier++; updateModDisplay(); });
 
 function updateModDisplay() {
-  document.getElementById('mod-display').textContent =
-    (diceModifier >= 0 ? '+' : '') + diceModifier;
+  document.getElementById('mod-display').textContent = (diceModifier >= 0 ? '+' : '') + diceModifier;
 }
 
 document.getElementById('btn-roll').addEventListener('click', () => {
@@ -790,46 +1137,37 @@ document.getElementById('btn-roll').addEventListener('click', () => {
   STATE.diceHistory.unshift({ notation, raw, modifier: diceModifier, total });
   if (STATE.diceHistory.length > 5) STATE.diceHistory.pop();
 
-  const resultEl = document.getElementById('dice-result');
-  resultEl.className = 'dice-result visible';
-  void resultEl.offsetWidth;
-  resultEl.className = 'dice-result visible roll-flash';
+  const numEl = document.getElementById('dice-result-num');
+  const infoEl = document.getElementById('dice-result-info');
+  const barEl = document.getElementById('dice-result-bar');
 
-  const breakdown = diceModifier !== 0
-    ? `rolled ${raw} ${diceModifier >= 0 ? '+' : ''}${diceModifier} = ${total}`
-    : `rolled ${raw}`;
+  barEl.style.display = 'flex';
+  numEl.className = 'dice-result-num';
+  void numEl.offsetWidth;
+  numEl.className = 'dice-result-num roll-flash';
+  numEl.textContent = total;
+  infoEl.textContent = diceModifier !== 0
+    ? `${notation}\nrolled ${raw}${diceModifier >= 0 ? '+' : ''}${diceModifier}`
+    : notation;
 
-  resultEl.innerHTML = `
-    <div class="dice-result-total">${total}</div>
-    <div class="dice-result-breakdown">${escHtml(notation)} — ${escHtml(breakdown)}</div>
-  `;
-
-  const histEl = document.getElementById('dice-history');
-  histEl.innerHTML = STATE.diceHistory.map((h, i) => {
-    const modStr = h.modifier === 0 ? '' : (h.modifier > 0 ? `+${h.modifier}` : `${h.modifier}`);
-    return `
-      <div class="hist-row ${i === 0 ? 'hist-latest' : ''}">
-        <span class="hist-notation">${escHtml(h.notation)}</span>
-        <span class="hist-total">${h.total}</span>
-      </div>
-    `;
-  }).join('');
+  document.getElementById('dice-history-bar').innerHTML = STATE.diceHistory.map((h, i) =>
+    `<span class="hist-chip ${i === 0 ? 'hist-latest' : ''}" title="${escHtml(h.notation)}">${h.total}</span>`
+  ).join('');
 });
 
-// ── Generate button ───────────────────────────────────────────────────────────
+// ── Wiring ────────────────────────────────────────────────────────────────────
 
 document.getElementById('btn-generate').addEventListener('click', generateMap);
-document.getElementById('map-desc').addEventListener('keydown', e => {
-  if (e.key === 'Enter') generateMap();
-});
+document.getElementById('map-desc').addEventListener('keydown', e => { if (e.key === 'Enter') generateMap(); });
+document.getElementById('btn-edit').addEventListener('click', toggleEditMode);
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 window.addEventListener('resize', resizeCanvas);
-// Wait for fonts + layout before sizing canvas
-document.fonts.ready.then(() => {
-  requestAnimationFrame(resizeCanvas);
-});
+renderTerrainPalette();
+renderObjectPresets();
+renderObjectList();
+document.fonts.ready.then(() => requestAnimationFrame(resizeCanvas));
 </script>
 </body>
 </html>
