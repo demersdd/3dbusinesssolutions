@@ -88,6 +88,18 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;display:flex;jus
 .obj-preset-btn{background:var(--panel);border:1px solid rgba(0,229,255,.1);padding:.4rem .3rem;cursor:pointer;text-align:center;transition:border-color .15s,background .15s;font-size:.9rem;line-height:1.2;}
 .obj-preset-btn:hover{border-color:var(--accent2);background:rgba(255,107,53,.06);}
 .obj-preset-label{display:block;font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-top:.15rem;}
+/* MAP TYPE SELECT */
+#map-type{background:var(--panel);border:1px solid rgba(0,229,255,.2);color:var(--text);font-family:var(--mono);font-size:.65rem;padding:0 .5rem;height:32px;outline:none;cursor:pointer;letter-spacing:.04em;}
+#map-type:focus{border-color:var(--accent);}
+/* SPRITE PICKER */
+.panel-sep{height:1px;background:var(--border);margin:.5rem 0;}
+.sprite-tabs{display:flex;gap:.2rem;margin-bottom:.3rem;}
+.sprite-tab{font-family:var(--mono);font-size:.52rem;letter-spacing:.06em;padding:.22rem .45rem;border:1px solid rgba(0,229,255,.12);color:var(--muted);background:transparent;cursor:pointer;text-transform:uppercase;transition:all .15s;}
+.sprite-tab.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.06);}
+.sprite-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:.2rem;max-height:124px;overflow-y:auto;padding-right:2px;margin-bottom:.4rem;}
+.sprite-grid::-webkit-scrollbar{width:3px;}
+.sprite-grid::-webkit-scrollbar-thumb{background:var(--border);}
+.sprite-thumb{width:100%;aspect-ratio:1;object-fit:contain;background:rgba(0,229,255,.03);border:1px solid rgba(0,229,255,.08);cursor:pointer;transition:border-color .15s;}
 
 /* INITIATIVE */
 .init-list{display:flex;flex-direction:column;gap:.2rem;margin-bottom:.5rem;}
@@ -146,6 +158,12 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;display:flex;jus
 
 <div class="topbar">
   <input id="map-desc" type="text" placeholder="Describe your map… e.g. 'a goblin cave with an underground river'" maxlength="200"/>
+  <select id="map-type" title="Map type">
+    <option value="outdoor">Outdoor</option>
+    <option value="dungeon">Dungeon</option>
+    <option value="cave">Cave</option>
+    <option value="town">Town</option>
+  </select>
   <button id="btn-generate" class="topbar-btn">Generate Map</button>
   <div class="gen-spinner" id="gen-spinner"></div>
   <button id="btn-edit" class="topbar-btn">✏ Edit Terrain</button>
@@ -181,6 +199,13 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:48px;display:flex;jus
       <!-- Objects -->
       <div class="panel">
         <div class="panel-title">Objects</div>
+        <div class="sprite-tabs" id="sprite-tabs">
+          <button class="sprite-tab active" data-tab="outdoor" onclick="selectSpriteTab('outdoor')">Outdoor</button>
+          <button class="sprite-tab" data-tab="indoor" onclick="selectSpriteTab('indoor')">Indoor</button>
+          <button class="sprite-tab" data-tab="dungeon" onclick="selectSpriteTab('dungeon')">Dungeon</button>
+        </div>
+        <div class="sprite-grid" id="sprite-grid"></div>
+        <div class="panel-sep"></div>
         <div class="obj-presets" id="obj-presets"></div>
         <div class="field-row">
           <input id="obj-name" class="field-input" type="text" placeholder="Custom name" maxlength="20"/>
@@ -294,6 +319,14 @@ const OBJECT_PRESETS = [
   { name: 'Pit',      w: 2, h: 2, color: 'rgba(10,10,10,0.85)',  border: '#333',    emoji: '⬛' },
   { name: 'Cart',     w: 1, h: 2, color: 'rgba(100,70,20,0.8)',  border: '#8a601a', emoji: '🛒' },
 ];
+
+const SPRITE_PATHS = {
+  outdoor: Array.from({length:13},(_,i)=>`map_assets/sprites/outdoor/sprite_${String(i+3).padStart(3,'0')}.png`),
+  indoor:  Array.from({length:111},(_,i)=>`map_assets/sprites/indoor/sprite_${String(i+1).padStart(3,'0')}.png`),
+  dungeon: Array.from({length:30},(_,i)=>`map_assets/sprites/dungeon/sprite_${String(i+1).padStart(3,'0')}.png`),
+};
+const IMG_CACHE = {};
+let currentSpriteTab = 'outdoor';
 
 const STATE = {
   grid: [],
@@ -450,6 +483,16 @@ function drawObjects() {
   }
 }
 
+function getOrLoadImage(src) {
+  if (!IMG_CACHE[src]) {
+    const img = new Image();
+    img.onload = () => redraw();
+    img.src = src;
+    IMG_CACHE[src] = img;
+  }
+  return IMG_CACHE[src];
+}
+
 function drawObject(obj, isDragging) {
   const x = isDragging
     ? STATE.drag.pixelX - obj.w * STATE.cellW / 2
@@ -459,6 +502,26 @@ function drawObject(obj, isDragging) {
     : STATE.offsetY + obj.row * STATE.cellH;
   const w = obj.w * STATE.cellW;
   const h = obj.h * STATE.cellH;
+
+  if (obj.spriteSrc) {
+    const img = getOrLoadImage(obj.spriteSrc);
+    if (img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, x, y, w, h);
+    } else {
+      ctx.fillStyle = 'rgba(0,229,255,0.08)';
+      ctx.fillRect(x, y, w, h);
+    }
+    if (isDragging) {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    } else {
+      ctx.strokeStyle = 'rgba(0,229,255,0.25)';
+      ctx.lineWidth = 1;
+      ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);
+    }
+    return;
+  }
 
   // Fill
   ctx.fillStyle = obj.color;
@@ -658,10 +721,19 @@ function drawToken(tok, isDragging, forceGrid) {
 
 // ── Map generation ────────────────────────────────────────────────────────────
 
-function buildMapPrompt(description) {
+function buildMapPrompt(description, mapType) {
+  const typeGuides = {
+    outdoor: `Outdoor terrain. Use grass, forest, water, mountain, road, desert, swamp — no dungeon tiles. Create natural landscapes: rivers, forests, clearings, hills. Roads should form paths between areas.`,
+    dungeon: `Underground dungeon. Primarily use dungeon-floor (walkable) and dungeon-wall (solid). Create distinct rooms (2–5 cells wide) connected by corridors (1–2 cells wide). Walls must fully enclose rooms. You may add water for underground streams or moats.`,
+    cave: `Natural cave system. Use dungeon-floor for passages and chambers, dungeon-wall for solid rock, water for underground pools and streams. Passages should be organic and irregular — avoid rectangular rooms.`,
+    town: `Town or village. Use road for streets (grid or organic network), grass for yards/outskirts, forest at edges, water for rivers or ponds. Road networks should interconnect across the map.`,
+  };
+  const guide = typeGuides[mapType] || typeGuides.outdoor;
   return `You are a tabletop RPG map generator. Generate a ${GRID_COLS}-column by ${GRID_ROWS}-row terrain grid for this location:
 
 "${description}"
+
+Map type: ${mapType}. ${guide}
 
 Respond with ONLY a valid JSON object, no explanation, no markdown fences:
 
@@ -672,8 +744,6 @@ Each terrain value must be exactly one of: grass, forest, water, mountain, dunge
 Rules:
 - Exactly 15 rows, each with exactly 20 columns.
 - Terrain must be geographically coherent (rivers flow, dungeon walls border floors, forests cluster).
-- Dungeon settings: use dungeon-floor corridors surrounded by dungeon-wall.
-- Outdoor settings: mix complementary terrains.
 - Lava only for volcanic/hellish settings.`;
 }
 
@@ -689,7 +759,7 @@ async function generateMap() {
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 2000,
-        messages: [{ role: 'user', content: buildMapPrompt(desc) }],
+        messages: [{ role: 'user', content: buildMapPrompt(desc, document.getElementById('map-type').value) }],
       }),
     });
     const data = await resp.json();
@@ -881,6 +951,30 @@ function addCustomObject() {
   redraw();
   renderObjectList();
   document.getElementById('obj-name').value = '';
+}
+
+function addSpriteObject(src) {
+  const name = src.split('/').pop().replace('.png','').replace('sprite_','#');
+  const col = Math.max(0, Math.min(GRID_COLS - 1, Math.floor(GRID_COLS / 2)));
+  const row = Math.max(0, Math.min(GRID_ROWS - 1, Math.floor(GRID_ROWS / 2)));
+  STATE.objects.push({ id: STATE.nextId++, name, w: 1, h: 1, col, row, color: 'transparent', border: '#5a5a90', spriteSrc: src });
+  redraw();
+  renderObjectList();
+}
+
+function renderSpritePicker() {
+  const paths = SPRITE_PATHS[currentSpriteTab] || [];
+  document.getElementById('sprite-grid').innerHTML = paths.map(src =>
+    `<img class="sprite-thumb" src="${escHtml(src)}" data-src="${escHtml(src)}" title="${escHtml(src.split('/').pop())}" onclick="addSpriteObject(this.dataset.src)" loading="lazy"/>`
+  ).join('');
+  document.querySelectorAll('.sprite-tab').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === currentSpriteTab);
+  });
+}
+
+function selectSpriteTab(tab) {
+  currentSpriteTab = tab;
+  renderSpritePicker();
 }
 
 function removeObject(id) {
@@ -1166,6 +1260,7 @@ document.getElementById('btn-edit').addEventListener('click', toggleEditMode);
 window.addEventListener('resize', resizeCanvas);
 renderTerrainPalette();
 renderObjectPresets();
+renderSpritePicker();
 renderObjectList();
 document.fonts.ready.then(() => requestAnimationFrame(resizeCanvas));
 </script>
