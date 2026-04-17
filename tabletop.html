@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<link rel="icon" type="image/png" href="images/logo.png">
+<title>Tabletop Map Generator | 3D Business Solutions</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #050a0f; --bg2: #080f18; --panel: #0b1622;
+  --accent: #00e5ff; --accent2: #ff6b35; --accent3: #39ff14;
+  --text: #e8f4f8; --muted: #6a8fa8; --border: rgba(0,229,255,0.15);
+  --mono: 'Share Tech Mono', monospace; --head: 'Barlow Condensed', sans-serif; --body: 'Barlow', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--body);}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.025) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:.9rem 2rem;background:rgba(5,10,15,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);}
+.nav-logo{font-family:var(--head);font-size:1.3rem;font-weight:900;letter-spacing:.08em;color:var(--text);text-decoration:none;}
+.nav-logo span{color:var(--accent);}
+.nav-back{font-family:var(--mono);font-size:.7rem;color:var(--muted);text-decoration:none;letter-spacing:.1em;transition:color .2s;}
+.nav-back:hover{color:var(--accent);}
+.nav-title{font-family:var(--mono);font-size:.7rem;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;}
+
+/* TOPBAR */
+.topbar{position:fixed;top:48px;left:0;right:0;z-index:50;display:flex;align-items:center;gap:.75rem;padding:.55rem 1.2rem;background:var(--bg2);border-bottom:1px solid var(--border);}
+#map-desc{flex:1;background:var(--panel);border:1px solid rgba(0,229,255,.2);color:var(--text);font-family:var(--mono);font-size:.7rem;padding:.5rem .8rem;outline:none;transition:border-color .2s;letter-spacing:.04em;}
+#map-desc:focus{border-color:var(--accent);}
+#map-desc::placeholder{color:var(--muted);}
+#btn-generate{font-family:var(--mono);font-size:.68rem;letter-spacing:.12em;padding:.5rem 1.2rem;background:var(--accent);color:var(--bg);font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s,opacity .2s;white-space:nowrap;}
+#btn-generate:hover{box-shadow:0 0 20px rgba(0,229,255,.4);}
+#btn-generate:disabled{opacity:.4;cursor:not-allowed;box-shadow:none;}
+#map-title-display{font-family:var(--head);font-size:1rem;font-weight:900;text-transform:uppercase;color:var(--accent);letter-spacing:.06em;white-space:nowrap;min-width:140px;}
+.gen-spinner{display:none;width:14px;height:14px;border:2px solid rgba(0,229,255,.2);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;}
+.gen-spinner.active{display:block;}
+@keyframes spin{to{transform:rotate(360deg)}}
+#topbar-error{font-family:var(--mono);font-size:.6rem;color:var(--accent2);letter-spacing:.06em;display:none;}
+
+/* LAYOUT */
+.layout{display:flex;height:100vh;padding-top:96px;position:relative;z-index:1;}
+
+/* CANVAS */
+#map-canvas{flex:1;display:block;background:#050a0f;cursor:default;min-width:0;}
+
+/* SIDEBAR */
+.sidebar{width:300px;min-width:300px;background:var(--bg2);border-left:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;}
+.sidebar-scroll{flex:1;overflow-y:auto;}
+.sidebar-scroll::-webkit-scrollbar{width:3px;}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:var(--border);}
+
+/* PANELS */
+.panel{border-bottom:1px solid var(--border);padding:.9rem 1.1rem;}
+.panel-title{font-family:var(--head);font-size:.95rem;font-weight:900;text-transform:uppercase;letter-spacing:.06em;color:var(--accent);margin-bottom:.7rem;display:flex;align-items:center;gap:.4rem;}
+.panel-title::before{content:'//';color:var(--accent2);font-size:.6rem;font-family:var(--mono);}
+
+/* FORM INPUTS */
+.field-row{display:flex;gap:.5rem;margin-bottom:.5rem;align-items:center;}
+.field-input{flex:1;background:var(--panel);border:1px solid rgba(0,229,255,.15);color:var(--text);font-family:var(--mono);font-size:.68rem;padding:.4rem .6rem;outline:none;transition:border-color .2s;min-width:0;}
+.field-input:focus{border-color:var(--accent);}
+.field-input::placeholder{color:var(--muted);}
+.field-input-sm{width:56px;flex:none;}
+.panel-btn{font-family:var(--mono);font-size:.62rem;letter-spacing:.1em;padding:.4rem .8rem;border:1px solid var(--accent);color:var(--accent);background:transparent;cursor:pointer;text-transform:uppercase;transition:background .2s,color .2s;white-space:nowrap;}
+.panel-btn:hover{background:rgba(0,229,255,.1);}
+.panel-btn-danger{border-color:var(--accent2);color:var(--accent2);}
+.panel-btn-danger:hover{background:rgba(255,107,53,.1);}
+
+/* TOKEN LIST */
+.token-list{display:flex;flex-direction:column;gap:.3rem;margin-top:.4rem;}
+.token-row{display:flex;align-items:center;gap:.5rem;padding:.35rem .5rem;background:var(--panel);border:1px solid rgba(0,229,255,.08);}
+.token-row-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+.token-row-dot.enemy{background:var(--accent2);}
+.token-row-dot.player{background:var(--accent);}
+.token-row-name{font-family:var(--mono);font-size:.62rem;color:var(--text);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.token-row-remove{font-family:var(--mono);font-size:.6rem;color:var(--muted);background:none;border:none;cursor:pointer;padding:.1rem .3rem;transition:color .15s;flex:none;}
+.token-row-remove:hover{color:var(--accent2);}
+.empty-hint{font-family:var(--mono);font-size:.62rem;color:var(--muted);letter-spacing:.06em;padding:.2rem 0;}
+
+/* INITIATIVE */
+.init-list{display:flex;flex-direction:column;gap:.25rem;margin-bottom:.6rem;}
+.init-row{display:flex;align-items:center;gap:.5rem;padding:.4rem .6rem;border-left:2px solid transparent;transition:background .2s,border-color .2s;}
+.init-row.active{background:rgba(57,255,20,.07);border-left-color:var(--accent3);}
+.init-num{font-family:var(--mono);font-size:.8rem;font-weight:700;color:var(--muted);min-width:22px;}
+.init-row.active .init-num{color:var(--accent3);}
+.init-dot{width:7px;height:7px;border-radius:50%;flex:none;}
+.init-dot.enemy{background:var(--accent2);}
+.init-dot.player{background:var(--accent);}
+.init-name{font-family:var(--mono);font-size:.62rem;flex:1;color:var(--text);}
+.init-active-label{font-family:var(--mono);font-size:.55rem;color:var(--accent3);letter-spacing:.1em;animation:initPulse 1.2s ease-in-out infinite;}
+@keyframes initPulse{0%,100%{opacity:.5}50%{opacity:1}}
+.init-controls{display:flex;gap:.5rem;margin-top:.4rem;}
+
+/* DICE ROLLER */
+.die-selector{display:flex;flex-wrap:wrap;gap:.3rem;margin-bottom:.6rem;}
+.die-btn{font-family:var(--mono);font-size:.62rem;padding:.3rem .55rem;border:1px solid rgba(0,229,255,.2);color:var(--muted);background:var(--panel);cursor:pointer;letter-spacing:.06em;transition:all .15s;}
+.die-btn:hover{border-color:var(--accent);color:var(--accent);}
+.die-btn.active{border-color:var(--accent);color:var(--accent);background:rgba(0,229,255,.08);}
+.modifier-row{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem;}
+.mod-label{font-family:var(--mono);font-size:.6rem;color:var(--muted);letter-spacing:.08em;}
+.mod-btn{width:24px;height:24px;border:1px solid rgba(0,229,255,.2);color:var(--accent);background:var(--panel);cursor:pointer;font-size:.9rem;line-height:1;display:flex;align-items:center;justify-content:center;transition:border-color .15s;}
+.mod-btn:hover{border-color:var(--accent);}
+#mod-display{font-family:var(--mono);font-size:.75rem;color:var(--accent);min-width:30px;text-align:center;}
+.btn-roll{width:100%;font-family:var(--mono);font-size:.75rem;letter-spacing:.15em;padding:.6rem;background:var(--accent2);color:#fff;font-weight:700;text-transform:uppercase;border:none;cursor:pointer;transition:box-shadow .2s;}
+.btn-roll:hover{box-shadow:0 0 20px rgba(255,107,53,.4);}
+.dice-result{margin-top:.6rem;text-align:center;display:none;}
+.dice-result.visible{display:block;}
+.dice-result-total{font-family:var(--head);font-size:3rem;font-weight:900;color:var(--accent);line-height:1;}
+.dice-result-breakdown{font-family:var(--mono);font-size:.6rem;color:var(--muted);margin-top:.2rem;letter-spacing:.06em;}
+@keyframes rollFlash{0%{transform:scale(1.5);opacity:0}40%{transform:scale(1.05);opacity:1}100%{transform:scale(1)}}
+.roll-flash{animation:rollFlash .35s cubic-bezier(.16,1,.3,1) forwards;}
+.dice-history{margin-top:.5rem;display:flex;flex-direction:column;gap:.2rem;}
+.hist-row{display:flex;justify-content:space-between;align-items:center;padding:.25rem .4rem;background:var(--panel);}
+.hist-row.hist-latest{background:rgba(0,229,255,.06);}
+.hist-notation{font-family:var(--mono);font-size:.58rem;color:var(--muted);}
+.hist-total{font-family:var(--mono);font-size:.72rem;color:var(--text);font-weight:700;}
+.hist-row.hist-latest .hist-total{color:var(--accent);}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="/" class="nav-logo">3D<span>.</span>BS</a>
+  <span class="nav-title">Tabletop Map Generator</span>
+  <a href="/" class="nav-back">← Back</a>
+</nav>
+
+<div class="topbar">
+  <input id="map-desc" type="text" placeholder="Describe your map… e.g. 'a goblin cave with an underground river'" maxlength="200"/>
+  <button id="btn-generate">Generate Map</button>
+  <div class="gen-spinner" id="gen-spinner"></div>
+  <span id="map-title-display"></span>
+  <span id="topbar-error"></span>
+</div>
+
+<div class="layout">
+  <canvas id="map-canvas"></canvas>
+
+  <aside class="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- Add Enemies -->
+      <div class="panel">
+        <div class="panel-title">Enemies</div>
+        <div class="field-row">
+          <input id="enemy-name" class="field-input" type="text" placeholder="Name (e.g. Goblin)" maxlength="24"/>
+          <input id="enemy-count" class="field-input field-input-sm" type="number" value="1" min="1" max="20"/>
+          <button class="panel-btn" onclick="addEnemies()">Add</button>
+        </div>
+      </div>
+
+      <!-- Add Players -->
+      <div class="panel">
+        <div class="panel-title">Players</div>
+        <div class="field-row">
+          <input id="player-name" class="field-input" type="text" placeholder="Character name" maxlength="24"/>
+          <button class="panel-btn" onclick="addPlayer()">Add</button>
+        </div>
+      </div>
+
+      <!-- Token List -->
+      <div class="panel">
+        <div class="panel-title">Tokens</div>
+        <div id="token-list" class="token-list">
+          <div class="empty-hint">No tokens placed yet</div>
+        </div>
+      </div>
+
+      <!-- Initiative & Turn Tracker -->
+      <div class="panel">
+        <div class="panel-title">Initiative</div>
+        <div id="initiative-list" class="init-list">
+          <div class="empty-hint">Add tokens, then roll initiative</div>
+        </div>
+        <div class="init-controls">
+          <button class="panel-btn" onclick="rollInitiative()">Roll Initiative</button>
+          <button class="panel-btn" onclick="nextTurn()">Next Turn</button>
+        </div>
+      </div>
+
+      <!-- Dice Roller -->
+      <div class="panel">
+        <div class="panel-title">Dice Roller</div>
+        <div class="die-selector" id="die-selector">
+          <button class="die-btn active" data-sides="20">d20</button>
+          <button class="die-btn" data-sides="12">d12</button>
+          <button class="die-btn" data-sides="10">d10</button>
+          <button class="die-btn" data-sides="8">d8</button>
+          <button class="die-btn" data-sides="6">d6</button>
+          <button class="die-btn" data-sides="4">d4</button>
+          <button class="die-btn" data-sides="100">d100</button>
+        </div>
+        <div class="modifier-row">
+          <span class="mod-label">Modifier</span>
+          <button class="mod-btn" id="mod-minus">−</button>
+          <span id="mod-display">+0</span>
+          <button class="mod-btn" id="mod-plus">+</button>
+        </div>
+        <button class="btn-roll" id="btn-roll">Roll</button>
+        <div class="dice-result" id="dice-result"></div>
+        <div class="dice-history" id="dice-history"></div>
+      </div>
+
+    </div>
+  </aside>
+</div>
+
+<script>
+const WORKER_URL = 'https://3dbusinesssolutions.demersdd.workers.dev';
+
+const TERRAIN_COLORS = {
+  'grass':         '#2d5a1b',
+  'forest':        '#1a3d12',
+  'water':         '#0d3a5c',
+  'mountain':      '#4a4040',
+  'dungeon-floor': '#1e1e2a',
+  'dungeon-wall':  '#0a0a10',
+  'road':          '#5a4a2a',
+  'desert':        '#6b5a2a',
+  'swamp':         '#2a3d1a',
+  'lava':          '#6b1a00',
+};
+
+const TERRAIN_SYMBOLS = {
+  'water':    '~',
+  'mountain': '▲',
+  'forest':   '♦',
+  'lava':     '✦',
+  'swamp':    '≈',
+  'dungeon-wall': '▪',
+};
+
+const GRID_COLS = 20;
+const GRID_ROWS = 15;
+
+const STATE = {
+  grid: [],
+  mapTitle: '',
+  cellW: 0,
+  cellH: 0,
+  offsetX: 0,
+  offsetY: 0,
+  tokens: [],
+  nextId: 1,
+  drag: { active: false, tokenId: null, offsetX: 0, offsetY: 0, pixelX: 0, pixelY: 0 },
+  initiativeOrder: [],
+  currentTurnIndex: 0,
+  diceHistory: [],
+};
+
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// ── Canvas setup ─────────────────────────────────────────────────────────────
+
+const canvas = document.getElementById('map-canvas');
+let ctx = canvas.getContext('2d');
+let dpr = 1;
+let logicalW = 0;
+let logicalH = 0;
+
+function resizeCanvas() {
+  dpr = window.devicePixelRatio || 1;
+  const layout = document.querySelector('.layout');
+  const sidebar = document.querySelector('.sidebar');
+  logicalW = layout.clientWidth - sidebar.offsetWidth;
+  logicalH = layout.clientHeight;
+
+  canvas.width  = Math.round(logicalW * dpr);
+  canvas.height = Math.round(logicalH * dpr);
+  canvas.style.width  = logicalW + 'px';
+  canvas.style.height = logicalH + 'px';
+
+  ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  computeCellSize();
+  redraw();
+}
+
+function computeCellSize() {
+  STATE.cellW = Math.floor(logicalW / GRID_COLS);
+  STATE.cellH = Math.floor(logicalH / GRID_ROWS);
+  STATE.offsetX = Math.floor((logicalW - STATE.cellW * GRID_COLS) / 2);
+  STATE.offsetY = Math.floor((logicalH - STATE.cellH * GRID_ROWS) / 2);
+}
+
+// ── Rendering ─────────────────────────────────────────────────────────────────
+
+function redraw() {
+  ctx.clearRect(0, 0, logicalW, logicalH);
+  drawGrid();
+  drawTokens();
+}
+
+function drawGrid() {
+  if (!STATE.grid.length) {
+    drawEmptyMap();
+    return;
+  }
+  for (let r = 0; r < GRID_ROWS; r++) {
+    for (let c = 0; c < GRID_COLS; c++) {
+      const terrain = (STATE.grid[r] && STATE.grid[r][c]) || 'dungeon-floor';
+      const x = STATE.offsetX + c * STATE.cellW;
+      const y = STATE.offsetY + r * STATE.cellH;
+
+      ctx.fillStyle = TERRAIN_COLORS[terrain] || '#1e1e2a';
+      ctx.fillRect(x, y, STATE.cellW, STATE.cellH);
+
+      ctx.strokeStyle = 'rgba(0,229,255,0.07)';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(x + 0.5, y + 0.5, STATE.cellW - 1, STATE.cellH - 1);
+
+      const sym = TERRAIN_SYMBOLS[terrain];
+      if (sym && STATE.cellW >= 22) {
+        ctx.fillStyle = 'rgba(255,255,255,0.13)';
+        ctx.font = `${Math.floor(STATE.cellH * 0.42)}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(sym, x + STATE.cellW / 2, y + STATE.cellH / 2);
+      }
+    }
+  }
+}
+
+function drawEmptyMap() {
+  const msg = STATE.grid.length === 0
+    ? 'Describe a location above and click Generate Map'
+    : '';
+  ctx.fillStyle = '#0d131a';
+  ctx.fillRect(STATE.offsetX, STATE.offsetY, STATE.cellW * GRID_COLS, STATE.cellH * GRID_ROWS);
+  for (let r = 0; r < GRID_ROWS; r++) {
+    for (let c = 0; c < GRID_COLS; c++) {
+      ctx.strokeStyle = 'rgba(0,229,255,0.05)';
+      ctx.lineWidth = 0.5;
+      ctx.strokeRect(
+        STATE.offsetX + c * STATE.cellW + 0.5,
+        STATE.offsetY + r * STATE.cellH + 0.5,
+        STATE.cellW - 1,
+        STATE.cellH - 1
+      );
+    }
+  }
+  if (msg) {
+    ctx.fillStyle = 'rgba(106,143,168,0.5)';
+    ctx.font = `14px 'Share Tech Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(msg, logicalW / 2, logicalH / 2);
+  }
+}
+
+function drawTokens() {
+  const draggingId = STATE.drag.active ? STATE.drag.tokenId : null;
+  for (const tok of STATE.tokens) {
+    if (tok.id !== draggingId) drawToken(tok, false);
+  }
+  if (draggingId) {
+    const tok = STATE.tokens.find(t => t.id === draggingId);
+    if (tok) drawToken(tok, true);
+  }
+}
+
+function drawToken(tok, isDragging) {
+  const isCurrentTurn = STATE.initiativeOrder.length > 0 &&
+    STATE.initiativeOrder[STATE.currentTurnIndex] === tok.id;
+  const isEnemy = tok.type === 'enemy';
+
+  const cx = isDragging
+    ? STATE.drag.pixelX
+    : STATE.offsetX + tok.col * STATE.cellW + STATE.cellW / 2;
+  const cy = isDragging
+    ? STATE.drag.pixelY
+    : STATE.offsetY + tok.row * STATE.cellH + STATE.cellH / 2;
+  const r = Math.min(STATE.cellW, STATE.cellH) * 0.33;
+
+  // Glow ring for active turn
+  if (isCurrentTurn) {
+    ctx.beginPath();
+    ctx.arc(cx, cy, r + 5, 0, Math.PI * 2);
+    ctx.strokeStyle = '#39ff14';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+
+  // Shadow
+  ctx.shadowColor = isEnemy ? 'rgba(255,107,53,0.5)' : 'rgba(0,229,255,0.5)';
+  ctx.shadowBlur = isDragging ? 14 : 6;
+
+  // Token body
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI * 2);
+  const grad = ctx.createRadialGradient(cx - r * 0.25, cy - r * 0.25, r * 0.05, cx, cy, r);
+  if (isEnemy) {
+    grad.addColorStop(0, '#ff9060');
+    grad.addColorStop(1, '#a02800');
+  } else {
+    grad.addColorStop(0, '#70f0ff');
+    grad.addColorStop(1, '#0060a0');
+  }
+  ctx.fillStyle = grad;
+  ctx.fill();
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'transparent';
+
+  // Border
+  ctx.strokeStyle = isDragging ? '#fff' : (isEnemy ? '#ff6b35' : '#00e5ff');
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+
+  // Label initial
+  const fontSize = Math.max(10, Math.floor(r * 0.85));
+  ctx.fillStyle = '#fff';
+  ctx.font = `900 ${fontSize}px 'Barlow Condensed', sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(tok.name.charAt(0).toUpperCase(), cx, cy + 1);
+
+  // Initiative badge
+  if (tok.initiative !== null && tok.initiative !== undefined) {
+    const bx = cx + r * 0.68;
+    const by = cy - r * 0.68;
+    const br = r * 0.36;
+    ctx.beginPath();
+    ctx.arc(bx, by, br, 0, Math.PI * 2);
+    ctx.fillStyle = isCurrentTurn ? '#39ff14' : 'rgba(5,10,15,0.9)';
+    ctx.fill();
+    ctx.strokeStyle = isCurrentTurn ? '#39ff14' : (isEnemy ? '#ff6b35' : '#00e5ff');
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    const bfSize = Math.max(7, Math.floor(br * 0.9));
+    ctx.fillStyle = isCurrentTurn ? '#050a0f' : '#e8f4f8';
+    ctx.font = `700 ${bfSize}px 'Share Tech Mono', monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(tok.initiative), bx, by + 1);
+  }
+}
+
+// ── Map generation ────────────────────────────────────────────────────────────
+
+function buildMapPrompt(description) {
+  return `You are a tabletop RPG map generator. Generate a ${GRID_COLS}-column by ${GRID_ROWS}-row terrain grid for this location:
+
+"${description}"
+
+Respond with ONLY a valid JSON object, no explanation, no markdown fences:
+
+{"title":"<2-5 word evocative title>","grid":[["terrain",...20 values...],... 15 rows total]}
+
+Each terrain value must be exactly one of: grass, forest, water, mountain, dungeon-floor, dungeon-wall, road, desert, swamp, lava
+
+Rules:
+- Exactly 15 rows, each with exactly 20 columns.
+- Terrain must be geographically coherent (rivers flow, dungeon walls border floors, forests cluster).
+- Dungeon settings: use dungeon-floor corridors surrounded by dungeon-wall.
+- Outdoor settings: mix complementary terrains.
+- Lava only for volcanic/hellish settings.`;
+}
+
+async function generateMap() {
+  const desc = document.getElementById('map-desc').value.trim();
+  if (!desc) return;
+
+  setGenerating(true);
+  hideError();
+
+  try {
+    const resp = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 2000,
+        messages: [{ role: 'user', content: buildMapPrompt(desc) }],
+      }),
+    });
+
+    const data = await resp.json();
+    let raw = data?.content?.[0]?.text || '';
+
+    // Strip markdown fences
+    raw = raw.replace(/```json|```/g, '').trim();
+
+    // Fallback: extract JSON object
+    const jsonMatch = raw.match(/\{[\s\S]*\}/);
+    if (jsonMatch) raw = jsonMatch[0];
+
+    const result = JSON.parse(raw);
+
+    if (!Array.isArray(result.grid) ||
+        result.grid.length !== GRID_ROWS ||
+        !result.grid.every(row => Array.isArray(row) && row.length === GRID_COLS)) {
+      throw new Error(`Grid must be ${GRID_ROWS}×${GRID_COLS}`);
+    }
+
+    STATE.grid = result.grid;
+    STATE.mapTitle = result.title || desc;
+    STATE.tokens = [];
+    STATE.initiativeOrder = [];
+    STATE.currentTurnIndex = 0;
+
+    document.getElementById('map-title-display').textContent = STATE.mapTitle;
+    renderTokenList();
+    updateInitiativePanel();
+    redraw();
+
+  } catch (err) {
+    showError('Generation failed: ' + err.message);
+  } finally {
+    setGenerating(false);
+  }
+}
+
+function setGenerating(on) {
+  document.getElementById('btn-generate').disabled = on;
+  document.getElementById('gen-spinner').classList.toggle('active', on);
+}
+
+function showError(msg) {
+  const el = document.getElementById('topbar-error');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideError() {
+  document.getElementById('topbar-error').style.display = 'none';
+}
+
+// ── Token system ──────────────────────────────────────────────────────────────
+
+function addEnemies() {
+  const name = document.getElementById('enemy-name').value.trim();
+  const count = Math.max(1, Math.min(20, parseInt(document.getElementById('enemy-count').value) || 1));
+  if (!name) return;
+
+  const placed = placeTokens(count, 'enemy', name);
+  STATE.tokens.push(...placed);
+  redraw();
+  renderTokenList();
+}
+
+function addPlayer() {
+  const name = document.getElementById('player-name').value.trim();
+  if (!name) return;
+
+  const placed = placeTokens(1, 'player', name);
+  STATE.tokens.push(...placed);
+  redraw();
+  renderTokenList();
+  document.getElementById('player-name').value = '';
+}
+
+function placeTokens(count, type, name) {
+  const result = [];
+  const occupied = new Set(STATE.tokens.map(t => `${t.col},${t.row}`));
+  const startCol = type === 'enemy' ? 15 : 3;
+  const startRow = 7;
+
+  for (let i = 0; i < count; i++) {
+    const cell = findFreeCell(startCol, startRow, occupied);
+    occupied.add(`${cell.col},${cell.row}`);
+    result.push({
+      id: STATE.nextId++,
+      name: count > 1 ? `${name} ${i + 1}` : name,
+      type,
+      col: cell.col,
+      row: cell.row,
+      initiative: null,
+    });
+  }
+  return result;
+}
+
+function findFreeCell(startCol, startRow, occupied) {
+  for (let radius = 0; radius < 15; radius++) {
+    for (let dc = -radius; dc <= radius; dc++) {
+      for (let dr = -radius; dr <= radius; dr++) {
+        if (Math.abs(dc) !== radius && Math.abs(dr) !== radius) continue;
+        const col = Math.max(0, Math.min(GRID_COLS - 1, startCol + dc));
+        const row = Math.max(0, Math.min(GRID_ROWS - 1, startRow + dr));
+        if (!occupied.has(`${col},${row}`)) return { col, row };
+      }
+    }
+  }
+  return { col: startCol, row: startRow };
+}
+
+function removeToken(id) {
+  STATE.tokens = STATE.tokens.filter(t => t.id !== id);
+  STATE.initiativeOrder = STATE.initiativeOrder.filter(i => i !== id);
+  if (STATE.currentTurnIndex >= STATE.initiativeOrder.length) {
+    STATE.currentTurnIndex = Math.max(0, STATE.initiativeOrder.length - 1);
+  }
+  redraw();
+  renderTokenList();
+  updateInitiativePanel();
+}
+
+function renderTokenList() {
+  const el = document.getElementById('token-list');
+  if (!STATE.tokens.length) {
+    el.innerHTML = '<div class="empty-hint">No tokens placed yet</div>';
+    return;
+  }
+  el.innerHTML = STATE.tokens.map(tok => `
+    <div class="token-row">
+      <span class="token-row-dot ${tok.type}"></span>
+      <span class="token-row-name">${escHtml(tok.name)}</span>
+      <button class="token-row-remove" onclick="removeToken(${tok.id})">✕</button>
+    </div>
+  `).join('');
+}
+
+// ── Drag-and-drop ─────────────────────────────────────────────────────────────
+
+function getCanvasPoint(e) {
+  const rect = canvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: src.clientX - rect.left,
+    y: src.clientY - rect.top,
+  };
+}
+
+function tokenAtPoint(px, py) {
+  for (let i = STATE.tokens.length - 1; i >= 0; i--) {
+    const tok = STATE.tokens[i];
+    const cx = STATE.offsetX + tok.col * STATE.cellW + STATE.cellW / 2;
+    const cy = STATE.offsetY + tok.row * STATE.cellH + STATE.cellH / 2;
+    const r = Math.min(STATE.cellW, STATE.cellH) * 0.33;
+    const dx = px - cx, dy = py - cy;
+    if (dx * dx + dy * dy <= r * r) return tok;
+  }
+  return null;
+}
+
+function pixelToCell(px, py) {
+  return {
+    col: Math.max(0, Math.min(GRID_COLS - 1, Math.floor((px - STATE.offsetX) / STATE.cellW))),
+    row: Math.max(0, Math.min(GRID_ROWS - 1, Math.floor((py - STATE.offsetY) / STATE.cellH))),
+  };
+}
+
+function onDragStart(e) {
+  const { x, y } = getCanvasPoint(e);
+  const tok = tokenAtPoint(x, y);
+  if (!tok) return;
+  e.preventDefault();
+
+  const cx = STATE.offsetX + tok.col * STATE.cellW + STATE.cellW / 2;
+  const cy = STATE.offsetY + tok.row * STATE.cellH + STATE.cellH / 2;
+  STATE.drag.active   = true;
+  STATE.drag.tokenId  = tok.id;
+  STATE.drag.offsetX  = x - cx;
+  STATE.drag.offsetY  = y - cy;
+  STATE.drag.pixelX   = cx;
+  STATE.drag.pixelY   = cy;
+  canvas.style.cursor = 'grabbing';
+}
+
+function onDragMove(e) {
+  const { x, y } = getCanvasPoint(e);
+  if (STATE.drag.active) {
+    e.preventDefault();
+    STATE.drag.pixelX = x - STATE.drag.offsetX;
+    STATE.drag.pixelY = y - STATE.drag.offsetY;
+    redraw();
+  } else {
+    canvas.style.cursor = tokenAtPoint(x, y) ? 'grab' : 'default';
+  }
+}
+
+function onDragEnd(e) {
+  if (!STATE.drag.active) return;
+  const pt = e.changedTouches ? e.changedTouches[0] : e;
+  const rect = canvas.getBoundingClientRect();
+  const x = pt.clientX - rect.left;
+  const y = pt.clientY - rect.top;
+
+  const tok = STATE.tokens.find(t => t.id === STATE.drag.tokenId);
+  if (tok) {
+    const cell = pixelToCell(x - STATE.drag.offsetX, y - STATE.drag.offsetY);
+    tok.col = cell.col;
+    tok.row = cell.row;
+  }
+  STATE.drag.active = false;
+  STATE.drag.tokenId = null;
+  canvas.style.cursor = 'default';
+  redraw();
+}
+
+canvas.addEventListener('mousedown', onDragStart);
+canvas.addEventListener('mousemove', onDragMove);
+canvas.addEventListener('mouseup', onDragEnd);
+canvas.addEventListener('mouseleave', onDragEnd);
+canvas.addEventListener('touchstart', onDragStart, { passive: false });
+canvas.addEventListener('touchmove', onDragMove, { passive: false });
+canvas.addEventListener('touchend', onDragEnd);
+
+// ── Initiative ────────────────────────────────────────────────────────────────
+
+function rollInitiative() {
+  if (!STATE.tokens.length) return;
+  STATE.tokens.forEach(tok => {
+    tok.initiative = Math.ceil(Math.random() * 20);
+  });
+  STATE.initiativeOrder = [...STATE.tokens]
+    .sort((a, b) => {
+      if (b.initiative !== a.initiative) return b.initiative - a.initiative;
+      if (a.type !== b.type) return a.type === 'player' ? -1 : 1;
+      return a.name.localeCompare(b.name);
+    })
+    .map(t => t.id);
+  STATE.currentTurnIndex = 0;
+  updateInitiativePanel();
+  redraw();
+}
+
+function nextTurn() {
+  if (!STATE.initiativeOrder.length) return;
+  STATE.currentTurnIndex = (STATE.currentTurnIndex + 1) % STATE.initiativeOrder.length;
+  updateInitiativePanel();
+  redraw();
+}
+
+function updateInitiativePanel() {
+  const el = document.getElementById('initiative-list');
+  if (!STATE.initiativeOrder.length) {
+    el.innerHTML = '<div class="empty-hint">Add tokens, then roll initiative</div>';
+    return;
+  }
+  el.innerHTML = STATE.initiativeOrder.map((id, idx) => {
+    const tok = STATE.tokens.find(t => t.id === id);
+    if (!tok) return '';
+    const isActive = idx === STATE.currentTurnIndex;
+    return `
+      <div class="init-row ${isActive ? 'active' : ''}">
+        <span class="init-num">${String(tok.initiative).padStart(2, '0')}</span>
+        <span class="init-dot ${tok.type}"></span>
+        <span class="init-name">${escHtml(tok.name)}</span>
+        ${isActive ? '<span class="init-active-label">▶ TURN</span>' : ''}
+      </div>
+    `;
+  }).join('');
+}
+
+// ── Dice roller ───────────────────────────────────────────────────────────────
+
+let selectedDie = 20;
+let diceModifier = 0;
+
+document.getElementById('die-selector').addEventListener('click', e => {
+  const btn = e.target.closest('.die-btn');
+  if (!btn) return;
+  document.querySelectorAll('.die-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  selectedDie = parseInt(btn.dataset.sides);
+});
+
+document.getElementById('mod-minus').addEventListener('click', () => {
+  diceModifier--;
+  updateModDisplay();
+});
+
+document.getElementById('mod-plus').addEventListener('click', () => {
+  diceModifier++;
+  updateModDisplay();
+});
+
+function updateModDisplay() {
+  document.getElementById('mod-display').textContent =
+    (diceModifier >= 0 ? '+' : '') + diceModifier;
+}
+
+document.getElementById('btn-roll').addEventListener('click', () => {
+  const raw = Math.ceil(Math.random() * selectedDie);
+  const total = raw + diceModifier;
+  const modStr = diceModifier === 0 ? '' : (diceModifier > 0 ? `+${diceModifier}` : `${diceModifier}`);
+  const notation = `d${selectedDie}${modStr}`;
+
+  STATE.diceHistory.unshift({ notation, raw, modifier: diceModifier, total });
+  if (STATE.diceHistory.length > 5) STATE.diceHistory.pop();
+
+  const resultEl = document.getElementById('dice-result');
+  resultEl.className = 'dice-result visible';
+  void resultEl.offsetWidth;
+  resultEl.className = 'dice-result visible roll-flash';
+
+  const breakdown = diceModifier !== 0
+    ? `rolled ${raw} ${diceModifier >= 0 ? '+' : ''}${diceModifier} = ${total}`
+    : `rolled ${raw}`;
+
+  resultEl.innerHTML = `
+    <div class="dice-result-total">${total}</div>
+    <div class="dice-result-breakdown">${escHtml(notation)} — ${escHtml(breakdown)}</div>
+  `;
+
+  const histEl = document.getElementById('dice-history');
+  histEl.innerHTML = STATE.diceHistory.map((h, i) => {
+    const modStr = h.modifier === 0 ? '' : (h.modifier > 0 ? `+${h.modifier}` : `${h.modifier}`);
+    return `
+      <div class="hist-row ${i === 0 ? 'hist-latest' : ''}">
+        <span class="hist-notation">${escHtml(h.notation)}</span>
+        <span class="hist-total">${h.total}</span>
+      </div>
+    `;
+  }).join('');
+});
+
+// ── Generate button ───────────────────────────────────────────────────────────
+
+document.getElementById('btn-generate').addEventListener('click', generateMap);
+document.getElementById('map-desc').addEventListener('keydown', e => {
+  if (e.key === 'Enter') generateMap();
+});
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+
+window.addEventListener('resize', resizeCanvas);
+// Wait for fonts + layout before sizing canvas
+document.fonts.ready.then(() => {
+  requestAnimationFrame(resizeCanvas);
+});
+</script>
+</body>
+</html>
